@@ -1,4 +1,4 @@
-[![GitHub version](https://badge.fury.io/gh/mamut86%2Fdiffusion.svg)
+![GitHub version](https://badge.fury.io/gh/mamut86%2Fdiffusion.svg)
 
 # diffusion
 An about to become R package __diffusion__ for forecasting with diffusion models
