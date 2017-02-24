@@ -7,7 +7,7 @@ Currently working on the following diffusion models:
 
 1. Bass model
 2. Norton Bass model for generational modelling
-3. Gompertz
+3. Gompertz model
 
 ## Notes
 This is alpha version
