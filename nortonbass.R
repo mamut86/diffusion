@@ -1,6 +1,6 @@
 
 # This is the function starting
-nortonBass <- function(x, startval.met = c("2ST", "BB", "iBM"),
+NortonBass <- function(x, startval.met = c("2ST", "BB", "iBM"),
                        startval = NULL, flexpq = F,
                        estim.met = c("OLS", "SUR", "2SLS", "3SLS"),
                        gstart = NULL){
@@ -89,27 +89,27 @@ nortonBass <- function(x, startval.met = c("2ST", "BB", "iBM"),
     
     # 2 Stage method
     if(startval.met == "2ST" & flexpq == T){
-      startval <- startvalgen(x, gn, flexpq = F, startval.met = "BB")
+      startval <- StartvalGen(x, gn, flexpq = F, startval.met = "BB")
       
-      param <- estimNB(x, gn, gstart, startval, flexpq = F, estim.met)$param
+      param <- EstimNB(x, gn, gstart, startval, flexpq = F, estim.met)$param
       
       startval <- c(rep(param[1], gn), rep(param[2], gn), param[3:(gn+2)])
       names(startval) <- c(paste0("p", 1:gn), paste0("q", 1:gn), paste0("m", 1:gn))
       
     }else{
-      startval <- startvalgen(x, gn, flexpq, startval.met)
+      startval <- StartvalGen(x, gn, flexpq, startval.met)
     }
   }
   
   
   # estimate Norton Bass
-  fitNB <- estimNB(x, gn, gstart, startval, flexpq, estim.met)
+  fitNB <- EstimNB(x, gn, gstart, startval, flexpq, estim.met)
   
   return(fitNB)
   }
 
 
-eqnNB <- function(gn, flexpq = T){
+EqnNB <- function(gn, flexpq = T){
   # Creates the Norton-Bass model equation
   
   # return values
@@ -156,7 +156,7 @@ eqnNB <- function(gn, flexpq = T){
 
 
 
-estimNB <- function(x, gn, gstart, startval, flexpq, estim.met){
+EstimNB <- function(x, gn, gstart, startval, flexpq, estim.met){
   
   # create devilishly nonlinear model equation
   mod <- eqnNB(gn, flexpq)
@@ -176,7 +176,7 @@ estimNB <- function(x, gn, gstart, startval, flexpq, estim.met){
 }
 
 
-startvalgen <- function(x, gn, flexpq, startval.met){
+StartvalGen <- function(x, gn, flexpq, startval.met){
   # function to guess starting values to be past into the nonlinear optimiser
   # methods considered are:
   # i) "BB" --> Bass and Bass (2004) approach
