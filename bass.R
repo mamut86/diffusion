@@ -1,34 +1,41 @@
-# This is the Bass model function (see Bass 1969) absolutely no warranty is provided.
-# The Coefficients are estimated in a first step by the linear regression as proposed by Bass
-# Since the linear regression does not always provide satisfying or feasible estimates, the
-# function is further optimised on the MSE of the insample. If p and q can not be found in a
-# optimal region, they are manually set to values of either 0.00000001 or 0.99999999 for p and
-# 0.00000001 or 1.49999999 for q, depending whether the proposed values of the optim()-function
-# are above or below of 0 to 1 or 0 to 1.5, respectively.
-# Function requires only the dataset as input variable and will automatically become the origin.
-# Moreover horizon (h=) can be set if desired. The default value, however, is 100 days.
-# In case the datapoints are of cumulative basis this can be indicated by setting cum=True.
-# Default is False. If set to True forecasts are also given cumulated though.
 
+# Bass model --------------------------------------------------------------
 
-bass <- function(a, h = 0, optim = T, estim=c("ols", "nls")){
+Bass <- function(x, h = 0, optim = F, estim.met = c("nls", "ols")){
+  # Input
+  # 
   
-  pqm <- bass.est(a, estim = estim)
+  # The Coefficients are estimated in x first step by the linear regression as proposed by Bass
+  # Since the linear regression does not always provide satisfying or feasible estimates, the
+  # function is further optimised on the MSE of the insample. If p and q can not be found in x
+  # optimal region, they are manually set to values of either 0.00000001 or 0.99999999 for p and
+  # 0.00000001 or 1.49999999 for q, depending whether the proposed values of the optim()-function
+  # are above or below of 0 to 1 or 0 to 1.5, respectively.
+  # Function requires only the dataset as input variable and will automatically become the origin.
+  # Moreover horizon (h=) can be set if desired. The default value, however, is 100 days.
+  # In case the datapoints are of cumulative basis this can be indicated by setting cum=True.
+  # Default is False. If set to True forecasts are also given cumulated though.
+  
+  estim.met <- estim.met[1]
+    
+  pqm <- EstimBass(x, estim.met = estim.met)
   
   if(optim==T){
-    pqm <- bass.optim(pqm, a)
+    pqm <- OptimBass(pqm, x)
   }
   
-  fit <- bass.fit(pqm, a, h)
+  fit <- FitBass(pqm, x, h)
   return(c(list("coef"= pqm), fit))
   
 }
 
-bass.est = function(a, estim = c("ols", "nls")){
+EstimBass = function(x, estim.met = c("nls", "ols")){
+  
+  estim.met = estim.met[1]
   
   #get LM set up
-  y <- a
-  x <- cumsum(a)
+  y <- x
+  x <- cumsum(x)
   x2 = x^2
   
   #OLS fitting
@@ -47,7 +54,7 @@ bass.est = function(a, estim = c("ols", "nls")){
   q <- cf.lm[2]+p
   
   #NLS version
-  if(estim=="nls"){
+  if(estim.met == "nls"){
     
     T79 <- 1:length(y)
 
@@ -76,31 +83,28 @@ bass.est = function(a, estim = c("ols", "nls")){
 }
 
 
-bass.fit <- function(pqm, a, h=0){
+FitBass <- function(pqm, x, h=0){
   
-  n <- length(a)
-  fc <- bass.curve(pqm, n, h)
+  n <- length(x)
+  fc <- CurveBass(pqm, n, h)
   
   #Creat insample and out-of-sample
   fc.in <- fc[1:n,]
   if(h!=0) fc.out <- fc[(n+1):nrow(fc)]
   
-  
   #Insample Performance Measurement
-  mse = mean((a - fc.in[,1])^2)
-  rmse = sqrt(mean((a - fc.in[,1])^2))
-  names(MAE) = c("MSE")
-  names(RMSE) = c("RMSE")
+  rmse = sqrt(mean((x - fc.in[,1])^2))
+  names(rmse) = c("RMSE")
   
   
   if(h !=0){
-    return(list("fit" = fc.in, "actuals" = a, "out" = fc.out, "error" = c(mse, rmse)))
+    return(list("fit" = fc.in, "actuals" = x, "out" = fc.out, "RMSE" = rmse))
   }else{
-    return(list("fit" = fc.in, "actuals" = a, "error" = c(mse, rmse)))
+    return(list("fit" = fc.in, "actuals" = x, "RMSE" = rmse))
   }
 }
 
-bass.curve <- function(pqm, n, h=0){
+CurveBass <- function(pqm, n, h=0){
   
   p <- pqm[1]
   q <- pqm[2]
@@ -123,7 +127,7 @@ bass.curve <- function(pqm, n, h=0){
 }
 
 
-bass.optim <- function(pqm, a){
+OptimBass <- function(pqm, x){
   
   require(nloptr)
   
@@ -135,9 +139,8 @@ bass.optim <- function(pqm, a){
 
   pqm.init <- pqm
   
-  opt.pqm <- bobyqa(pqm.init, bass.cost, lower = c(0, 0, 0), upper = c(5, 5, Inf), a = a)
+  opt.pqm <- bobyqa(pqm.init, CostBass, lower = c(0, 0, 0), upper = c(5, 5, Inf), x = x)
   
-  #opt.pqm <- optim(pqm.init, bass.cost, method = "Nelder-Mead", a = a)
   opt.pqm <- opt.pqm$par
   names(opt.pqm) <- c("p", "q", "m")
   return(opt.pqm)
@@ -145,13 +148,13 @@ bass.optim <- function(pqm, a){
 }
 
 
-bass.cost <- function(pqm, a){
+CostBass <- function(pqm, x){
   
-  SSE <-  sum((a - bass.fit(pqm, a)$fit[,1])^2)
+  sse <-  sum((x - FitBass(pqm, x)$fit[,1])^2)
   
   if (sum(pqm < 0) > 0 | pqm[1] > 1.5 | pqm[2] > 1.5 | pqm[3] == 0){
-    SSE <- 1e200
+    sse <- 1e200
   }
   
-  return(SSE)
+  return(sse)
 }
