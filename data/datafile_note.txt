@@ -1,0 +1,14 @@
+The following datasets are included
+
+Generational Diffusion model
+dram.RData
+Norton J.A. and Bass F.M. (1987). A Diffusion Theory Model of Adoption and Substitution for Successive
+Generations of High-Technology Products. Management Science, 33, 1069-1086.
+
+Gompertz
+cars.RData
+Franses, P.H. (1994). Fitting a Gompertz curve. Journal of Operational Research Society, 45, 109-113.
+
+chicken.RData
+Jukic, D., Kralik, G. and Scitovski, R. (2004). Least-square fitting Gompertz curve.
+Journal of Computational and Applied Mathematics, 169, 359-375.
