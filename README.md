@@ -10,8 +10,6 @@ Currently working on the following diffusion models:
 3. Gompertz model
 
 ### Installation 
-This development version, is available via github and can be installed using "devtools" in R. Firstly make sure that you have devtools:
+For installation via github use "devtools" in R:
 > if (!require("devtools")){install.packages("devtools")}
-
-and after that run:
 > devtools::install_github("mamut86/diffusion")
