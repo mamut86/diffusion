@@ -1,29 +1,53 @@
+#' Norton-Bass model
+#'
+#' \code{Nortonbass} fits a generational Bass model proposed by (Norton and Bass
+#' 1987). Each subsequent generation influences the sales of the previous
+#' generation. The set of equation is estimated simulataneously.
+#' 
+#' @param x matrix or dataframe containing demand for each generation in
+#'   non-cumulative form.
+#' @param startval.met Different methods of obtaining starting values.
+#' \describe{
+#' \item \code{2ST} Two stage approach taking \code{BB} method first and then
+#' re-estimate if flexpq == T [default]
+#' \item \code{BB} Bass and Bass (2004) method which sets \eqn{p_{1,\dots,j} =
+#' 0.003, q_{1,\dots,j} = 0.05} and \eqn{m_j} is the maximum observed value for
+#' generation \eqn{j}
+#' \item \code{iBM} Fits individual Bass models and uses this as estimators. In
+#' case \code{flexpq} == F the median of p and q is used
+#' }
+#' @param estim.met Estimation method, see \code{\link[systemfit]{nlsystemfit}}
+#'   (\code{OLS} default)
+#' @param gstart optional vector with starting points of generations#'   
+#' @param startval an optional Vector with starting for manual estimation
+#' @param flexpq If \code{TRUE}, generations will have independent p and q
+#'   values as suggested by Islam and Maed (1997)
+#'   
+#' @return \code{coef}: coefficients for p, q and m
+#' 
+#' @details For starting values the Vector values need to be named in the case
+#'   \code{flexpq} == T \eqn{p_1,\dots,p_j,q_1,\dots,q_j,m_1,\dots,m_j}. In the
+#'   case of \code{flexpq} == F \eqn{p_1, q_1, m_1,\dots, m_j}.
+#'   
+#'   If \code{gstart} is not provided, the generation starting points will be
+#'   detected automatically selecting the first value that is non-zero.
+#'    
+#' @references Norton, J.A. and Bass, F.M., 1987. A Diffusion Theory Model of
+#'   Adoption and Substitution for Successive Generations of High-Technology
+#'   Products.
+#' @references Islam, T. and Meade, N., 1997. The Diffusion of Successive
+#'   Generations of a Technology: A More General Model. Technological
+#'   Forecasting and Social Change, 56, 49-60.
+#' @author Oliver Schaer, \email{info@@oliverschaer.ch}
+#' 
+#' @example examples/example_nortonbass.R
+#'  
+#' @rdname Nortonbass  
+#' @export Nortonbass
 
-# This is the function starting
-NortonBass <- function(x, startval.met = c("2ST", "BB", "iBM"),
-                       startval = NULL, flexpq = F,
+Nortonbass <- function(x, startval.met = c("2ST", "BB", "iBM"),
                        estim.met = c("OLS", "SUR", "2SLS", "3SLS"),
-                       gstart = NULL){
-  # Inputs
-  # x                       matrix or dataframe containing demand for each generation
-  #                         in non-cumulative form
-  # startval.met            Different ways of obtaining start values
-  #                         "2ST" (default) Two stage approach taking "BB" method first
-  #                         and then re-estimate if flexpq == T
-  #                         "BB" Bass and Bass 2004 method sets p = 0.003, q = 0.05
-  #                         and m is the maximum observed value for generation j
-  #                         "iBM" Fits individual Bass models and uses this as
-  #                         estimators in case flexpq == F median of p and q is used
-  # startval                Vector with start values needed for manual estimation.
-  #                         Vector values need to be named in the form of
-  #                         case flexpq == T  --> (p1,...,pj,q1,...,qj,m1,..,mj)
-  #                         case flexpq == F  --> (p1,q1,m1,..,mj)
-  # flexqp[default = F]     Allows for flexible p and q for each generation as
-  #                         described by Islam and Maede 1997
-  # estim.met["OLS" default]Estimation method for nlsystemfit() function --> OLS default
-  
-  # gstart                  manually defne starting points of generation
-  #
+                       gstart = NULL, startval = NULL, flexpq = F){
   
   # Set some basic variables
   gn <- ncol(x)
@@ -89,27 +113,27 @@ NortonBass <- function(x, startval.met = c("2ST", "BB", "iBM"),
     
     # 2 Stage method
     if(startval.met == "2ST" & flexpq == T){
-      startval <- StartvalGen(x, gn, flexpq = F, startval.met = "BB")
+      startval <- Nortonbass_startvalgen(x, gn, flexpq = F, startval.met = "BB")
       
-      param <- EstimNB(x, gn, gstart, startval, flexpq = F, estim.met)$param
+      param <- Nortonbass_estim(x, gn, gstart, startval, flexpq = F, estim.met)$param
       
       startval <- c(rep(param[1], gn), rep(param[2], gn), param[3:(gn+2)])
       names(startval) <- c(paste0("p", 1:gn), paste0("q", 1:gn), paste0("m", 1:gn))
       
     }else{
-      startval <- StartvalGen(x, gn, flexpq, startval.met)
+      startval <- Nortonbass_startvalgen(x, gn, flexpq, startval.met)
     }
   }
   
   
   # estimate Norton Bass
-  fitNB <- EstimNB(x, gn, gstart, startval, flexpq, estim.met)
+  fitNB <- Nortonbass_estim(x, gn, gstart, startval, flexpq, estim.met)
   
   return(fitNB)
   }
 
 
-EqnNB <- function(gn, flexpq = T){
+Nortonbass_eqngen <- function(gn, flexpq = T){
   # Creates the Norton-Bass model equation
   
   # return values
@@ -156,10 +180,10 @@ EqnNB <- function(gn, flexpq = T){
 
 
 
-EstimNB <- function(x, gn, gstart, startval, flexpq, estim.met){
+Nortonbass_estim <- function(x, gn, gstart, startval, flexpq, estim.met){
   
   # create devilishly nonlinear model equation
-  mod <- eqnNB(gn, flexpq)
+  mod <- Nortonbass_eqngen(gn, flexpq)
   
   print(startval)
   
@@ -176,7 +200,7 @@ EstimNB <- function(x, gn, gstart, startval, flexpq, estim.met){
 }
 
 
-StartvalGen <- function(x, gn, flexpq, startval.met){
+Nortonbass_startvalgen <- function(x, gn, flexpq, startval.met){
   # function to guess starting values to be past into the nonlinear optimiser
   # methods considered are:
   # i) "BB" --> Bass and Bass (2004) approach

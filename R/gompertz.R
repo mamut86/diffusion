@@ -1,13 +1,28 @@
-# Gompertz model ----------------------------------------------------------
+#' Gompertz model
+#'
+#' \code{Gompertz} fits a Gompertz model using non-linear least square
+#' estimation.
+#' 
+#' @param x vector of cumulative observations
+#' @param startval an optional Vector with starting for manual estimation
+#'   
+#' @return coefficients for a, b and c
+#' 
+#' @details For \code{startval} the Vector values needs to be named in the form
+#'   of (a, b, c). Else automated approximation of NLS is taking place using
+#'   Jukic et al. (2004) approach.
+#' 
+#' @references Jukic, D., Kralik, G. and Scitovski, R., 2004. Least-squares
+#'   fitting Gompertz curve. Journal of Computational and Applied Mathematics,
+#'   169, 359-375.
+#' @author Oliver Schaer, \email{info@@oliverschaer.ch}
+#' 
+#' @example examples/example_gompertz.R
+#'  
+#' @rdname Gompertz 
+#' @export Gompertz
 
 Gompertz <- function(x, startval = NULL){
-  
-  # Inputs
-  # x                       vector of cumulative demand data
-  # startval                Vector with start values needed for manual estimation.
-  #                         Vector values need to be named in the form of
-  #                         (a, b, c). Else automated approximation of NLS is
-  #                         is taken by using Jukic et al. 2004 approach.
   
   # some error handling
   startvalNames <- c("a","b", "c")
@@ -30,18 +45,18 @@ Gompertz <- function(x, startval = NULL){
   
   # get starting values if needed
   if(is.null(startval)){
-    startval <- StartvalGen(x)
+    startval <- Gompertz_startvalgen(x)
   }
   
   # estimate curve
-  param <- EstimGomp(x, startval)
+  param <- Gompertz_estim(x, startval)
   
   return(list("param" = param))
   
 }
 
 
-EstimGomp <- function(x, startval){
+Gompertz_estim <- function(x, startval){
   
   t0 <- 1:length(x)
   fitGomp <- nls(x ~ exp(a - b*exp(-c*t0)), start = startval)
@@ -49,9 +64,8 @@ EstimGomp <- function(x, startval){
   return(coef(fitGomp))
 }
 
-StartvalGen <- function(x){
+Gompertz_startvalgen <- function(x){
   # get approximation of initial values using Jukic et al. 2004 approach
-  
   # get largest distance between t1 and t3 possible, t2 = (t1 + t3)/2
   t0 <- c(1, floor((1+length(x))/2), length(x))
   x0 <- x[t0]
@@ -67,6 +81,3 @@ StartvalGen <- function(x){
   
   return(startval)
 }
-
-
-

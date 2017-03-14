@@ -1,0 +1,18 @@
+Package: diffusion
+Type: Package
+Title: Forecasting Diffusion of New Products
+Version: 0.0.0.900
+Authors@R: person("Oliver", "Schaer", email = "info@oliverschaer.ch",
+                  role = c("aut", "cre"),
+                  comment = "PhD Student Lancaster Centre for Forecasting")
+URL: https://github.com/mamut86/diffusion
+BugReports: https://github.com/mamut86/diffusion/issues
+Description: Various diffusion models to forecast new product growth. Currently
+    the package contains Bass, Norton-Bass and Gompertz models. 
+License: GPL (>=2)
+Encoding: UTF-8
+LazyData: true
+Imports:
+  nloptr,
+  systemfit
+RoxygenNote: 6.0.1

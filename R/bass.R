@@ -1,35 +1,66 @@
-
-# Bass model --------------------------------------------------------------
+#' Bass model
+#'
+#' \code{Bass} fits a Bass model (Bass 1969)
+#' 
+#' @param x vector of non-cumulative observed data to fit Bass model on
+#' @param h desired step-ahead forecast (to become depreciated) [default = 0]
+#' @param optim additional optimisation on the insample MSE
+#' @param estim.met non-linear least squares (\code{"nls"}) or ordinary least
+#'   squares (\code{"ols"}) [default "nls"]
+#'   
+#' @return \code{coef}: coefficients p, q and m
+#' @return list of fitted values:
+#' \itemize{
+#' \item \code{fit} fitted values
+#' \item \code{actuals} actual values
+#' \item \code{out} predicted values
+#' \item \code{RMSE} insample root mean squared error
+#' }
+#' 
+#' @details The Coefficients are estimated by first fitting a linear regression 
+#'   as proposed by Bass (1969). This then serves as starting values for the 
+#'   non-linear least square estimation (Srinivasan and Mason 1986).
+#'   Furthermore, parameters can be additionally optimised on the MSE of the
+#'   insample following the suggestion of Lilien et al. (2000) using BOBYQA
+#'   algorithm (Powell 2009). If p and q can not be determined optimal region,
+#'   they are manually set to values of either 0.00000001 or 0.99999999 for p
+#'   and 0.00000001 or 1.49999999 for q, depending whether the proposed values
+#'   of the optim()-function are above or below of 0 to 1 or 0 to 1.5,
+#'   respectively.
+#'   
+#' @references Bass, F.M., 1969. A new product growth for model consumer 
+#'   durables. Management Science 15(5), 215-227.
+#' @references Srinivasan, V., and Mason, C.H., 1986. Nonlinear Least Squares
+#'   Estimation of New Product Diffusion MOdels. Marketing Science, 5(2),
+#'   169-178.
+#' @references Lilien, G.Y., Rangaswamy, A. and Van den Bulte, C., 2000. 
+#'   Diffusion models: Managerial applications and software. In: Mahajan, V., 
+#'   Muller, E., Wind, Y. (Eds.), New-Product Diffusion Models. Kluwer, 
+#'   Massachusetts, 295-311.
+#' @references Powell, M.J.D., 2009. The QOBYQA algorithm for bound constrained 
+#'   optimization witouth derivatives. Department of Applied Mathematics and 
+#'   Theorteical Physics, Cambridge University. DAMTP 2009/NA06.
+#' @author Oliver Schaer, \email{info@@oliverschaer.ch} 
+#'  
+#' @rdname Bass  
+#' @export Bass
 
 Bass <- function(x, h = 0, optim = F, estim.met = c("nls", "ols")){
-  # Input
-  # 
-  
-  # The Coefficients are estimated in x first step by the linear regression as proposed by Bass
-  # Since the linear regression does not always provide satisfying or feasible estimates, the
-  # function is further optimised on the MSE of the insample. If p and q can not be found in x
-  # optimal region, they are manually set to values of either 0.00000001 or 0.99999999 for p and
-  # 0.00000001 or 1.49999999 for q, depending whether the proposed values of the optim()-function
-  # are above or below of 0 to 1 or 0 to 1.5, respectively.
-  # Function requires only the dataset as input variable and will automatically become the origin.
-  # Moreover horizon (h=) can be set if desired. The default value, however, is 100 days.
-  # In case the datapoints are of cumulative basis this can be indicated by setting cum=True.
-  # Default is False. If set to True forecasts are also given cumulated though.
-  
+
   estim.met <- estim.met[1]
     
-  pqm <- EstimBass(x, estim.met = estim.met)
+  pqm <- Bass_estim(x, estim.met = estim.met)
   
   if(optim==T){
-    pqm <- OptimBass(pqm, x)
+    pqm <- Bass_optim(pqm, x)
   }
   
-  fit <- FitBass(pqm, x, h)
+  fit <- Bass_fit(pqm, x, h)
   return(c(list("coef"= pqm), fit))
   
 }
 
-EstimBass = function(x, estim.met = c("nls", "ols")){
+Bass_estim <- function(x, estim.met = c("nls", "ols")){
   
   estim.met = estim.met[1]
   
@@ -83,10 +114,10 @@ EstimBass = function(x, estim.met = c("nls", "ols")){
 }
 
 
-FitBass <- function(pqm, x, h=0){
+Bass_fit <- function(pqm, x, h=0){
   
   n <- length(x)
-  fc <- CurveBass(pqm, n, h)
+  fc <- Bass_curve(pqm, n, h)
   
   #Creat insample and out-of-sample
   fc.in <- fc[1:n,]
@@ -104,7 +135,7 @@ FitBass <- function(pqm, x, h=0){
   }
 }
 
-CurveBass <- function(pqm, n, h=0){
+Bass_curve <- function(pqm, n, h=0){
   
   p <- pqm[1]
   q <- pqm[2]
@@ -127,9 +158,7 @@ CurveBass <- function(pqm, n, h=0){
 }
 
 
-OptimBass <- function(pqm, x){
-  
-  require(nloptr)
+Bass_optim <- function(pqm, x){
   
   #only submit positive numbers to 
   if(pqm[1]<0) pqm[1] <- 0.0000000001
@@ -139,7 +168,7 @@ OptimBass <- function(pqm, x){
 
   pqm.init <- pqm
   
-  opt.pqm <- bobyqa(pqm.init, CostBass, lower = c(0, 0, 0), upper = c(5, 5, Inf), x = x)
+  opt.pqm <- nloptr::bobyqa(pqm.init, Bass_costfun, lower = c(0, 0, 0), upper = c(5, 5, Inf), x = x)
   
   opt.pqm <- opt.pqm$par
   names(opt.pqm) <- c("p", "q", "m")
@@ -148,9 +177,9 @@ OptimBass <- function(pqm, x){
 }
 
 
-CostBass <- function(pqm, x){
+Bass_costfun <- function(pqm, x){
   
-  sse <-  sum((x - FitBass(pqm, x)$fit[,1])^2)
+  sse <-  sum((x - Bass_fit(pqm, x)$fit[,1])^2)
   
   if (sum(pqm < 0) > 0 | pqm[1] > 1.5 | pqm[2] > 1.5 | pqm[3] == 0){
     sse <- 1e200
