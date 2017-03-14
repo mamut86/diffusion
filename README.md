@@ -12,4 +12,5 @@ Currently working on the following diffusion models:
 ### Installation 
 For installation via github use "devtools" in R:
 > if (!require("devtools")){install.packages("devtools")}
+
 > devtools::install_github("mamut86/diffusion")
