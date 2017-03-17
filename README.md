@@ -9,5 +9,8 @@ Currently working on the following diffusion models:
 2. Norton Bass model for generational modelling
 3. Gompertz model
 
-## Notes
-This is alpha version
+### Installation 
+For installation from github use the following R code to run devtools:
+> if (!require("devtools")){install.packages("devtools")}
+
+> devtools::install_github("mamut86/diffusion")
