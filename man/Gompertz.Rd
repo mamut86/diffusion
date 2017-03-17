@@ -24,7 +24,7 @@ For \code{startval} the Vector values needs to be named in the form
   Jukic et al. (2004) approach.
 }
 \examples{
-# Gompertz model example --------------------------------------------------
+### Gompertz model example
 \dontrun{
 data("chicken")
 Gompertz(x = chicken$weight)

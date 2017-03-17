@@ -13,14 +13,15 @@ non-cumulative form.}
 
 \item{startval.met}{Different methods of obtaining starting values.
 \describe{
-\item \code{2ST} Two stage approach taking \code{BB} method first and then
-re-estimate if flexpq == T [default]
-\item \code{BB} Bass and Bass (2004) method which sets \eqn{p_{1,\dots,j} =
-0.003, q_{1,\dots,j} = 0.05} and \eqn{m_j} is the maximum observed value for
-generation \eqn{j}
-\item \code{iBM} Fits individual Bass models and uses this as estimators. In
-case \code{flexpq} == F the median of p and q is used
-}}
+  \item{\code{"2ST"}}{Two stage approach taking \code{"BB"} method first and
+  then re-estimate if \code{flexpq == T} (default)}
+  \item{\code{"BB"}}{Bass
+  and Bass (2004) method which sets \eqn{p_{1,\dots,j} = 0.003, q_{1,\dots,j}
+  = 0.05}{pj = 0.003, qj = 0.05} and \eqn{m_j}{mj} is the maximum observed
+  value for generation \eqn{j}{j}}
+  \item{\code{"iBM"}}{Fits individual Bass
+  models and uses this as estimators. In case \code{flexpq == F} the median
+  of p and q is used }}}
 
 \item{estim.met}{Estimation method, see \code{\link[systemfit]{nlsystemfit}}
 (\code{OLS} default)}
@@ -41,15 +42,17 @@ values as suggested by Islam and Maed (1997)}
 generation. The set of equation is estimated simulataneously.
 }
 \details{
-For starting values the Vector values need to be named in the case
-  \code{flexpq} == T \eqn{p_1,\dots,p_j,q_1,\dots,q_j,m_1,\dots,m_j}. In the
-  case of \code{flexpq} == F \eqn{p_1, q_1, m_1,\dots, m_j}.
+For starting values the Vector values need to be named in the case 
+  \code{flexpq == T}
+  \eqn{p_1,\dots,p_j,q_1,\dots,q_j,m_1,\dots,m_j}{p1,..,pj,q1,...,qj,m1,...,mj}.
+   In the case of \code{flexpq == F} \eqn{p_1, q_1, m_1,\dots, m_j}{p1,
+  q1,m1,..., mj}.
   
   If \code{gstart} is not provided, the generation starting points will be
   detected automatically selecting the first value that is non-zero.
 }
 \examples{
-# Norton Bass example -----------------------------------------------------
+### Norton Bass
 
 \dontrun{
   data(ibm)

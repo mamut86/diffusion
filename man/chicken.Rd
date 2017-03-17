@@ -6,8 +6,8 @@
 \title{Chicken weight}
 \format{A data frame with 13 observations and 2 variables
 \describe{
-\item{time} Weeks since birth
-\item{weight} Weight of the female chicken in Kg
+\item{time}{Weeks since birth}
+\item{weight}{Weight of the female chicken in Kg}
   }}
 \usage{
 chicken

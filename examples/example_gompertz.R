@@ -1,4 +1,4 @@
-# Gompertz model example --------------------------------------------------
+### Gompertz model example
 \dontrun{
 data("chicken")
 Gompertz(x = chicken$weight)

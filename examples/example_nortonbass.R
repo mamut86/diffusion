@@ -1,4 +1,4 @@
-# Norton Bass example -----------------------------------------------------
+### Norton Bass
 
 \dontrun{
   data(ibm)

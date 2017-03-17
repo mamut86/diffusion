@@ -4,9 +4,9 @@
 #' 
 #' @format A data frame with 25 observations and 3 variables
 #' \describe{
-#' \item{year} Year
-#' \item{raw} Raw stock numbers
-#' \item{smoothed} Smoothed stock numbers as described by Franses (1994)
+#' \item{year}{Year}
+#' \item{raw}{Raw stock numbers}
+#' \item{smoothed}{Smoothed stock numbers as described by Franses (1994)}
 #'   }
 #'   
 #' @references Franses, P.H. (1994). Fitting a Gompertz curve. Journal of

@@ -3,3 +3,5 @@
 export(Bass)
 export(Gompertz)
 export(Nortonbass)
+export(Nortonbass_error)
+export(Nortonbass_startvalgen)

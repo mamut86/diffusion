@@ -8,14 +8,15 @@
 #'   non-cumulative form.
 #' @param startval.met Different methods of obtaining starting values.
 #' \describe{
-#' \item \code{2ST} Two stage approach taking \code{BB} method first and then
-#' re-estimate if flexpq == T [default]
-#' \item \code{BB} Bass and Bass (2004) method which sets \eqn{p_{1,\dots,j} =
-#' 0.003, q_{1,\dots,j} = 0.05} and \eqn{m_j} is the maximum observed value for
-#' generation \eqn{j}
-#' \item \code{iBM} Fits individual Bass models and uses this as estimators. In
-#' case \code{flexpq} == F the median of p and q is used
-#' }
+#'   \item{\code{"2ST"}}{Two stage approach taking \code{"BB"} method first and
+#'   then re-estimate if \code{flexpq == T} (default)}
+#'   \item{\code{"BB"}}{Bass
+#'   and Bass (2004) method which sets \eqn{p_{1,\dots,j} = 0.003, q_{1,\dots,j}
+#'   = 0.05}{pj = 0.003, qj = 0.05} and \eqn{m_j}{mj} is the maximum observed
+#'   value for generation \eqn{j}{j}}
+#'   \item{\code{"iBM"}}{Fits individual Bass
+#'   models and uses this as estimators. In case \code{flexpq == F} the median
+#'   of p and q is used }}
 #' @param estim.met Estimation method, see \code{\link[systemfit]{nlsystemfit}}
 #'   (\code{OLS} default)
 #' @param gstart optional vector with starting points of generations#'   
@@ -25,9 +26,11 @@
 #'   
 #' @return \code{coef}: coefficients for p, q and m
 #' 
-#' @details For starting values the Vector values need to be named in the case
-#'   \code{flexpq} == T \eqn{p_1,\dots,p_j,q_1,\dots,q_j,m_1,\dots,m_j}. In the
-#'   case of \code{flexpq} == F \eqn{p_1, q_1, m_1,\dots, m_j}.
+#' @details For starting values the Vector values need to be named in the case 
+#'   \code{flexpq == T}
+#'   \eqn{p_1,\dots,p_j,q_1,\dots,q_j,m_1,\dots,m_j}{p1,..,pj,q1,...,qj,m1,...,mj}.
+#'    In the case of \code{flexpq == F} \eqn{p_1, q_1, m_1,\dots, m_j}{p1,
+#'   q1,m1,..., mj}.
 #'   
 #'   If \code{gstart} is not provided, the generation starting points will be
 #'   detected automatically selecting the first value that is non-zero.
@@ -55,30 +58,30 @@ Nortonbass <- function(x, startval.met = c("2ST", "BB", "iBM"),
   estim.met <- estim.met[1]
   
   # Input validation
-  if(!is.matrix(x) || is.data.frame(x)){
+  if (!is.matrix(x) || is.data.frame(x)) {
     stop("x needs to be matrix or data.frame")
   }
   
-  if(!is.null(startval)){
-    if(flexpq == T){
+  if (!is.null(startval)) {
+    if (flexpq == T) {
       parnum <- gn*3
     }else{
       parnum <- gn+2
     }
     
-    if(flexpq == T){
+    if (flexpq == T) {
       startvalNames <- c(paste0("p", 1:gn), paste0("q", 1:gn), paste0("m", 1:gn))
     }else{
       startvalNames <- c("p1","q1", paste0("m", 1:gn))
     }
     
     # Error handling
-    if(length(startval) != parnum){
+    if (length(startval) != parnum) {
       stop("Lenght of startvalues not correct")
     }
     
-    if(all(names(startval), startvalNames)){
-      if(flexpq == T){
+    if (all(names(startval), startvalNames)) {
+      if (flexpq == T) {
         stop("Startvalue vector need to be named in
              (p1,...,pj,q1,...,qj,m1,..,mj) form")
       }else{
@@ -87,19 +90,19 @@ Nortonbass <- function(x, startval.met = c("2ST", "BB", "iBM"),
     }
     }
   
-  if(!is.null(gstart)){
-    if(ncol(x) != length(gstart)){
+  if (!is.null(gstart)) {
+    if (ncol(x) != length(gstart)) {
       stop("Number of generations in data does not match number of starting values")
     }
   }
   
   # get generations starting points
-  if(is.null(gstart)){
+  if (is.null(gstart)) {
     gstart <- apply(x, 2, function(x) which(x > 0)[1])
   }
   
   # add time values to the x matrix
-  for(i in 1:gn){
+  for (i in 1:gn) {
     ti <- c(rep(0, (gstart[i]-1)), 1:(nrow(x)-(gstart[i]-1)))
     x <- cbind(x, ti)
   }
@@ -112,7 +115,7 @@ Nortonbass <- function(x, startval.met = c("2ST", "BB", "iBM"),
   if(is.null(startval)){
     
     # 2 Stage method
-    if(startval.met == "2ST" & flexpq == T){
+    if (startval.met == "2ST" & flexpq == T) {
       startval <- Nortonbass_startvalgen(x, gn, flexpq = F, startval.met = "BB")
       
       param <- Nortonbass_estim(x, gn, gstart, startval, flexpq = F, estim.met)$param
@@ -125,11 +128,10 @@ Nortonbass <- function(x, startval.met = c("2ST", "BB", "iBM"),
     }
   }
   
-  
   # estimate Norton Bass
   fitNB <- Nortonbass_estim(x, gn, gstart, startval, flexpq, estim.met)
   
-  return(fitNB)
+  return (fitNB)
   }
 
 
@@ -141,7 +143,7 @@ Nortonbass_eqngen <- function(gn, flexpq = T){
   # instr         Istruments required for three and two stage least squares
   
   # case p and q flexible
-  if(flexpq == T){
+  if (flexpq == T) {
     pqmt <- cbind(p=1:gn, q = 1:gn, m = 1:gn, t = 1:gn)
   }else{
     pqmt <- cbind(p = rep(1, gn), q = rep(1, gn), m = 1:gn, t = 1:gn)
@@ -160,35 +162,40 @@ Nortonbass_eqngen <- function(gn, flexpq = T){
   
   # storage for equations
   eqns <- list()
+  eqnshat <- list()
   
   # loop across all generations
   for(g in 1:gn){
     
-    if(g == 1){
+    if (g == 1) {
       pg <- sprintf("%s * %s", ft[g], m[g])
       eqns[[g]] <- as.formula(sprintf("y%d ~ %s * (1-%s)", g, pg, ft[g+1]))
-    }else if(g == gn){
+      eqnshat[[g]] <- sprintf("yhat[[%d]] <-  %s * (1-%s)", g, pg, ft[g+1])
+    }else if (g == gn) {
       pg <- sprintf("%s * (%s + %s)", ft[g], m[g], pg)
       eqns[[g]] <- as.formula(sprintf("y%d ~ %s", g, pg))
+      eqnshat[[g]] <- sprintf("yhat[[%d]] <-  %s", g, pg)
     }else{
       pg <- sprintf("%s * (%s + %s)", ft[g], m[g], pg)
       eqns[[g]] <- as.formula(sprintf("y%d ~ %s * (1-%s)", g, pg, ft[g+1]))
+      eqnshat[[g]] <- sprintf("yhat[[%d]] <-  %s * (1-%s)", g, pg, ft[g+1])
     }
   }
-  return(list("eqns" = eqns, "inst" = inst))
+  return (list("eqns" = eqns, "inst" = inst, "eqnshat" = eqnshat))
 }
 
 
-
 Nortonbass_estim <- function(x, gn, gstart, startval, flexpq, estim.met){
+  # estimates nortonbass parameters using systemfit() package at the moment
+  # returns
+  # fitted      list of each equation provided from including fitted values, SSE
+  # param       obtained parameters
   
   # create devilishly nonlinear model equation
   mod <- Nortonbass_eqngen(gn, flexpq)
   
-  print(startval)
-  
   # Fit devilishly nonlinear model
-  if(estim.met == "OLS" | estim.met == "SUR"){
+  if (estim.met == "OLS" | estim.met == "SUR") {
     nbFit <- systemfit::nlsystemfit(method = estim.met, eqns = mod$eqns, startvals = startval,
                                     data = x, maxiter = 1000)
   }else{
@@ -199,24 +206,45 @@ Nortonbass_estim <- function(x, gn, gstart, startval, flexpq, estim.met){
   return(list("fitted" = nbFit$eq, "param" = nbFit$b))
 }
 
+#' Nortonbass_error
+#'
+#' \code{Nortonbass_error} fits Norton Bass curve and estimated RMSE
+#' 
+#' @param x matrix with generations
+#' @param param the parameters for curve to estimated
+#' @param gstart optional vector of starting points for the generations
+#' @param startvalgen \code{"iBM"} fits Bass model to each genartion;
+#'   \code{"BB"} uses Bass and Bass 2004 approach.
+#'   
+#' @return starting values for all parameters
+#' 
+#' @author Oliver Schaer, \email{info@@oliverschaer.ch}
+#' 
+#' @rdname Nortonbass_startvalgen
+#' @export Nortonbass_startvalgen
 
-Nortonbass_startvalgen <- function(x, gn, flexpq, startval.met){
+
+Nortonbass_startvalgen <- function(x, gstart, flexpq, startval.met){
   # function to guess starting values to be past into the nonlinear optimiser
   # methods considered are:
   # i) "BB" --> Bass and Bass (2004) approach
   # ii) "iBM" --> indivudual Bass models
   
-  if(startval.met == "iBM"){
+  gn <- length(gstart)
+  n <- nrow(x)
+  startval <- NULL
+  
+  if (startval.met == "iBM") {
     
-    for(i in 1:gn){
-      fitBass <- bass.est(x[gstart[i]:nrow(x),i], estim = "nls")
-      print(fitBass)
+    for (i in 1:gn) {
+      fitBass <- Bass_estim(x[gstart[i]:n, i], estim = "nls")
+      # print(fitBass)
       names(fitBass) <- c(paste0("p", i), paste0("q", i), paste0("m", i))
       startval <- c(startval, fitBass)
     }
     
-    if(gn > 1){
-      if(flexpq == F){
+    if (gn > 1) {
+      if (flexpq == F) {
         startval[1] <- median(startval[seq(1, (3*gn), 3)])
         startval[2] <- median(startval[seq(2, (3*gn), 3)])
         
@@ -233,7 +261,7 @@ Nortonbass_startvalgen <- function(x, gn, flexpq, startval.met){
     p <- 0.003
     q <- 0.5
     
-    if(flexpq == F){
+    if (flexpq == F) {
       startval <- c(p, q, apply(x, 2, max)[1:gn])
       names(startval) <- c(paste0("p", 1), paste0("q", 1), paste0("m", 1:gn))
     }else{
@@ -241,6 +269,111 @@ Nortonbass_startvalgen <- function(x, gn, flexpq, startval.met){
       names(startval) <- c(paste0("p", 1:gn), paste0("q", 1:gn), paste0("m", 1:gn))
     }
   }
+  return (startval)
+}
+
+
+#' Nortonbass_error
+#'
+#' \code{Nortonbass_error} fits Norton Bass curve and estimated RMSE
+#' 
+#' @param x matrix with generations
+#' @param param the parameters for curve to estimated
+#' @param gstart optional vector of starting points for the generations
+#' @param flexpq flexible p and q
+#'   
+#' @return yhat, the predicted values
+#' @return actuals, the actual values
+#' @return RMSE, the root mean squared error for each generation
+#' 
+#' @author Oliver Schaer, \email{info@@oliverschaer.ch}
+#' 
+#' @rdname Nortonbass_error
+#' @export Nortonbass_error
+
+Nortonbass_error <- function(x, param, gstart = NULL, flexpq = F){
+  # calculates the insample errors
+  #
+  # returns
+  # fitted      fitted values
+  # actuals     actual values
+  # RMSE        Root Mean Squared Error
   
-  return(startval)
+  # the length and numbers of generations of series
+  n <- nrow(x)
+  gn <- ncol(x)
+  
+  # get generations starting points if not provided
+  if (is.null(gstart)) {
+    gstart <- apply(x, 2, function(x) which(x > 0)[1])
+  }
+  
+  # get fitted values
+  yhat <- Nortonbass_curve(gstart, n, param, flexpq)
+  
+  # prepare
+  rmse <- list()
+  
+  # Insample Performance Measurement
+  for (g in 1:gn) {
+    rmse[[g]] <-  sqrt(mean((x[gstart[g]:n, g] - yhat[[g]][gstart[g]:n])^2))
+  }
+  return(list("fitted" = yhat, "actuals" = x, "RMSE" = rmse))
+}
+
+Nortonbass_curve <- function(gstart, n, param, flexpq = F){
+  # creates predicted values for each generation
+  # 
+  # returns
+  # yhat        list with point forecasts for each generation
+  
+  # how many generations
+  gn <- length(gstart)
+  
+  # create time values
+  ti <- list()
+  for (i in 1:gn) {
+    ti[[i]] <- c(rep(0, (gstart[i]-1)), 1:(n-(gstart[i]-1)))
+  }
+  names(ti) <- paste0("t", 1:gn)
+  
+  # combine to list to be used as environment in the eval()
+  estimators <- c(as.list(param), ti)
+
+  # create devilishly nonlinear model equation
+  mod <- Nortonbass_eqngen(gn, flexpq = flexpq)
+  
+  # estimate yhat
+  yhat <- list()
+  for (i in 1:gn){
+    yhat[[i]] <- eval(parse(text = mod$eqns[[i]]), envir = estimators)
+  }
+  names(yhat) <- paste0("yhat", 1:gn)
+  
+  return(yhat)
+}
+
+
+Nortonbass_optim <- function(pqm, x){
+  
+  pqm.init <- pqm
+  
+  opt.pqm <- nloptr::bobyqa(pqm.init, Bass_costfun, lower = c(0, 0, 0), upper = c(5, 5, Inf), x = x)
+  
+  opt.pqm <- opt.pqm$par
+  names(opt.pqm) <- c("p", "q", "m")
+  return(opt.pqm)
+  
+}
+
+
+Nortonbass_costfun <- function(pqm, x){
+  
+  sse <-  sum((x - Bass_fit(pqm, x)$fit[,1])^2)
+  
+  if (sum(pqm < 0) > 0 | pqm[1] > 1.5 | pqm[2] > 1.5 | pqm[3] == 0){
+    sse <- 1e200
+  }
+  
+  return(sse)
 }
