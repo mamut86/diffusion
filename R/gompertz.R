@@ -81,3 +81,41 @@ Gompertz_startvalgen <- function(x){
   
   return(startval)
 }
+
+Gompertz_curve <- function(n, param){
+  # creates predicted values for each generation
+  # 
+  # returns
+  # yhat        vector with point forecasts
+  
+  # create time values
+  t0 <- 1:n
+  
+  a <- as.list(param)$a
+  b <- as.list(param)$b
+  c <- as.list(param)$c
+  
+  yhat <- exp(a - b*exp(-c*t0))
+  
+  return(yhat)
+}
+
+Gompertz_error <- function(x, param){
+  # calculates the insample errors
+  #
+  # returns
+  # fitted      fitted values
+  # actuals     actual values
+  # RMSE        Root Mean Squared Error
+  
+  # the length and numbers of generations of series
+  n <- length(x)
+  
+  # get fitted values
+  yhat <- Gompertz_curve(n, param)
+  
+  # Insample Performance Measurement
+  rmse <-  sqrt(mean((x - yhat)^2))
+
+  return(list("fitted" = yhat, "actuals" = x, "RMSE" = rmse))
+}
