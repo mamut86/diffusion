@@ -1,0 +1,10 @@
+#### v.0.0.0.902 (20/03/17) ####
+
+Changes:
+Added curve fitting ability and insample error estimation for the Gompertz curve
+Added data "broadband"
+
+#### v.0.0.0.901 (18/03/17) ####
+
+Changes:
+Added curve fitting and insample error estimation for Norton-Bass model
