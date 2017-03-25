@@ -1,3 +1,17 @@
+#### Open Tasks ####
+- Implement shifted Gompertz (check p and q variation)
+- Update Gompertz to cost-function with BOBYQA algorithm
+- Include changes received from tyran_nick
+- Add predict() wrapper
+- Add additonal dataset for generations forecast
+
+#### v.0.0.0.903 (25/03/17) ####
+
+Changes:
+Added cost function for Norton-Bass model
+Included curve fitting into Nortonbass() function
+Update of example
+
 #### v.0.0.0.902 (20/03/17) ####
 
 Changes:

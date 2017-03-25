@@ -8,11 +8,11 @@ Authors@R: person("Oliver", "Schaer", email = "info@oliverschaer.ch",
 URL: https://github.com/mamut86/diffusion
 BugReports: https://github.com/mamut86/diffusion/issues
 Description: Various diffusion models to forecast new product growth. Currently
-    the package contains Bass, Norton-Bass and Gompertz models. 
+    the package contains Bass, Norton-Bass and Gompertz models.
 License: GPL (>=2)
 Encoding: UTF-8
 LazyData: true
 Imports:
-  nloptr,
-  systemfit
-RoxygenNote: 6.0.1
+    nloptr,
+    systemfit
+RoxygenNote: 5.0.1

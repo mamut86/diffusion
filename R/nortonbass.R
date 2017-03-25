@@ -17,8 +17,8 @@
 #'   \item{\code{"iBM"}}{Fits individual Bass
 #'   models and uses this as estimators. In case \code{flexpq == F} the median
 #'   of p and q is used }}
-#' @param estim.met Estimation method, see \code{\link[systemfit]{nlsystemfit}}
-#'   (\code{OLS} default)
+#' @param estim.met Estimation method, \code{"BOBYQA"} see \code{\link[systemfit]{nlsystemfit}}
+#'   (\code{BOBYQA} default)
 #' @param gstart optional vector with starting points of generations#'   
 #' @param startval an optional Vector with starting for manual estimation
 #' @param flexpq If \code{TRUE}, generations will have independent p and q
@@ -49,7 +49,7 @@
 #' @export Nortonbass
 
 Nortonbass <- function(x, startval.met = c("2ST", "BB", "iBM"),
-                       estim.met = c("OLS", "SUR", "2SLS", "3SLS"),
+                       estim.met = c("BOBYQA", "OLS", "SUR", "2SLS", "3SLS"),
                        gstart = NULL, startval = NULL, flexpq = F){
   
   # Set some basic variables
@@ -58,7 +58,7 @@ Nortonbass <- function(x, startval.met = c("2ST", "BB", "iBM"),
   estim.met <- estim.met[1]
   
   # Input validation
-  if (!is.matrix(x) || is.data.frame(x)) {
+  if (!is.matrix(x) & !is.data.frame(x)) {
     stop("x needs to be matrix or data.frame")
   }
   
@@ -101,14 +101,6 @@ Nortonbass <- function(x, startval.met = c("2ST", "BB", "iBM"),
     gstart <- apply(x, 2, function(x) which(x > 0)[1])
   }
   
-  # add time values to the x matrix
-  for (i in 1:gn) {
-    ti <- c(rep(0, (gstart[i]-1)), 1:(nrow(x)-(gstart[i]-1)))
-    x <- cbind(x, ti)
-  }
-  
-  # set name for later equation
-  colnames(x) <- c(paste0("y", 1:gn), paste0("t", 1:gn))
   x <- as.data.frame(x) # nlsystemfit requires dataframe format
   
   # Obtain parameter starting values
@@ -116,22 +108,25 @@ Nortonbass <- function(x, startval.met = c("2ST", "BB", "iBM"),
     
     # 2 Stage method
     if (startval.met == "2ST" & flexpq == T) {
-      startval <- Nortonbass_startvalgen(x, gn, flexpq = F, startval.met = "BB")
+      startval <- Nortonbass_startvalgen(x, gstart, flexpq, startval.met = "BB")
       
-      param <- Nortonbass_estim(x, gn, gstart, startval, flexpq = F, estim.met)$param
+      param <- Nortonbass_estim(x, gn, gstart, startval, flexpq = F, estim.met)
       
       startval <- c(rep(param[1], gn), rep(param[2], gn), param[3:(gn+2)])
       names(startval) <- c(paste0("p", 1:gn), paste0("q", 1:gn), paste0("m", 1:gn))
       
     }else{
-      startval <- Nortonbass_startvalgen(x, gn, flexpq, startval.met)
+      startval <- Nortonbass_startvalgen(x, gstart, flexpq, startval.met)
     }
   }
   
-  # estimate Norton Bass
-  fitNB <- Nortonbass_estim(x, gn, gstart, startval, flexpq, estim.met)
+  # estimate parameters of Norton Bass
+  param <- Nortonbass_estim(x, gn, gstart, startval, flexpq, estim.met)
   
-  return (fitNB)
+  # get error
+  error <- Nortonbass_error(x, param, gstart, flexpq)
+  
+  return (list("param" = param, "fit" = error))
   }
 
 
@@ -195,15 +190,42 @@ Nortonbass_estim <- function(x, gn, gstart, startval, flexpq, estim.met){
   mod <- Nortonbass_eqngen(gn, flexpq)
   
   # Fit devilishly nonlinear model
-  if (estim.met == "OLS" | estim.met == "SUR") {
+  if (estim.met == "BOBYQA") {
+    
+    param <- Nortonbass_optim(param = startval, x, gstart, gn, flexpq)
+    
+  }else if (estim.met == "OLS" | estim.met == "SUR") {
+    
+    # add time values to the x matrix
+    for (i in 1:gn) {
+      ti <- c(rep(0, (gstart[i]-1)), 1:(nrow(x)-(gstart[i]-1)))
+      x <- cbind(x, ti)
+    }
+    
+    colnames(x) <- c(paste0("y", 1:gn), paste0("t", 1:gn))
+    x <- as.data.frame(x) # nlsystemfit requires dataframe format
+    
     nbFit <- systemfit::nlsystemfit(method = estim.met, eqns = mod$eqns, startvals = startval,
                                     data = x, maxiter = 1000)
+    param <- nbFit$b
+    
   }else{
+    
+    # add time values to the x matrix
+    for (i in 1:gn) {
+      ti <- c(rep(0, (gstart[i]-1)), 1:(nrow(x)-(gstart[i]-1)))
+      x <- cbind(x, ti)
+    }
+    
+    colnames(x) <- c(paste0("y", 1:gn), paste0("t", 1:gn))
+    x <- as.data.frame(x) # nlsystemfit requires dataframe format
+    
     nbFit <- systemfit::nlsystemfit(method = estim.met, eqns = mod$eqns, startvals = startval,
                                     data = x, inst = mod$inst, maxiter = 1000)
+    
+    param <- nbFit$b
   }
-  
-  return(list("fitted" = nbFit$eq, "param" = nbFit$b))
+  return(param)
 }
 
 #' Nortonbass_error
@@ -318,6 +340,15 @@ Nortonbass_error <- function(x, param, gstart = NULL, flexpq = F){
   for (g in 1:gn) {
     rmse[[g]] <-  sqrt(mean((x[gstart[g]:n, g] - yhat[[g]][gstart[g]:n])^2))
   }
+  
+  #an alternative to get the errros
+#   # get sum squared errors
+#   sse <- mapply(function(x, xhat) sum((x - xhat)^2),
+#                 x = as.list(x), xhat =  yhat, SIMPLIFY = F)
+  
+#   # optimise on the total sum squared errors
+#   tsse <-  Reduce("+", sse)
+  
   return(list("fitted" = yhat, "actuals" = x, "RMSE" = rmse))
 }
 
@@ -329,6 +360,11 @@ Nortonbass_curve <- function(gstart, n, param, flexpq = F){
   
   # how many generations
   gn <- length(gstart)
+  
+  if (is.null(names(param))) {
+    names(param) <- Nortonbass_paraname(gn, flexpq)
+  }
+  
   
   # create time values
   ti <- list()
@@ -353,27 +389,57 @@ Nortonbass_curve <- function(gstart, n, param, flexpq = F){
   return(yhat)
 }
 
-
-Nortonbass_optim <- function(pqm, x){
+Nortonbass_optim <- function(param, x, gstart, gn, flexpq){
   
-  pqm.init <- pqm
+  paraminit <- param
   
-  opt.pqm <- nloptr::bobyqa(pqm.init, Bass_costfun, lower = c(0, 0, 0), upper = c(5, 5, Inf), x = x)
+  opt <- nloptr::bobyqa(x0 = paraminit, fn = Nortonbass_costfun,
+                            lower = rep(0, length(param)),
+                            upper = rep(Inf, length(param)),
+                        x = x, gn = gn, gstart = gstart, flexpq = flexpq)
   
-  opt.pqm <- opt.pqm$par
-  names(opt.pqm) <- c("p", "q", "m")
-  return(opt.pqm)
+  optparam <- opt$par
+  names(optparam) <- Nortonbass_paraname(gn, flexpq)
+  return(optparam)
   
 }
 
+Nortonbass_costfun <- function(param, x, gn, gstart, flexpq){
+  
+  n <- nrow(x)
 
-Nortonbass_costfun <- function(pqm, x){
+  # get predictions
+  yhat <- Nortonbass_curve(gstart, n, param, flexpq)
   
-  sse <-  sum((x - Bass_fit(pqm, x)$fit[,1])^2)
+  # get sum squared errors
+  sse <- mapply(function(y, yhat) sum((y - yhat)^2)/(mean(y)^2),
+         y = as.list(x), yhat =  yhat)
   
-  if (sum(pqm < 0) > 0 | pqm[1] > 1.5 | pqm[2] > 1.5 | pqm[3] == 0){
-    sse <- 1e200
+  # optimise on the total sum squared errors
+  tsse <-  sum(sse)
+  
+  # get numbers of parameters p and q
+  if (flexpq == F) {
+    gn <- 1
   }
   
-  return(sse)
+  if (any(param < 0)) {
+    tsse <- 1e200
+  }
+  return(tsse)
+}
+
+Nortonbass_paraname <- function(gn, flexpq){
+  # helper function for generating the parameter names depending on numbers of
+  # generations and if flexible paramters or not
+  # returns
+  # paraname
+  
+  if (flexpq == F) {
+    paraname <- c(paste0("p", 1), paste0("q", 1), paste0("m", 1:gn))
+  }else{
+    paraname <- c(paste0("p", 1:gn), paste0("q", 1:gn), paste0("m", 1:gn))
+  }
+  
+  return(paraname)
 }
