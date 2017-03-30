@@ -1,121 +1,115 @@
-#' Gompertz model
-#'
-#' \code{Gompertz} fits a Gompertz model using non-linear least square
-#' estimation.
-#' 
-#' @param x vector of cumulative observations
-#' @param startval an optional Vector with starting for manual estimation
-#'   
-#' @return coefficients for a, b and c
-#' 
-#' @details For \code{startval} the Vector values needs to be named in the form
-#'   of (a, b, c). Else automated approximation of NLS is taking place using
-#'   Jukic et al. (2004) approach.
-#' 
-#' @references Jukic, D., Kralik, G. and Scitovski, R., 2004. Least-squares
-#'   fitting Gompertz curve. Journal of Computational and Applied Mathematics,
-#'   169, 359-375.
-#' @author Oliver Schaer, \email{info@@oliverschaer.ch}
-#' 
-#' @example examples/example_gompertz.R
-#'  
-#' @rdname Gompertz 
-#' @export Gompertz
+# Gompertz function -------------------------------------------------------
+#
+# References
+# Jukic, D., Kralik, G. and Scitovski, R., 2004. Least-squares fitting Gompertz
+# curve. Journal of Computational and Applied Mathematics, 169, 359-375.
+#
+# author Oliver Schaer, info@oliverschaer.ch
+# author Nikolaos Kourentzes, nikolaos@kourentzes.com
 
-Gompertz <- function(x, startval = NULL){
+gompertzCurve <- function(n, w){
+  # Generate Gompertz curve
+  # n, sample size
+  # w, vector of parameters
   
-  # some error handling
-  startvalNames <- c("a","b", "c")
-  parnum <- 3
+  t <- 1:n
+  # Cumulative
+  At <- w[3] * exp(- w[1] * exp(-w[2] * t))
+  # Adoption
+  at <- diff(c(0, At))
+  Y <- cbind(At, at)
+  colnames(Y) <- c("Cumulative Adoption", "Adoption")
   
-  # Error handling
-  if(!is.null(startval)){
-    if(length(startval) != parnum){
-      stop("Lenght of startvalues not correct")
-    }
-    
-    if(all(names(startval), startvalNames)){
-      stop("Startvalues vector need to be named in (a, b, c) form")
-      }
-  }
-  
-  if(any(diff(x) < 0)){
-    stop("x needs to be in strictly positive cumulative form (monotonic)")
-  }
-  
-  # get starting values if needed
-  if(is.null(startval)){
-    startval <- Gompertz_startvalgen(x)
-  }
-  
-  # estimate curve
-  param <- Gompertz_estim(x, startval)
-  
-  return(list("param" = param))
-  
+  return(Y)
 }
 
-
-Gompertz_estim <- function(x, startval){
+gompertzInit <- function(x){
+  # Internal function: get initial values
+  # x in adoption per period
   
-  t0 <- 1:length(x)
-  fitGomp <- nls(x ~ exp(a - b*exp(-c*t0)), start = startval)
-
-  return(coef(fitGomp))
-}
-
-Gompertz_startvalgen <- function(x){
-  # get approximation of initial values using Jukic et al. 2004 approach
-  # get largest distance between t1 and t3 possible, t2 = (t1 + t3)/2
-  t0 <- c(1, floor((1+length(x))/2), length(x))
+  n <- length(x)
+  x <- cumsum(x)
+  
+  t0 <- c(1, floor((1 + n)/2), n)
   x0 <- x[t0]
+  m <- (x0[1]) - ((((x0[2]) - (x0[1]))^2)/((x0[3]) - (2 * (x0[2])) + (x0[1])))
   
-  a <- log(x0[1]) - (((log(x0[2]) - log(x0[1]))^2) / (log(x0[3]) - (2*log(x0[2])) + log(x0[1])))
+  a <- ((-(log(x0[2]) - log(x0[1]))^2)/(log(x0[3]) - (2 * log(x0[2])) + 
+        log(x0[1]))) * ((log(x0[2]) - log(x0[1]))/(log(x0[3]) -
+        log(x0[2])))^(2 * t0[1]/(t0[3] - t0[1]))
   
-  b <- ((-(log(x0[2]) - log(x0[1]))^2) / (log(x0[3]) - (2*log(x0[2])) + log(x0[1]))) *
-    ((log(x0[2]) - log(x0[1])) / (log(x0[3]) - log(x0[2])))^(2*t0[1] / (t0[3]-t0[1]))
+  b <- (-2/(t0[3] - t0[1])) * log((log(x0[3]) -
+                                     log(x0[2]))/(log(x0[2]) - log(x0[1])))
+  w <- c(a, b, m)
+  names(w) <- c("a", "b", "m")
   
-  c <- (-2 / (t0[3] - t0[1])) * log((log(x0[3]) - log(x0[2])) / (log(x0[2]) - log(x0[1])))
-  
-  startval <- c(a=a, b=b, c=c)
-  
-  return(startval)
+  return(w)
 }
 
-Gompertz_curve <- function(n, param){
-  # creates predicted values for each generation
-  # 
-  # returns
-  # yhat        vector with point forecasts
+gompertzCost <- function(w, x, l, w.idx = rep(TRUE, 3), prew = NULL){
+  # Internal function: cost function for numerical optimisation
+  # w, current parameters
+  # x, adoption per period
+  # l, the l-norm (1 is absolute errors, 2 is squared errors)
+  # w.idx, logical vector with three elements. Use FALSE to not estimate
+  # respective parameter
+  # prew, the w of the previous generation - this is used for sequential fitting
   
-  # create time values
-  t0 <- 1:n
-  
-  a <- as.list(param)$a
-  b <- as.list(param)$b
-  c <- as.list(param)$c
-  
-  yhat <- exp(a - b*exp(-c*t0))
-  
-  return(yhat)
-}
-
-Gompertz_error <- function(x, param){
-  # calculates the insample errors
-  #
-  # returns
-  # fitted      fitted values
-  # actuals     actual values
-  # RMSE        Root Mean Squared Error
-  
-  # the length and numbers of generations of series
   n <- length(x)
   
-  # get fitted values
-  yhat <- Gompertz_curve(n, param)
+  # If some elements of w are not optimised, sort out vectors
+  w.all <- rep(0, 3)
+  w.all[w.idx] <- w
   
-  # Insample Performance Measurement
-  rmse <-  sqrt(mean((x - yhat)^2))
+  # If sequential construct total parameters
+  if (is.null(prew)){
+    gompw <- w.all    
+  } else {
+    gompw <- w.all + prew
+  }
+  
+  fit <- gompertzCurve(n, gompw)
+  
+  if (l == 1){
+    se <- sum(abs(x-fit[, 2]))
+  } else if (l == 2){
+    se <- sum((x-fit[, 2])^2)
+  } else {
+    se <- sum(abs(x-fit[, 2])^l)
+  }
+  
+  # Ensure positive coefficients
+  if (any(gompw <= 0)){
+    se <- 10e200
+  }
+  
+  return(se)
+}
 
-  return(list("fitted" = yhat, "actuals" = x, "RMSE" = rmse))
+forecast.gompertz <- function(object, h){
+  # Produce forecasts for Gompertz
+  # object, estimated gompertz model using diffuse
+  # h, forecast horizon
+  
+  n <- length(object$x)
+  xhat <- gompertzCurve(n+h, object$w)[(n+1):(n+h), ]
+  
+  # Append forecasts to bass object
+  return(structure(c(object, list("mean" = xhat[, 2],"xhat" = xhat)),
+                   class = "gompertz"))
+}
+
+print.gompertz <- function(x, ...){
+  # Print console output for gompertz
+  # x, object estimated using diffusion
+  
+  diffusionPrint(x, ...)
+}
+
+plot.gompertz <- function(x, cumulative = c(FALSE, TRUE), ...){
+  # Plot bass curves
+  # x, object estimated using bass
+  # cumulative, if TRUE plot cumulative adoption
+  
+  diffusionPlot(x, cumulative, ...)
 }

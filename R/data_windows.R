@@ -1,0 +1,18 @@
+#' Windows OS Platform Statistics
+#' 
+#' A dataset containing the 3WSchools monthly log files of Windows operating 
+#' system usage from March 2003 until February 2017.
+#' 
+#' @format A data frame with 168 observations and 9 variables \describe{ 
+#'   \item{Date}{Log file date} \item{Win10}{Usage of Windows 10} 
+#'   \item{Win8}{Usage of Windows 8} \item{Win7}{Usage of Windows 7} 
+#'   \item{Vista}{Usage of Windows Vista} \item{WinXP}{Usage of Windows XP} 
+#'   \item{Win2000}{Usage of Windows 2000} \item{Win98}{Usage of Windows 98} 
+#'   \item{Win95}{Usage of Windows 95} }
+#'   
+#' @note From March 2003 until January 2008 log file is only available
+#'   bi-monthly. To retain monthly consistency values have been linearly
+#'   interpolated
+#'   
+#' @source \url{https://www.w3schools.com/browsers/browsers_os.asp}
+"windows"

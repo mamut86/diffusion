@@ -1,24 +1,26 @@
 #### Open Tasks ####
 - Implement shifted Gompertz (check p and q variation)
-- Update Gompertz to cost-function with BOBYQA algorithm
-- Include changes received from tyran_nick
-- Add predict() wrapper
-- Add additonal dataset for generations forecast
+
+#### v.0.1.0.904 (30/03/17) ####
+Changes:
+Depreciating funciton Bass() and Gompertz()
+Introducing function diffusion() and seqdiffusion (kindly donated by N. Kourentzes)
+  - allows for p-value estimation and sequential generation fitting
+  - includes plotting
+  - allows forecasting
+Added dataset safari
+Added dataset windows
 
 #### v.0.0.0.903 (25/03/17) ####
-
 Changes:
 Added cost function for Norton-Bass model
 Included curve fitting into Nortonbass() function
-Update of example
 
 #### v.0.0.0.902 (20/03/17) ####
-
 Changes:
 Added curve fitting ability and insample error estimation for the Gompertz curve
 Added data "broadband"
 
 #### v.0.0.0.901 (18/03/17) ####
-
 Changes:
 Added curve fitting and insample error estimation for Norton-Bass model

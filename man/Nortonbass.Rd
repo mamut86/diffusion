@@ -4,8 +4,9 @@
 \alias{Nortonbass}
 \title{Norton-Bass model}
 \usage{
-Nortonbass(x, startval.met = c("2ST", "BB", "iBM"), estim.met = c("OLS",
-  "SUR", "2SLS", "3SLS"), gstart = NULL, startval = NULL, flexpq = F)
+Nortonbass(x, startval.met = c("2ST", "BB", "iBM"), estim.met = c("BOBYQA",
+  "OLS", "SUR", "2SLS", "3SLS"), gstart = NULL, startval = NULL,
+  flexpq = F)
 }
 \arguments{
 \item{x}{matrix or dataframe containing demand for each generation in
@@ -23,8 +24,8 @@ non-cumulative form.}
   models and uses this as estimators. In case \code{flexpq == F} the median
   of p and q is used }}}
 
-\item{estim.met}{Estimation method, see \code{\link[systemfit]{nlsystemfit}}
-(\code{OLS} default)}
+\item{estim.met}{Estimation method, \code{"BOBYQA"} see \code{\link[systemfit]{nlsystemfit}}
+(\code{BOBYQA} default)}
 
 \item{gstart}{optional vector with starting points of generations#'}
 
@@ -57,24 +58,34 @@ For starting values the Vector values need to be named in the case
 \dontrun{
   data(ibm)
   
-  fitNB1 <- Nortonbass(ibm, startval.met = "2ST", startval = NULL, flexpq = F, gstart = NULL)
-  fitNB2 <- Nortonbass(ibm, startval.met = "2ST", startval = NULL, flexpq = T, gstart = NULL)
+  fitNB1 <- Nortonbass(ibm, startval.met = "2ST", estim.met = "OLS",
+                       startval = NULL, flexpq = F, gstart = NULL)
+  fitNB2 <- Nortonbass(ibm, startval.met = "2ST", estim.met = "OLS",
+                       startval = NULL, flexpq = T, gstart = NULL)
+  # using BOBYQA algorithm
+  fitNB3 <- Nortonbass(ibm, startval.met = "2ST", estim.met = "BOBYQA",
+                       startval = NULL, flexpq = F, gstart = NULL)
   
   # Create some plots
-  plot(ibm[, 1],type = "l", ylim=c(0,30000))
+  plot(ibm[, 1],type = "l", ylim=c(0,35000))
   lines(ibm[, 2],col ="blue")
   lines(ibm[, 3],col ="green")
   lines(ibm[, 4],col ="pink")
   
-  lines(fitNB1$fitted[[1]]$predicted, col = "black", lty = 2)
-  lines(fitNB1$fitted[[2]]$predicted, col = "blue", lty = 2)
-  lines(fitNB1$fitted[[3]]$predicted, col = "green", lty = 2)
-  lines(fitNB1$fitted[[4]]$predicted, col = "pink", lty = 2)
+  lines(fitNB1$fit$fitted[[1]], col = "black", lty = 2)
+  lines(fitNB1$fit$fitted[[2]], col = "blue", lty = 2)
+  lines(fitNB1$fit$fitted[[3]], col = "green", lty = 2)
+  lines(fitNB1$fit$fitted[[4]], col = "pink", lty = 2)
   
-  lines(fitNB2$fitted[[1]]$predicted, col = "black", lty = 3)
-  lines(fitNB2$fitted[[2]]$predicted, col = "blue", lty = 3)
-  lines(fitNB2$fitted[[3]]$predicted, col = "green", lty = 3)
-  lines(fitNB2$fitted[[4]]$predicted, col = "pink", lty = 3)
+  lines(fitNB2$fit$fitted[[1]], col = "black", lty = 3)
+  lines(fitNB2$fit$fitted[[2]], col = "blue", lty = 3)
+  lines(fitNB2$fit$fitted[[3]], col = "green", lty = 3)
+  lines(fitNB2$fit$fitted[[4]], col = "pink", lty = 3)
+  
+  lines(fitNB3$fit$fitted[[1]], col = "black", lty = 4)
+  lines(fitNB3$fit$fitted[[2]], col = "blue", lty = 4)
+  lines(fitNB3$fit$fitted[[3]], col = "green", lty = 4)
+  lines(fitNB3$fit$fitted[[4]], col = "pink", lty = 4)
   
   # read out RMSE
   fitNB1$fitted[[1]]$rmse
@@ -86,6 +97,11 @@ For starting values the Vector values need to be named in the case
   fitNB2$fitted[[2]]$rmse
   fitNB2$fitted[[3]]$rmse
   fitNB2$fitted[[4]]$rmse
+  
+  fitNB3$fit$RMSE[[1]]
+  fitNB3$fit$RMSE[[2]]
+  fitNB3$fit$RMSE[[3]]
+  fitNB3$fit$RMSE[[4]]
 }
 }
 \references{
