@@ -6,7 +6,7 @@
 \usage{
 diffusion(x, w = NULL, cleanlead = c(TRUE, FALSE), prew = NULL, l = 2,
   pvalreps = 0, eliminate = c(FALSE, TRUE), sig = 0.05,
-  verbose = c(FALSE, TRUE), type = c("bass", "gompertz"))
+  verbose = c(FALSE, TRUE), type = c("bass", "gompertz", "sgompertz"))
 }
 \arguments{
 \item{x}{vector with adoption per period}
@@ -50,11 +50,12 @@ returns list of:
 \code{diffusion} enables to fit various diffusion models.
 }
 \details{
-This function fits diffusion models of the type \code{"bass"} or
-\code{"gompertz"}. Parameters are estimated by minimising the Mean Squared
-Error with a quasi Newton algorithm. Optionally p-values of the coefficients
-can be determined via bootstraping. Furthermore, the bootstrapping allows to
-remove insignificant parameters from the optimisation process.
+This function fits diffusion models of the type \code{"bass"}, 
+\code{"gompertz"} or \code{"sgompertz"}. Parameters are estimated by
+minimising the Mean Squared Error with a quasi Newton algorithm. Optionally
+p-values of the coefficients can be determined via bootstraping. Furthermore,
+the bootstrapping allows to remove insignificant parameters from the
+optimisation process.
 }
 \note{
 vector \code{w} needs to be provided for the Bass model in the order of

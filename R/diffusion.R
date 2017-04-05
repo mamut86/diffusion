@@ -2,11 +2,12 @@
 #' 
 #' \code{diffusion} enables to fit various diffusion models.
 #' 
-#' This function fits diffusion models of the type \code{"bass"} or
-#' \code{"gompertz"}. Parameters are estimated by minimising the Mean Squared
-#' Error with a quasi Newton algorithm. Optionally p-values of the coefficients
-#' can be determined via bootstraping. Furthermore, the bootstrapping allows to
-#' remove insignificant parameters from the optimisation process.
+#' This function fits diffusion models of the type \code{"bass"}, 
+#' \code{"gompertz"} or \code{"sgompertz"}. Parameters are estimated by
+#' minimising the Mean Squared Error with a quasi Newton algorithm. Optionally
+#' p-values of the coefficients can be determined via bootstraping. Furthermore,
+#' the bootstrapping allows to remove insignificant parameters from the
+#' optimisation process.
 #' 
 #' @section Bass model
 #' The optimisation of the Bass model is initialisated by the linear
@@ -70,17 +71,18 @@
 #' @rdname diffusion  
 #' @export diffusion
 
+
 diffusion <- function(x, w = NULL, cleanlead = c(TRUE, FALSE), prew = NULL,
                       l = 2, pvalreps = 0, eliminate = c(FALSE, TRUE),
                       sig = 0.05, verbose = c(FALSE, TRUE),
-                      type = c("bass", "gompertz")){
+                      type = c("bass", "gompertz", "sgompertz")){
 
   # todos
   # - incorporate the ability to use named vector w rather than fixed order and
   #   include error handling
   # - consider using BOBYQA instead of quasi-newton optim() algorithm
   
-  type <- match.arg(type, c("bass", "gompertz"))
+  type <- match.arg(type, c("bass", "gompertz", "sgompertz"))
   
   cleanlead <- cleanlead[1]
   if (cleanlead == TRUE){
@@ -92,12 +94,16 @@ diffusion <- function(x, w = NULL, cleanlead = c(TRUE, FALSE), prew = NULL,
   
   # Optimise parameters
   if (is.null(w)){
-    opt <- diffusionEstim(x, l, prew, pvalreps, eliminate, sig,
-                          verbose, type = type)
+    opt <- diffusionEstim(x, l, prew, pvalreps, eliminate,
+                          sig, verbose, type = type)
     w <- opt$w
     pval <- opt$pval
   } else {
-    pval <- rep(NA, 3)
+    if (type == "bass" | type == "gompertz"){
+      pval <- rep(NA, 3)
+    } else if (type == "sgompertz"){
+      pval <- rep(NA, 4)
+    }
   }
   
   n <- length(x)
@@ -105,6 +111,8 @@ diffusion <- function(x, w = NULL, cleanlead = c(TRUE, FALSE), prew = NULL,
     fit <- bassCurve(n, w)
   } else if (type == "gompertz"){
     fit <- gompertzCurve(n, w)
+  }else if (type == "sgompertz"){
+    fit <- sgompertzCurve(n, w)
   }
   
   mse <- mean((x - fit[,2])^2)
@@ -114,33 +122,48 @@ diffusion <- function(x, w = NULL, cleanlead = c(TRUE, FALSE), prew = NULL,
                           "x" = x, "fit" = fit, "mse" = mse, "prew" = prew,
                           "pval" = pval),
                      class = "bass")
-  } else {
+  } else if (type == "gompertz"){
     out <- structure(list("type" = "Gompertz", "call" = sys.call(),
                           "w" = w, "x" = x, "fit" = fit, "mse" = mse,
                           "prew" = prew, "pval" = pval),
                      class = "gompertz")
+  }else if (type == "sgompertz"){
+    out <- structure(list("type" = "SGompertz", "call" = sys.call(),
+                          "w" = w, "x" = x, "fit" = fit, "mse" = mse,
+                          "prew" = prew, "pval" = pval),
+                     class = "sgompertz")
   }
   return(out)
 }
 
+
 diffusionEstim <- function(x, l = 2, prew = NULL, pvalreps = 0,
                            eliminate = c(FALSE, TRUE), sig = 0.05,
-                           verbose = c(FALSE, TRUE), type = c("bass", "gompertz")){
+                           verbose = c(FALSE, TRUE),
+                           type = c("bass", "gompertz", "sgompertz")){
   # Internal function: estimate bass parameters 
   # x, adoption per period
   # l, the l-norm (1 is absolute errors, 2 is squared errors)
   # prew, the w of the previous generation - this is used for sequential fitting
   # pvalreps, bootstrap repetitions to estimate (marginal) p-values
-  # eliminate, if TRUE eliminates insignificant parameters from estimation. Forces pvalreps=1000 if left to 0.
+  # eliminate, if TRUE eliminates insignificant parameters from estimation.
+  # Forces pvalreps = 1000 if left to 0.
   # sig, significance level used to eliminate parameters
   # verbose, if TRUE provide console output during estimation
   # type, diffusion model to use
   
-  type <- match.arg(type,c("bass", "gompertz"))
+  type <- match.arg(type,c("bass", "gompertz", "sgompertz"))
   
   # Defaults for eliminating parameters
   eliminate <- eliminate[1]
   verbose <- verbose[1]
+  
+  # determine how many paramters needed
+  if (type == "bass" | type == "gompertz"){
+    no.w <- 3
+  } else if (type == "sgompertz"){
+    no.w <- 4
+  }
   
   if (eliminate == TRUE & pvalreps == 0){
     pvalreps <- 1000
@@ -148,7 +171,7 @@ diffusionEstim <- function(x, l = 2, prew = NULL, pvalreps = 0,
   }
   
   # Initially all parameters are estimated
-  w.idx <- rep(TRUE, 3)         # Which parameters to estimate 
+  w.idx <- rep(TRUE, no.w)         # Which parameters to estimate 
   
   # Check botstrap repetitions (pvalreps)
   if (pvalreps > 0 & pvalreps < 500){
@@ -163,13 +186,15 @@ diffusionEstim <- function(x, l = 2, prew = NULL, pvalreps = 0,
   
   # Initialise
   if (is.null(prew)){
-    prew <- rep(0, 3)
+    prew <- rep(0, no.w)
   }
   
   if (type == "bass"){
     init <- bassInit(x)
   } else if (type == "gompertz"){
     init <- gompertzInit(x)
+  } else if (type == "sgompertz"){
+    init <- sgompertzInit(x, l)
   }
   
   init <- init - prew
@@ -184,7 +209,7 @@ diffusionEstim <- function(x, l = 2, prew = NULL, pvalreps = 0,
   while (elim == TRUE){
     
     # Optimise
-    w <- rep(0, 3)
+    w <- rep(0, no.w)
     
     if (sum(w.idx) > 0){
       if (sum(w.idx) > 1){ # Allow for different optimiser - not needed though!
@@ -194,6 +219,9 @@ diffusionEstim <- function(x, l = 2, prew = NULL, pvalreps = 0,
         } else if (type == "gompertz"){
           w.new <- optim(init[w.idx], gompertzCost, x = x, l = l,
                          prew = prew, w.idx = w.idx, method = "BFGS")$par
+        } else if (type == "sgompertz"){
+          w.new <- optim(init[w.idx], sgompertzCost, x = x, l = l,
+                         prew = prew, w.idx = w.idx, method = "BFGS")$par
         }
       } else {
         if (type == "bass"){
@@ -201,6 +229,9 @@ diffusionEstim <- function(x, l = 2, prew = NULL, pvalreps = 0,
                          prew = prew, w.idx = w.idx, method = "BFGS")$par
         } else if (type == "gompertz"){
           w.new <- optim(init[w.idx], gompertzCost, x = x, l = l,
+                         prew = prew, w.idx = w.idx, method = "BFGS")$par
+        } else if (type == "sgompertz"){
+          w.new <- optim(init[w.idx], sgompertzCost, x = x, l = l,
                          prew = prew, w.idx = w.idx, method = "BFGS")$par
         }
       }
@@ -215,12 +246,14 @@ diffusionEstim <- function(x, l = 2, prew = NULL, pvalreps = 0,
         yhat <- bassCurve(n, prew+w)[, 2]
       } else if (type == "gompertz"){
         yhat <- gompertzCurve(n, prew+w)[, 2]
+      } else if (type == "sgompertz"){
+        yhat <- sgompertzCurve(n, prew+w)[, 2]
       }
       
       sigma <- sqrt(mean((x - yhat)^2))
       
       # Construct bootstraps
-      wboot <- array(NA, c(pvalreps, 3))
+      wboot <- array(NA, c(pvalreps, no.w))
       yboot <- matrix(rnorm(n*pvalreps, 0, sigma), nrow = n) +
         matrix(rep(yhat, pvalreps), ncol = pvalreps)
       
@@ -235,6 +268,9 @@ diffusionEstim <- function(x, l = 2, prew = NULL, pvalreps = 0,
         } else if (type == "gompertz"){
           wboot[i,] <- diffusionEstim(yboot[, i], l, pvalreps = 0,
                                       type = "gompertz")$w - prew
+        } else if (type == "sgompertz"){
+          wboot[i,] <- diffusionEstim(yboot[, i], l, pvalreps = 0,
+                                      type = "sgompertz")$w - prew
         }
       }
       
@@ -243,7 +279,7 @@ diffusionEstim <- function(x, l = 2, prew = NULL, pvalreps = 0,
                                      ncol=3, byrow = T))) > 
                          abs(matrix(rep(w, pvalreps), ncol=3, byrow = T)))
     } else {
-      pval <- rep(NA, 3)
+      pval <- rep(NA, no.w)
     }
     
     # Elimination process
@@ -279,6 +315,8 @@ diffusionEstim <- function(x, l = 2, prew = NULL, pvalreps = 0,
         rownames(temp) <- c("p", "q", "m")    
       } else if (type == "gompertz"){
         rownames(temp) <- c("a", "b", "m")    
+      }else if (type == "sgompertz"){
+        rownames(temp) <- c("a", "b", "c", "m")    
       }
       
       colnames(temp) <- c("Estimate", "p-value", "")[1:(2+!is.na(loc))]
@@ -309,6 +347,8 @@ diffusionPlot <- function(x, cumulative = c(FALSE, TRUE), ...){
   if (type == "bass"){
     elmt <- 3
   } else if (type == "gompertz"){
+    elmt <- 1
+  } else if (type == "sgompertz"){
     elmt <- 1
   }
   
@@ -381,9 +421,9 @@ diffusionPrint <- function(x, ...){
   # Print console output for diffusion models
   # x, object estimated using diffusion
   
-  type <- tolower(x$method)
+  type <- tolower(x$type)
   
-  writeLines(paste(x$method, "model"))
+  writeLines(paste(x$type, "model"))
   writeLines("")
   writeLines("Parameters:")
   
@@ -402,6 +442,11 @@ diffusionPrint <- function(x, ...){
   } else if (type == "gompertz"){
     rownames(temp) <- c("a - displacement",
                         "b - growth",
+                        "m - Market potential")
+  } else if (type == "sgompertz"){
+    rownames(temp) <- c("a - displacement",
+                        "b - growth",
+                        "c - shift",
                         "m - Market potential")
   }
   

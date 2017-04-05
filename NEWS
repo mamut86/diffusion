@@ -1,5 +1,13 @@
 #### Open Tasks ####
-- Implement shifted Gompertz (check p and q variation)
+- estimation problems with Gompertz
+
+#### v.0.2.0.905 (05/04/17) ####
+Changes:
+Introducing shifted-gompertz model to the diffusion() function
+
+Bugfixes:
+Some typo in the print out function fixed
+carstock.RData file should now be available
 
 #### v.0.1.0.904 (30/03/17) ####
 Changes:
