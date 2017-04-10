@@ -14,7 +14,9 @@ gompertzCurve <- function(n, w){
   
   t <- 1:n
   # Cumulative
-  At <- w[3] * exp(- w[1] * exp(-w[2] * t))
+  At <- w[3] * exp(-w[1] * exp(-w[2] * t))
+  # At <- w[3] * exp(-exp(-(w[1] + (w[2] *t))))
+  
   # Adoption
   at <- diff(c(0, At))
   Y <- cbind(At, at)
@@ -23,17 +25,30 @@ gompertzCurve <- function(n, w){
   return(Y)
 }
 
-gompertzInit <- function(x){
+gompertzInit <- function(x, l){
   # Internal function: get initial values
-  # x in adoption per period
+  # get approximation of initial values using Jukic et al. 2004 approach adopted
+  # m to allow for x to be adoption per period
+  
   
   n <- length(x)
-  x <- cumsum(x)
+  X <- cumsum(x)
   
+  # get largest distance between t1 and t3 possible, t2 = (t1 + t3)/2
   t0 <- c(1, floor((1 + n)/2), n)
-  x0 <- x[t0]
-  m <- (x0[1]) - ((((x0[2]) - (x0[1]))^2)/((x0[3]) - (2 * (x0[2])) + (x0[1])))
+  x0 <- X[t0]
   
+  # make sure that all values are slightly different
+  if(anyDuplicated(x0) > 0){
+    x0[anyDuplicated(x0)] <- x0[anyDuplicated(x0)]+(x0[anyDuplicated(x0)]*0.00001)
+  }
+  # m <- (x0[1]) - ((((x0[2]) - (x0[1]))^2)/((x0[3]) - (2 * (x0[2])) + (x0[1])))
+  # m <- exp(log(x0[1]) - (((log(x0[2]) - log(x0[1]))^2) / (log(x0[3]) - (2*log(x0[2])) + log(x0[1]))))
+  
+  # calling bass estimates
+  what <- diffusionEstim(x, l, pvalreps = 0, type = "bass")$w
+  m <- what[3]
+
   a <- ((-(log(x0[2]) - log(x0[1]))^2)/(log(x0[3]) - (2 * log(x0[2])) + 
         log(x0[1]))) * ((log(x0[2]) - log(x0[1]))/(log(x0[3]) -
         log(x0[2])))^(2 * t0[1]/(t0[3] - t0[1]))
@@ -43,6 +58,11 @@ gompertzInit <- function(x){
   w <- c(a, b, m)
   names(w) <- c("a", "b", "m")
   
+#   a <- log(x0[1]) - (((log(x0[2]) - log(x0[1]))^2) / (log(x0[3]) - (2*log(x0[2])) + log(x0[1])))
+#   
+#   b <- ((-(log(x0[2]) - log(x0[1]))^2) / (log(x0[3]) - (2*log(x0[2])) + log(x0[1]))) *
+#     ((log(x0[2]) - log(x0[1])) / (log(x0[3]) - log(x0[2])))^(2*t0[1] / (t0[3]-t0[1]))
+
   return(w)
 }
 

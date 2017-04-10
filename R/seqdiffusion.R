@@ -2,12 +2,13 @@
 #' 
 #' \code{seqdiffusion} enables to fit various sequential diffusion models.
 #' 
-#' #' This function fits diffusion models of the type \code{"bass"} or 
-#' \code{"gompertz"} across generations. Parameters are estimated for
-#' each generation individually by minimising the Mean Squared Error with a
-#' quasi Newton algorithm. Optionally p-values of the coefficients can be
-#' determined via bootstraping. Furthermore, the bootstrapping allows to remove
-#' insignificant parameters from the optimisation process.
+#' This function fits diffusion models of the type \code{"bass"}, 
+#' \code{"gompertz"} or \code{sgompertz} across generations. Parameters are 
+#' estimated for each generation individually by minimising the Mean Squared 
+#' Error with the subplex algorithm from the nloptr package. Optionally p-values
+#' of the coefficients can be determined via bootstraping. Furthermore, the
+#' bootstrapping allows to remove insignificant parameters from the optimisation
+#' process.
 #' 
 #' @section Bass model
 #' The optimisation of the Bass model is initialisated by the linear
@@ -15,7 +16,14 @@
 #' 
 #' @section Gompertz model
 #' The initialisation of the Gompertz model uses the approach suggested by Jukic
-#' et al. (2004).
+#' et al. (2004) but is adopted to allow for the non-exponential version of
+#' Gompertz curve. This allows that m becomes Bass model equivalent. Hence for
+#' the market potential the Bass model is used as an initialisation.
+#' 
+#' @section Shifted-Gompertz model
+#' The model is initialised by assuming the shift operator to be 1. At this 
+#' point the model becomes Bass equivalent as shown in Bemmaor (1994). A Bass
+#' model is therefore used as an estimator for the remaining parameters.
 #' 
 #' @param x matrix containing in each column the adoption per period for generation k
 #' @param w vector of model parameters (see note). If provided no estimation
@@ -57,6 +65,11 @@
 #' 
 #' @references Bass, F.M., 1969. A new product growth for model consumer
 #'   durables. Management Science 15(5), 215-227.
+#'   
+#' @references Bemmaor, A. 1994. Modeling the Diffusion of New Durable Goods:
+#'   Word-of-Mouth Effect versus Consumer Heterogeneity. In G. Laurent, G.L.
+#'   Lilien and B. Pras (Eds.). Research Traditions in Marketing. Boston:
+#'   Kluwer, pp. 201-223.
 #' 
 #' @references Jukic, D., Kralik, G. and Scitovski, R., 2004. Least-squares
 #'   fitting Gompertz curve. Journal of Computational and Applied Mathematics,
@@ -70,12 +83,13 @@
 
 seqdiffusion <- function(x, cleanlead = c(TRUE, FALSE), prew = NULL, l = 2,
                          pvalreps = 0, eliminate = c(FALSE,TRUE), sig = 0.05, 
-                         verbose = c(FALSE,TRUE), type = c("bass", "gompertz")){
+                         verbose = c(FALSE,TRUE),
+                         type = c("bass", "gompertz", "sgompertz")){
   
   # todo:
   # - maybe this can be further simplified and merged to diffusion package as well?
 
-  type <- match.arg(type, c("bass", "gompertz"))
+  type <- match.arg(type, c("bass", "gompertz", "sgompertz"))
   verbose <- verbose[1]
   
   # Number of curves
@@ -102,42 +116,62 @@ seqdiffusion <- function(x, cleanlead = c(TRUE, FALSE), prew = NULL, l = 2,
     
   }
   
-  allw <- do.call(rbind, lapply(fit, function(x){x$w}))
-  allmse <- do.call(rbind, lapply(fit, function(x){x$mse}))
-  allpval <- do.call(rbind, lapply(fit, function(x){x$pval}))
+  allw <- do.call(rbind, lapply(fit, function(x) {x$w}))
+  allmse <- do.call(rbind, lapply(fit, function(x) {x$mse}))
+  allpval <- do.call(rbind, lapply(fit, function(x) {x$pval}))
   
-  mth <- paste("Sequential", fit[[1]]$type)
+  typ <- paste("Sequential", fit[[1]]$type)
   
-  return(structure(list("type" = mth, "diffusion" = fit, "x" = x, "w" = allw,
+  return(structure(list("type" = typ, "diffusion" = fit, "x" = x, "w" = allw,
                         "mse" = allmse, "pval" = allpval), 
-                   class="seqdiffusion"))
+                   class = "seqdiffusion"))
 }
 
-print.seqdiffusion <- function(x, ...){
+print.seqdiffusion <- function(x,...){
   # Print console output for bass
   # x, object estimated using bass
   
-  type <- tolower(x$diffusion[[1]]$method)
+  type <- tolower(x$diffusion[[1]]$type)
   
-  writeLines(paste(x$method, "model"))
+  # create selector of paramters and p-values
+  no.w <- ncol(x$w)
+  sel <- NULL
+  for (i in 1:no.w){
+    sel <- c(sel, c(i, (i+no.w)))
+  }
+  
+  writeLines(paste(x$type, "model"))
   writeLines("")
   writeLines("Parameters:")
-  temp <- round(cbind(cbind(x$w,
-                            x$pval)[, c(1, 4, 2, 5, 3, 6)],
-                      sqrt(x$mse)), 4)
-  if (type == "bass"){
-    colnames(temp) <- c("p coef.", "pval.", "q coef.", "pval.",
-                        "M size", "pval.", "sigma")
-  } else if (type == "gompertz"){
-    colnames(temp) <- c("a coef.", "pval.", "b coef.",
-                        "pval.", "M size", "pval.", "sigma")
-  }
+  temp <- round(cbind(cbind(x$w, x$pval)[, sel],
+                      sqrt(x$mse)),
+                      4)
+  
+  switch(type,
+         bass = colnames(temp) <- c("p coef.", "pval.", "q coef.", "pval.",
+                                    "M size", "pval.", "sigma"),
+         gompertz = colnames(temp) <- c("p coef.", "pval.", "q coef.", "pval.",
+                                        "M size", "pval.", "sigma"),
+         sgompertz = colnames(temp) <- c("a coef.", "pval.", "b coef.",
+                                         "pval.", "c coef", "pval.", "M size",
+                                         "pval.", "sigma"))
+  
+#   if (type == "bass"){
+#     colnames(temp) <- c("p coef.", "pval.", "q coef.", "pval.",
+#                         "M size", "pval.", "sigma")
+#   } else if (type == "gompertz"){
+#     colnames(temp) <- c("a coef.", "pval.", "b coef.",
+#                         "pval.", "M size", "pval.", "sigma")
+#   } else if (type == "sgompertz"){
+#     colnames(temp) <- c("a coef.", "pval.", "b coef.",
+#                         "pval.", "c coef", "pval.", "M size", "pval.", "sigma")
+#   }
   print(temp)
   writeLines("")
   
 }
 
-plot.seqdiffusion <- function(x, cumulative = c(FALSE, TRUE), ...){
+plot.seqdiffusion <- function(x, cumulative = c(FALSE, TRUE),...){
   # Plot sequential bass curves
   # x, object estimated using bass
   # cumulative, if TRUE plot cumulative adoption
@@ -153,22 +187,23 @@ plot.seqdiffusion <- function(x, cumulative = c(FALSE, TRUE), ...){
     X <- x$x
     ll <- 2
   } else {
-    X <- apply(x$x,2,cumsum)
+    X <- apply(x$x, 2, cumsum)
     ll <- 1
   }
   
   yy <- range(X)
-  yy <- yy + c(-1,1)*0.04*diff(yy)
+  yy <- yy + c(-1, 1)*0.04*diff(yy)
   yy[1] <- max(0,yy[1])
   
-  plot(NA,NA,xlim=c(1,N),ylim=yy,xlab="Period",ylab="Adoption",main=x$method)
+  plot(NA, NA, xlim = c(1, N), ylim = yy,
+       xlab = "Period", ylab = "Adoption", main = x$type)
   for (i in 1:k){
-    x.temp <- X[,i]
+    x.temp <- X[, i]
     x.temp <- cleanzero(x.temp)
     n <- length(x.temp$x)
     l <- x.temp$loc
     xx <- l:(l+n-1)
     points(xx, x.temp$x, col = "black", pch = 21, bg = cmp[i], cex = 0.7)
-    lines(xx, x$diffusion[[i]]$fit[,ll], col=cmp[i], lwd = 2)
+    lines(xx, x$diffusion[[i]]$fit[,ll], col = cmp[i], lwd = 2)
   }
 }

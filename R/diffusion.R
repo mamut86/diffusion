@@ -3,11 +3,11 @@
 #' \code{diffusion} enables to fit various diffusion models.
 #' 
 #' This function fits diffusion models of the type \code{"bass"}, 
-#' \code{"gompertz"} or \code{"sgompertz"}. Parameters are estimated by
-#' minimising the Mean Squared Error with a quasi Newton algorithm. Optionally
-#' p-values of the coefficients can be determined via bootstraping. Furthermore,
-#' the bootstrapping allows to remove insignificant parameters from the
-#' optimisation process.
+#' \code{"gompertz"} or \code{"sgompertz"}. Parameters are estimated by 
+#' minimising the Mean Squared Error with a Subplex algorithm from the nloptr
+#' package. Optionally p-values of the coefficients can be determined via
+#' bootstraping. Furthermore, the bootstrapping allows to remove insignificant
+#' parameters from the optimisation process.
 #' 
 #' @section Bass model
 #' The optimisation of the Bass model is initialisated by the linear
@@ -15,7 +15,14 @@
 #' 
 #' @section Gompertz model
 #' The initialisation of the Gompertz model uses the approach suggested by Jukic
-#' et al. (2004).
+#' et al. (2004) but is adopted to allow for the non-exponential version of
+#' Gompertz curve. This allows that m becomes Bass model equivalent. Hence for
+#' the market potential the Bass model is used as an initialisation.
+#' 
+#' @section Shifted-Gompertz model
+#' The model is initialised by assuming the shift operator to be 1. At this 
+#' point the model becomes Bass equivalent as shown in Bemmaor (1994). A Bass
+#' model is therefore used as an estimator for the remaining parameters.
 #' 
 #' @param x vector with adoption per period
 #' @param w vector of model parameters (see note). If provided no estimation
@@ -57,6 +64,11 @@
 #' 
 #' @references Bass, F.M., 1969. A new product growth for model consumer
 #'   durables. Management Science 15(5), 215-227.
+#'   
+#' @references Bemmaor, A. 1994. Modeling the Diffusion of New Durable Goods:
+#'   Word-of-Mouth Effect versus Consumer Heterogeneity. In G. Laurent, G.L.
+#'   Lilien and B. Pras (Eds.). Research Traditions in Marketing. Boston:
+#'   Kluwer, pp. 201-223.
 #' 
 #' @references Jukic, D., Kralik, G. and Scitovski, R., 2004. Least-squares
 #'   fitting Gompertz curve. Journal of Computational and Applied Mathematics,
@@ -77,11 +89,6 @@ diffusion <- function(x, w = NULL, cleanlead = c(TRUE, FALSE), prew = NULL,
                       sig = 0.05, verbose = c(FALSE, TRUE),
                       type = c("bass", "gompertz", "sgompertz")){
 
-  # todos
-  # - incorporate the ability to use named vector w rather than fixed order and
-  #   include error handling
-  # - consider using BOBYQA instead of quasi-newton optim() algorithm
-  
   type <- match.arg(type, c("bass", "gompertz", "sgompertz"))
   
   cleanlead <- cleanlead[1]
@@ -99,40 +106,30 @@ diffusion <- function(x, w = NULL, cleanlead = c(TRUE, FALSE), prew = NULL,
     w <- opt$w
     pval <- opt$pval
   } else {
-    if (type == "bass" | type == "gompertz"){
-      pval <- rep(NA, 3)
-    } else if (type == "sgompertz"){
-      pval <- rep(NA, 4)
-    }
+    pval <- rep(NA, length(opt$w))
   }
   
   n <- length(x)
-  if (type == "bass"){
-    fit <- bassCurve(n, w)
-  } else if (type == "gompertz"){
-    fit <- gompertzCurve(n, w)
-  }else if (type == "sgompertz"){
-    fit <- sgompertzCurve(n, w)
-  }
+  switch(type,
+         "bass" = fit <- bassCurve(n, w),
+         "gompertz" = fit <- gompertzCurve(n, w),
+         "sgompertz" = fit <- sgompertzCurve(n, w))
   
   mse <- mean((x - fit[,2])^2)
   
-  if (type == "bass"){
-    out <- structure(list("type" = "Bass", "call" = sys.call(), "w" = w,
-                          "x" = x, "fit" = fit, "mse" = mse, "prew" = prew,
-                          "pval" = pval),
-                     class = "bass")
-  } else if (type == "gompertz"){
-    out <- structure(list("type" = "Gompertz", "call" = sys.call(),
-                          "w" = w, "x" = x, "fit" = fit, "mse" = mse,
-                          "prew" = prew, "pval" = pval),
-                     class = "gompertz")
-  }else if (type == "sgompertz"){
-    out <- structure(list("type" = "SGompertz", "call" = sys.call(),
-                          "w" = w, "x" = x, "fit" = fit, "mse" = mse,
-                          "prew" = prew, "pval" = pval),
-                     class = "sgompertz")
-  }
+  switch(type,
+         "bass" = out <- structure(list("type" = "Bass", "call" = sys.call(),
+                                      "w" = w, "x" = x, "fit" = fit,
+                                      "mse" = mse, "prew" = prew, "pval" = pval),
+                                 class = "bass"),
+         "gompertz" = out <- structure(list("type" = "Gompertz", "call" = sys.call(),
+                                          "w" = w, "x" = x, "fit" = fit,
+                                          "mse" = mse, "prew" = prew, "pval" = pval),
+                                     class = "gompertz"),
+         "sgompertz" = out <- structure(list("type" = "SGompertz", "call" = sys.call(),
+                                           "w" = w, "x" = x, "fit" = fit,"mse" = mse,
+                                           "prew" = prew, "pval" = pval),
+                                      class = "sgompertz"))
   return(out)
 }
 
@@ -189,13 +186,10 @@ diffusionEstim <- function(x, l = 2, prew = NULL, pvalreps = 0,
     prew <- rep(0, no.w)
   }
   
-  if (type == "bass"){
-    init <- bassInit(x)
-  } else if (type == "gompertz"){
-    init <- gompertzInit(x)
-  } else if (type == "sgompertz"){
-    init <- sgompertzInit(x, l)
-  }
+  switch(type,
+         "bass" = init <- bassInit(x),
+         "gompertz" = init <- gompertzInit(x, l),
+         "sgompertz" = init <- sgompertzInit(x, l))
   
   init <- init - prew
   init[(init + prew) <= 0] <- 0.00001
@@ -212,43 +206,45 @@ diffusionEstim <- function(x, l = 2, prew = NULL, pvalreps = 0,
     w <- rep(0, no.w)
     
     if (sum(w.idx) > 0){
-      if (sum(w.idx) > 1){ # Allow for different optimiser - not needed though!
-        if (type == "bass"){
-          w.new <- optim(init[w.idx], bassCost, x = x, l = l,
-                         prew = prew, w.idx = w.idx, method = "BFGS")$par    
-        } else if (type == "gompertz"){
-          w.new <- optim(init[w.idx], gompertzCost, x = x, l = l,
-                         prew = prew, w.idx = w.idx, method = "BFGS")$par
-        } else if (type == "sgompertz"){
-          w.new <- optim(init[w.idx], sgompertzCost, x = x, l = l,
-                         prew = prew, w.idx = w.idx, method = "BFGS")$par
-        }
-      } else {
-        if (type == "bass"){
-          w.new <- optim(init[w.idx], bassCost, x = x, l = l,
-                         prew = prew, w.idx = w.idx, method = "BFGS")$par
-        } else if (type == "gompertz"){
-          w.new <- optim(init[w.idx], gompertzCost, x = x, l = l,
-                         prew = prew, w.idx = w.idx, method = "BFGS")$par
-        } else if (type == "sgompertz"){
-          w.new <- optim(init[w.idx], sgompertzCost, x = x, l = l,
-                         prew = prew, w.idx = w.idx, method = "BFGS")$par
-        }
-      }
+      
+      # if (sum(w.idx) > 1){ # Allow for different optimiser - not needed though!
+      
+      # very much under construction: Different optimisers for different models
+#       switch(type,
+#              "bass" = w.new <- optim(init[w.idx], bassCost, x = x, l = l,
+#                                      prew = prew, w.idx = w.idx)$par,
+#              "gompertz" = w.new <- optim(init[w.idx], gompertzCost, x = x, l = l,
+#                                          prew = prew, w.idx = w.idx)$par,
+#              "sgompertz" = w.new <- optim(init[w.idx], sgompertzCost, x = x, l = l,
+#                                           prew = prew, w.idx = w.idx)$par)
+      
+      switch(type,
+             "bass" = w.new <- nloptr::sbplx(x0 = init[w.idx], fn = bassCost,
+                                             lower = NULL, upper = NULL,
+                                             x = x, l = l, prew = prew,
+                                             w.idx = w.idx)$par,
+             "gompertz" = w.new <- nloptr::sbplx(x0 = init[w.idx], fn = gompertzCost,
+                                                 lower = NULL, upper = NULL,
+                                                 x = x, l = l, prew = prew,
+                                                 w.idx = w.idx)$par,
+             "sgompertz" = w.new <- nloptr::sbplx(x0 = init[w.idx], fn = sgompertzCost,
+                                                  lower = NULL, upper = NULL,
+                                                  x = x, l = l, prew = prew,
+                                                  w.idx = w.idx)$par)
+      
+      # } else {
+      # here another switch equal structure to the previous one could be if needed
+      # }
       w[w.idx] <- w.new
     }
     
     # Bootstrap p-values
     if (pvalreps > 0){
       
-      # Calculate sigma
-      if (type == "bass"){
-        yhat <- bassCurve(n, prew+w)[, 2]
-      } else if (type == "gompertz"){
-        yhat <- gompertzCurve(n, prew+w)[, 2]
-      } else if (type == "sgompertz"){
-        yhat <- sgompertzCurve(n, prew+w)[, 2]
-      }
+      switch(type,
+             "bass" = yhat <- bassCurve(n, prew+w)[, 2],
+             "gompertz" = yhat <- gompertzCurve(n, prew+w)[, 2],
+             "sgompertz" = yhat <- sgompertzCurve(n, prew+w)[, 2])
       
       sigma <- sqrt(mean((x - yhat)^2))
       
@@ -262,22 +258,19 @@ diffusionEstim <- function(x, l = 2, prew = NULL, pvalreps = 0,
       
       # Estimate model
       for (i in 1:pvalreps){
-        if (type == "bass"){
-          wboot[i,] <- diffusionEstim(yboot[, i], l,pvalreps = 0,
-                                      type = "bass")$w - prew
-        } else if (type == "gompertz"){
-          wboot[i,] <- diffusionEstim(yboot[, i], l, pvalreps = 0,
-                                      type = "gompertz")$w - prew
-        } else if (type == "sgompertz"){
-          wboot[i,] <- diffusionEstim(yboot[, i], l, pvalreps = 0,
-                                      type = "sgompertz")$w - prew
-        }
+        switch(type,
+               "bass" = wboot[i,] <- diffusionEstim(yboot[, i], l, pvalreps = 0,
+                                                    type = "bass")$w - prew,
+               "gompertz" = wboot[i,] <- diffusionEstim(yboot[, i], l, pvalreps = 0,
+                                                        type = "gompertz")$w - prew,
+               "sgompertz" = wboot[i,] <- diffusionEstim(yboot[, i], l, pvalreps = 0,
+                                                         type = "sgompertz")$w - prew)
       }
       
       pval <- colMeans((abs(wboot - 
                               matrix(rep(colMeans(wboot), pvalreps),
-                                     ncol=3, byrow = T))) > 
-                         abs(matrix(rep(w, pvalreps), ncol=3, byrow = T)))
+                                     ncol = 3, byrow = T))) > 
+                         abs(matrix(rep(w, pvalreps), ncol = 3, byrow = T)))
     } else {
       pval <- rep(NA, no.w)
     }
@@ -311,13 +304,10 @@ diffusionEstim <- function(x, l = 2, prew = NULL, pvalreps = 0,
       
       temp <- cbind(round(cbind(w, pval), 4), locv)
       
-      if (type == "bass"){
-        rownames(temp) <- c("p", "q", "m")    
-      } else if (type == "gompertz"){
-        rownames(temp) <- c("a", "b", "m")    
-      }else if (type == "sgompertz"){
-        rownames(temp) <- c("a", "b", "c", "m")    
-      }
+      switch(type,
+             "bass" = rownames(temp) <- c("p", "q", "m"),
+             "gompertz" = rownames(temp) <- c("a", "b", "m"),
+             "sgompertz" = rownames(temp) <- c("a", "b", "c", "m"))
       
       colnames(temp) <- c("Estimate", "p-value", "")[1:(2+!is.na(loc))]
       print(temp, quote = FALSE)
@@ -344,13 +334,11 @@ diffusionPlot <- function(x, cumulative = c(FALSE, TRUE), ...){
   # cumulative, if TRUE plot cumulative adoption
   
   type <- class(x)
-  if (type == "bass"){
-    elmt <- 3
-  } else if (type == "gompertz"){
-    elmt <- 1
-  } else if (type == "sgompertz"){
-    elmt <- 1
-  }
+  # set numbers of elements to be plotted, i.e. including innov. and immiat.
+  switch(type,
+         "bass" = elmt <- 3,
+         "gompertz" = elmt <- 1,
+         "sgompertz" = elmt <- 1)
   
   cumulative <- cumulative[1]
   
@@ -435,23 +423,19 @@ diffusionPrint <- function(x, ...){
     colnames(temp) <- c("Estimate", "Marginal", " Marginal p-value")
   }
   
-  if (type == "bass"){
-    rownames(temp) <- c("p - Coefficient of innovation",
-                        "q - Coefficient of imitation",
-                        "m - Market potential")
-  } else if (type == "gompertz"){
-    rownames(temp) <- c("a - displacement",
-                        "b - growth",
-                        "m - Market potential")
-  } else if (type == "sgompertz"){
-    rownames(temp) <- c("a - displacement",
-                        "b - growth",
-                        "c - shift",
-                        "m - Market potential")
-  }
+  switch(type,
+         "bass" = rownames(temp) <- c("p - Coefficient of innovation",
+                                      "q - Coefficient of imitation",
+                                      "m - Market potential"),
+         "gompertz" = rownames(temp) <- c("a - displacement",
+                                          "b - growth",
+                                          "m - Market potential"),
+         "sgompertz" = rownames(temp) <- c("a - displacement",
+                                           "b - growth",
+                                           "c - shift",
+                                           "m - Market potential"))
   
   print(temp)
   writeLines("")
   writeLines(paste("sigma:", round(sqrt(x$mse), 4)))
-  
 }

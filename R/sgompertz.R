@@ -34,7 +34,7 @@ sgompertzInit <- function(x, l){
   
   # calling bass estimates
   what <- diffusionEstim(x, l, pvalreps = 0, type = "bass")$w
-  
+
   # Bemmaor shows that if a = 1, Beta = p/q and b = p + q
   a <- what[1] / what[2] # the shape parameter beta
   b <- what[1] + what[2] # the scale parameter b

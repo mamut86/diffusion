@@ -1,6 +1,10 @@
 # example for seqdiffusion() function
-\dontrun{
+  data("ibm")
+  fitsgomp <- seqdiffusion(ibm, type = "sgompertz")
+  fitgomp <- seqdiffusion(ibm, type = "gompertz")
+  fitbass <- seqdiffusion(ibm, type = "bass")
   
-  # Some examples needed
+  plot(fitgomp)
+  plot(fitsgomp)
+  plot(fitbass)
   
-}

@@ -1,5 +1,14 @@
-#### Open Tasks ####
-- estimation problems with Gompertz
+#### v.0.2.1.906 (10/04/17) ####
+
+Changes:
+Replaced if statements with switches where necessary - closing Issue #1
+Updated the optimisation process. This should give better results but still not perfect
+Added better commented for diffusionPlot() function - closing Issue #2
+Open tasks in News depreciated and now tracking them with Issues on github
+All the parameter optimisation are now using Subplex algorithm from the nloptr package
+
+Bugfixes:
+Several small variable name errors due to the integration
 
 #### v.0.2.0.905 (05/04/17) ####
 Changes:

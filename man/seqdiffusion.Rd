@@ -6,7 +6,7 @@
 \usage{
 seqdiffusion(x, cleanlead = c(TRUE, FALSE), prew = NULL, l = 2,
   pvalreps = 0, eliminate = c(FALSE, TRUE), sig = 0.05,
-  verbose = c(FALSE, TRUE), type = c("bass", "gompertz"))
+  verbose = c(FALSE, TRUE), type = c("bass", "gompertz", "sgompertz"))
 }
 \arguments{
 \item{x}{matrix containing in each column the adoption per period for generation k}
@@ -50,12 +50,13 @@ list of:
 \code{seqdiffusion} enables to fit various sequential diffusion models.
 }
 \details{
-#' This function fits diffusion models of the type \code{"bass"} or 
-\code{"gompertz"} across generations. Parameters are estimated for
-each generation individually by minimising the Mean Squared Error with a
-quasi Newton algorithm. Optionally p-values of the coefficients can be
-determined via bootstraping. Furthermore, the bootstrapping allows to remove
-insignificant parameters from the optimisation process.
+This function fits diffusion models of the type \code{"bass"}, 
+\code{"gompertz"} or \code{sgompertz} across generations. Parameters are 
+estimated for each generation individually by minimising the Mean Squared 
+Error with the subplex algorithm from the nloptr package. Optionally p-values
+of the coefficients can be determined via bootstraping. Furthermore, the
+bootstrapping allows to remove insignificant parameters from the optimisation
+process.
 }
 \note{
 vector \code{w} needs to be provided for the Bass model in the order of
@@ -69,15 +70,24 @@ vector \code{w} needs to be provided for the Bass model in the order of
 }
 \examples{
 # example for seqdiffusion() function
-\dontrun{
+  data("ibm")
+  fitsgomp <- seqdiffusion(ibm, type = "sgompertz")
+  fitgomp <- seqdiffusion(ibm, type = "gompertz")
+  fitbass <- seqdiffusion(ibm, type = "bass")
   
-  # Some examples needed
+  plot(fitgomp)
+  plot(fitsgomp)
+  plot(fitbass)
   
-}
 }
 \references{
 Bass, F.M., 1969. A new product growth for model consumer
   durables. Management Science 15(5), 215-227.
+
+Bemmaor, A. 1994. Modeling the Diffusion of New Durable Goods:
+  Word-of-Mouth Effect versus Consumer Heterogeneity. In G. Laurent, G.L.
+  Lilien and B. Pras (Eds.). Research Traditions in Marketing. Boston:
+  Kluwer, pp. 201-223.
 
 Jukic, D., Kralik, G. and Scitovski, R., 2004. Least-squares
   fitting Gompertz curve. Journal of Computational and Applied Mathematics,

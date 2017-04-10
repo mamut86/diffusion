@@ -51,11 +51,11 @@ returns list of:
 }
 \details{
 This function fits diffusion models of the type \code{"bass"}, 
-\code{"gompertz"} or \code{"sgompertz"}. Parameters are estimated by
-minimising the Mean Squared Error with a quasi Newton algorithm. Optionally
-p-values of the coefficients can be determined via bootstraping. Furthermore,
-the bootstrapping allows to remove insignificant parameters from the
-optimisation process.
+\code{"gompertz"} or \code{"sgompertz"}. Parameters are estimated by 
+minimising the Mean Squared Error with a Subplex algorithm from the nloptr
+package. Optionally p-values of the coefficients can be determined via
+bootstraping. Furthermore, the bootstrapping allows to remove insignificant
+parameters from the optimisation process.
 }
 \note{
 vector \code{w} needs to be provided for the Bass model in the order of
@@ -69,15 +69,24 @@ vector \code{w} needs to be provided for the Bass model in the order of
 }
 \examples{
 # example for diffusion() function
-\dontrun{
-  
-  # Some examples needed
-  
-}
+data("chicken")
+fitbass <- diffusion(chicken[, 2], type = "bass")
+fitgomp <- diffusion(chicken[, 2], type = "gompertz")
+fitsgomp <- diffusion(chicken[, 2], type = "sgompertz")
+
+# Produce some plots
+plot(fitbass)
+plot(fitgomp)
+plot(fitsgomp)
 }
 \references{
 Bass, F.M., 1969. A new product growth for model consumer
   durables. Management Science 15(5), 215-227.
+
+Bemmaor, A. 1994. Modeling the Diffusion of New Durable Goods:
+  Word-of-Mouth Effect versus Consumer Heterogeneity. In G. Laurent, G.L.
+  Lilien and B. Pras (Eds.). Research Traditions in Marketing. Boston:
+  Kluwer, pp. 201-223.
 
 Jukic, D., Kralik, G. and Scitovski, R., 2004. Least-squares
   fitting Gompertz curve. Journal of Computational and Applied Mathematics,

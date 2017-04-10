@@ -24,6 +24,7 @@ bassCurve <- function(n, w){
   # Separate into innovator and imitators
   innov <- w[1]*(w[3] - At)
   imit <- at - innov
+  
   # Merge
   Y <- cbind(At, at, innov, imit)
   colnames(Y) <- c("Cumulative Adoption", "Adoption",
@@ -36,7 +37,7 @@ bassInit <- function(x){
   # Internal function: get initial values using linear regression
   # x in adoption per period
   
-  # Estimate via linear regression
+  # Estimate via linear regression as shown by Bass (1969)
   X <- cumsum(x)
   X2 <- X^2
   cf <- lm(x ~ X + X2)$coefficients
@@ -50,6 +51,8 @@ bassInit <- function(x){
   
   init <- c(p, q, m)
   names(init) <- c("p", "q", "m")
+  # make sure no negative paramters appear
+  # init[init < 0] <- 0
   
   return(init)
 }
