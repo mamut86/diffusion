@@ -1,7 +1,7 @@
 Package: diffusion
 Type: Package
 Title: Forecasting Diffusion of New Products
-Version: 0.2.0.905
+Version: 0.2.1.906
 Authors@R: person("Oliver", "Schaer", email = "info@oliverschaer.ch",
                   role = c("aut", "cre"),
                   comment = "PhD Student Lancaster Centre for Forecasting")
