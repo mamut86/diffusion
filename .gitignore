@@ -1,3 +1,9 @@
-.Rproj.user
+# History files
 .Rhistory
-.Rdata
+# Session Data files
+.RData
+# RStudio files
+.Rproj.user
+# some folders not needed
+testing/
+_old
