@@ -61,6 +61,12 @@
 #'   determines the growth rate and "m" sets, similarly to Bass model, the
 #'   market potential (saturation point).
 #'   
+#'   For the Shifted-Gompertz model vector \code{w} needs to be in the form of 
+#'   \code("a", "b", "c", "m"). Where "a" is the x-axis displacement
+#'   coefficient, "b" determines the growth rate, "c" is the shifting parameter
+#'   and "m" sets, similarly to Bass model, the market potential (saturation
+#'   point).
+#'   
 #' @example examples/example_seqdiffusion.R
 #' 
 #' @references Bass, F.M., 1969. A new product growth for model consumer
