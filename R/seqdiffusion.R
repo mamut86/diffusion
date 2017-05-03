@@ -38,7 +38,8 @@
 #' @param sig significance level used to eliminate parameters
 #' @param verbose if TRUE console output is provided during estimation (default
 #'   == F)
-#' @param type diffusion model to use
+#' @param type diffusion model to use. This can be "bass", "gompertz" and "sgompertz"
+#' @param optim optimization method to use. This can be "nm" for Nelder-Meade or "hj" for Hooke-Jeeves.
 #' 
 #' @return list of:
 #' \itemize{
@@ -90,12 +91,14 @@
 seqdiffusion <- function(x, cleanlead = c(TRUE, FALSE), prew = NULL, l = 2,
                          pvalreps = 0, eliminate = c(FALSE,TRUE), sig = 0.05, 
                          verbose = c(FALSE,TRUE),
-                         type = c("bass", "gompertz", "sgompertz")){
+                         type = c("bass", "gompertz", "sgompertz"),
+                         optim = c("nm", "hj")){
   
   # todo:
   # - maybe this can be further simplified and merged to diffusion package as well?
 
   type <- match.arg(type, c("bass", "gompertz", "sgompertz"))
+  optim <- match.arg(optim, c("nm", "hj"))
   verbose <- verbose[1]
   
   # Number of curves
@@ -118,7 +121,7 @@ seqdiffusion <- function(x, cleanlead = c(TRUE, FALSE), prew = NULL, l = 2,
     }
     
     fit[[i]] <- diffusion(x[, i], w = NULL, cleanlead, prew, l, pvalreps, 
-                          elimin, sig, verbose, type = type)
+                          elimin, sig, verbose, type = type, optim = optim)
     
   }
   

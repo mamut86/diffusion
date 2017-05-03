@@ -37,7 +37,8 @@
 #' @param sig significance level used to eliminate parameters
 #' @param verbose if TRUE console output is provided during estimation (default
 #'   == F)
-#' @param type diffusion model to use
+#' @param type diffusion model to use. This can be "bass", "gompertz" and "sgompertz"
+#' @param optim optimization method to use. This can be "nm" for Nelder-Meade or "hj" for Hooke-Jeeves.
 #' 
 #' @return returns list of:
 #' \itemize{
@@ -93,9 +94,11 @@
 diffusion <- function(x, w = NULL, cleanlead = c(TRUE, FALSE), prew = NULL,
                       l = 2, pvalreps = 0, eliminate = c(FALSE, TRUE),
                       sig = 0.05, verbose = c(FALSE, TRUE),
-                      type = c("bass", "gompertz", "sgompertz")){
+                      type = c("bass", "gompertz", "sgompertz"),
+                      optim = c("nm", "hj")){
 
   type <- match.arg(type, c("bass", "gompertz", "sgompertz"))
+  optim <- match.arg(optim, c("nm", "hj"))
   
   cleanlead <- cleanlead[1]
   if (cleanlead == TRUE){
@@ -108,7 +111,7 @@ diffusion <- function(x, w = NULL, cleanlead = c(TRUE, FALSE), prew = NULL,
   # Optimise parameters
   if (is.null(w)){
     opt <- diffusionEstim(x, l, prew, pvalreps, eliminate,
-                          sig, verbose, type = type)
+                          sig, verbose, type = type, optim  =optim)
     w <- opt$w
     pval <- opt$pval
   } else {
@@ -143,7 +146,8 @@ diffusion <- function(x, w = NULL, cleanlead = c(TRUE, FALSE), prew = NULL,
 diffusionEstim <- function(x, l = 2, prew = NULL, pvalreps = 0,
                            eliminate = c(FALSE, TRUE), sig = 0.05,
                            verbose = c(FALSE, TRUE),
-                           type = c("bass", "gompertz", "sgompertz")){
+                           type = c("bass", "gompertz", "sgompertz"),
+                           optim = c("nm", "hj")){
   # Internal function: estimate bass parameters 
   # x, adoption per period
   # l, the l-norm (1 is absolute errors, 2 is squared errors)
@@ -154,8 +158,10 @@ diffusionEstim <- function(x, l = 2, prew = NULL, pvalreps = 0,
   # sig, significance level used to eliminate parameters
   # verbose, if TRUE provide console output during estimation
   # type, diffusion model to use
+  # optim, optimisation algorithm, "nm" is nelder-mead, "hj" is hooke-jeeves
   
   type <- match.arg(type,c("bass", "gompertz", "sgompertz"))
+  optim <- match.arg(optim,c("nm", "hj"))
   
   # Defaults for eliminating parameters
   eliminate <- eliminate[1]
@@ -211,38 +217,47 @@ diffusionEstim <- function(x, l = 2, prew = NULL, pvalreps = 0,
     # Optimise
     w <- rep(0, no.w)
     
-    if (sum(w.idx) > 0){
+    if (sum(w.idx) > 1){
+      # This optimisation algorithms are multidimensional, so revert to BFGS if needed
       
-      # if (sum(w.idx) > 1){ # Allow for different optimiser - not needed though!
+      if (optim == "nm"){
+        
+        # Nelder-Meade works typically quite well
+        switch(type,
+               "bass" = w.new <- dfoptim::nmk(par=init[w.idx], fn=bassCost, x=x, l=l, 
+                                              prew=prew, w.idx=w.idx)$par,
+               "gompertz" = w.new <- dfoptim::nmk(par=init[w.idx], fn=gompertzCost, x=x, l=l, 
+                                                  prew=prew, w.idx=w.idx)$par,
+               "sgompertz" = w.new <- dfoptim::nmk(par=init[w.idx], fn=sgompertzCost, x=x, l=l, 
+                                                   prew=prew, w.idx=w.idx)$par)
       
-      # very much under construction: Different optimisers for different models
-#       switch(type,
-#              "bass" = w.new <- optim(init[w.idx], bassCost, x = x, l = l,
-#                                      prew = prew, w.idx = w.idx)$par,
-#              "gompertz" = w.new <- optim(init[w.idx], gompertzCost, x = x, l = l,
-#                                          prew = prew, w.idx = w.idx)$par,
-#              "sgompertz" = w.new <- optim(init[w.idx], sgompertzCost, x = x, l = l,
-#                                           prew = prew, w.idx = w.idx)$par)
+      } else {
+        
+        # Hooker-Jeeves is slow but optimises tough stuff
+        switch(type,
+               "bass" = w.new <- dfoptim::hjk(par=init[w.idx], fn=bassCost, x=x, l=l, 
+                                              prew=prew, w.idx=w.idx)$par,
+               "gompertz" = w.new <- dfoptim::hjk(par=init[w.idx], fn=gompertzCost, x=x, l=l, 
+                                                  prew=prew, w.idx=w.idx)$par,
+               "sgompertz" = w.new <- dfoptim::hjk(par=init[w.idx], fn=sgompertzCost, x=x, l=l, 
+                                                   prew=prew, w.idx=w.idx)$par)
+        
+      }
+        
+    } else {
+      # Revert to BFGS if only one parameter is required
       
       switch(type,
-             "bass" = w.new <- nloptr::sbplx(x0 = init[w.idx], fn = bassCost,
-                                             lower = NULL, upper = NULL,
-                                             x = x, l = l, prew = prew,
-                                             w.idx = w.idx)$par,
-             "gompertz" = w.new <- nloptr::sbplx(x0 = init[w.idx], fn = gompertzCost,
-                                                 lower = NULL, upper = NULL,
-                                                 x = x, l = l, prew = prew,
-                                                 w.idx = w.idx)$par,
-             "sgompertz" = w.new <- nloptr::sbplx(x0 = init[w.idx], fn = sgompertzCost,
-                                                  lower = NULL, upper = NULL,
-                                                  x = x, l = l, prew = prew,
-                                                  w.idx = w.idx)$par)
+             "bass" = w.new <- optim(init[w.idx], bassCost, method = "BFGS", x = x, l = l,
+                                     prew = prew, w.idx = w.idx)$par,
+             "gompertz" = w.new <- optim(init[w.idx], gompertzCost, method = "BFGS", x = x, l = l,
+                                         prew = prew, w.idx = w.idx)$par,
+             "sgompertz" = w.new <- optim(init[w.idx], sgompertzCost, method = "BFGS", x = x, l = l,
+                                          prew = prew, w.idx = w.idx)$par)
       
-      # } else {
-      # here another switch equal structure to the previous one could be if needed
-      # }
-      w[w.idx] <- w.new
     }
+    
+    w[w.idx] <- w.new
     
     # Bootstrap p-values
     if (pvalreps > 0){
@@ -272,11 +287,11 @@ diffusionEstim <- function(x, l = 2, prew = NULL, pvalreps = 0,
                "sgompertz" = wboot[i,] <- diffusionEstim(yboot[, i], l, pvalreps = 0,
                                                          type = "sgompertz")$w - prew)
       }
-      
+
       pval <- colMeans((abs(wboot - 
                               matrix(rep(colMeans(wboot), pvalreps),
-                                     ncol = 3, byrow = T))) > 
-                         abs(matrix(rep(w, pvalreps), ncol = 3, byrow = T)))
+                                     ncol = no.w, byrow = T))) > 
+                         abs(matrix(rep(w, pvalreps), ncol = no.w, byrow = T)))
     } else {
       pval <- rep(NA, no.w)
     }
