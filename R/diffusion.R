@@ -352,7 +352,7 @@ diffusionEstim <- function(x, l = 2, prew = NULL, pvalreps = 0,
 #' @importFrom graphics plot
 #' @method plot diffusion
 #' @export
-diffusionPlot <- function(x, cumulative = c(FALSE, TRUE), ...){
+plot.diffusion <- function(x, cumulative = c(FALSE, TRUE), ...){
   # Plot diffusion curves
   # x, object estimated using diffusion
   # cumulative, if TRUE plot cumulative adoption
@@ -430,7 +430,7 @@ diffusionPlot <- function(x, cumulative = c(FALSE, TRUE), ...){
 }
 
 #' @export
-diffusionPrint <- function(x, ...){
+print.diffusion <- function(x, ...){
   # Print console output for diffusion models
   # x, object estimated using diffusion
   
