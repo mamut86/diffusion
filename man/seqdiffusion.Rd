@@ -6,7 +6,8 @@
 \usage{
 seqdiffusion(x, cleanlead = c(TRUE, FALSE), prew = NULL, l = 2,
   pvalreps = 0, eliminate = c(FALSE, TRUE), sig = 0.05,
-  verbose = c(FALSE, TRUE), type = c("bass", "gompertz", "sgompertz"))
+  verbose = c(FALSE, TRUE), type = c("bass", "gompertz", "sgompertz"),
+  optim = c("nm", "hj"))
 }
 \arguments{
 \item{x}{matrix containing in each column the adoption per period for generation k}
@@ -28,7 +29,9 @@ estimation. Forces \code{pvalreps = 1000} if left to 0.}
 \item{verbose}{if TRUE console output is provided during estimation (default
 == F)}
 
-\item{type}{diffusion model to use}
+\item{type}{diffusion model to use. This can be "bass", "gompertz" and "sgompertz"}
+
+\item{optim}{optimization method to use. This can be "nm" for Nelder-Meade or "hj" for Hooke-Jeeves.}
 
 \item{w}{vector of model parameters (see note). If provided no estimation
 is done.}

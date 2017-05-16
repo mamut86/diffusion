@@ -136,6 +136,7 @@ seqdiffusion <- function(x, cleanlead = c(TRUE, FALSE), prew = NULL, l = 2,
                    class = "seqdiffusion"))
 }
 
+#' @export
 print.seqdiffusion <- function(x,...){
   # Print console output for bass
   # x, object estimated using bass
@@ -180,6 +181,8 @@ print.seqdiffusion <- function(x,...){
   
 }
 
+#' @method plot seqdiffusion
+#' @export
 plot.seqdiffusion <- function(x, cumulative = c(FALSE, TRUE),...){
   # Plot sequential bass curves
   # x, object estimated using bass

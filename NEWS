@@ -1,3 +1,12 @@
+#### v.0.2.2.908 (16/05/17) ####
+
+Changes:
+- Updated some of the documentation so it contains information about the new optim = parameter
+- introducing optim paramter choice to allow for Nelder-Mead or Hooke-Jeeves method
+
+Bugfixes:
+- Added print and plot to Namespace
+
 #### v.0.2.1.907 (11/04/17) ####
 
 Changes:
