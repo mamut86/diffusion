@@ -57,12 +57,12 @@
 #'   coeficient of imitation and "m" is the market size coefficient.
 #'   
 #'   For the Gompertz model vector \code{w} needs to be in the form of
-#'   \code("a", "b", "m"). Where "a" is the x-axis displacement coefficient, "b"
+#'   \code{("a", "b", "m")}. Where "a" is the x-axis displacement coefficient, "b"
 #'   determines the growth rate and "m" sets, similarly to Bass model, the
 #'   market potential (saturation point).
 #'   
 #'   For the Shifted-Gompertz model vector \code{w} needs to be in the form of 
-#'   \code("a", "b", "c", "m"). Where "a" is the x-axis displacement
+#'   \code{("a", "b", "c", "m")}. Where "a" is the x-axis displacement
 #'   coefficient, "b" determines the growth rate, "c" is the shifting parameter
 #'   and "m" sets, similarly to Bass model, the market potential (saturation
 #'   point).
@@ -89,8 +89,6 @@
 #' 
 #' @rdname diffusion  
 #' @export diffusion
-
-
 diffusion <- function(x, w = NULL, cleanlead = c(TRUE, FALSE), prew = NULL,
                       l = 2, pvalreps = 0, eliminate = c(FALSE, TRUE),
                       sig = 0.05, verbose = c(FALSE, TRUE),

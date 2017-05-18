@@ -112,5 +112,5 @@ plot.sgompertz <- function(x, cumulative = c(FALSE, TRUE), ...){
   # x, object estimated using shifted-Gompertz
   # cumulative, if TRUE plot cumulative adoption
   
-  diffusionPlot(x, cumulative, ...)
+  plot.diffusion(x, cumulative, ...)
 }

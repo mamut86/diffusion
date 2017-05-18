@@ -66,12 +66,12 @@ vector \code{w} needs to be provided for the Bass model in the order of
   coeficient of imitation and "m" is the market size coefficient.
   
   For the Gompertz model vector \code{w} needs to be in the form of
-  \code("a", "b", "m"). Where "a" is the x-axis displacement coefficient, "b"
+  \code{("a", "b", "m")}. Where "a" is the x-axis displacement coefficient, "b"
   determines the growth rate and "m" sets, similarly to Bass model, the
   market potential (saturation point).
   
   For the Shifted-Gompertz model vector \code{w} needs to be in the form of 
-  \code("a", "b", "c", "m"). Where "a" is the x-axis displacement
+  \code{("a", "b", "c", "m")}. Where "a" is the x-axis displacement
   coefficient, "b" determines the growth rate, "c" is the shifting parameter
   and "m" sets, similarly to Bass model, the market potential (saturation
   point).

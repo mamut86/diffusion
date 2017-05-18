@@ -16,7 +16,7 @@
   \item{Safari6.0}{Market share of Safari browser v 6.0}
   \item{Safari5.0}{Market share of Safari browser v 5.0}
   \item{Safari4.1}{Market share of Safari browser v 4.1}
-  \item{Safari4.0}{Market share of Safari browser v 4.0} }}
+  \item{Safari4.0}{Market share of Safari browser v 4.0}}}
 \source{
 \url{http://gs.statcounter.com/browser-version-market-share}
 }

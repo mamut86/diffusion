@@ -122,5 +122,5 @@ plot.bass <- function(x, cumulative=c(FALSE, TRUE), ...){
   # x, object estimated using bass
   # cumulative, if TRUE plot cumulative adoption
   
-  diffusionPlot(x, cumulative, ...)
+  plot.diffusion(x, cumulative, ...)
 }
