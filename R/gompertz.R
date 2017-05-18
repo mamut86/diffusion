@@ -119,6 +119,8 @@ forecast.gompertz <- function(object, h){
                    class = "gompertz"))
 }
 
+#' @method print gompertz
+#' @export
 print.gompertz <- function(x, ...){
   # Print console output for gompertz
   # x, object estimated using diffusion
@@ -126,6 +128,8 @@ print.gompertz <- function(x, ...){
   diffusionPrint(x, ...)
 }
 
+#' @method plot gompertz
+#' @export
 plot.gompertz <- function(x, cumulative = c(FALSE, TRUE), ...){
   # Plot bass curves
   # x, object estimated using bass

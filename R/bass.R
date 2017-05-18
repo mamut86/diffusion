@@ -110,13 +110,17 @@ forecast.bass <- function(object, h){
                    class = "bass"))
 }
 
+#' @method print bass
+#' @export
 print.bass <- function(x, ...){
   # Print console output for bass
   # x, object estimated using diffusion
   
-  diffusionPrint(x, ...)
+  print.diffusion(x, ...)
 }
 
+#' @method plot bass
+#' @export
 plot.bass <- function(x, cumulative=c(FALSE, TRUE), ...){
   # Plot bass curves
   # x, object estimated using bass

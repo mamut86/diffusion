@@ -100,13 +100,17 @@ forecast.sgompertz <- function(object, h){
                    class = "sgompertz"))
 }
 
+#' @method print sgompertz
+#' @export
 print.sgompertz <- function(x, ...){
   # Print console output for shifted-gompertz
   # x, object estimated using diffusion
   
-  diffusionPrint(x, ...)
+  print.diffusion(x, ...)
 }
 
+#' @method plot sgompertz
+#' @export
 plot.sgompertz <- function(x, cumulative = c(FALSE, TRUE), ...){
   # Plot shifted-Gompertz curves
   # x, object estimated using shifted-Gompertz
