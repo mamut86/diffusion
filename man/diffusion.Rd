@@ -83,6 +83,27 @@ vector \code{w} needs to be provided for the Bass model in the order of
   and "m" sets, similarly to Bass model, the market potential (saturation
   point).
 }
+\section{Bass model}{
+
+The optimisation of the Bass model is initialisated by the linear
+aproximation suggested in Bass (1969).
+}
+
+\section{Gompertz model}{
+
+The initialisation of the Gompertz model uses the approach suggested by Jukic
+et al. (2004) but is adopted to allow for the non-exponential version of
+Gompertz curve. This allows that m becomes Bass model equivalent. Hence for
+the market potential the Bass model is used as an initialisation.
+}
+
+\section{Shifted-Gompertz model}{
+
+The model is initialised by assuming the shift operator to be 1. At this 
+point the model becomes Bass equivalent as shown in Bemmaor (1994). A Bass
+model is therefore used as an estimator for the remaining parameters.
+}
+
 \examples{
 # example for diffusion() function
 data("chicken")
