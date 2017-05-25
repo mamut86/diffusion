@@ -31,6 +31,7 @@
 #' @param prew the \code{w} of the previous generation. This is used for
 #'   sequential fitting.
 #' @param l the l-norm (1 is absolute errors, 2 is squared errors)
+#' @param cumulative If TRUE optimisation is done on cumulative adoption.
 #' @param pvalreps bootstrap repetitions to estimate (marginal) p-values
 #' @param eliminate if TRUE eliminates insignificant parameters from the
 #'   estimation. Forces \code{pvalreps = 1000} if left to 0.
@@ -90,8 +91,8 @@
 #' @rdname diffusion  
 #' @export diffusion
 diffusion <- function(x, w = NULL, cleanlead = c(TRUE, FALSE), prew = NULL,
-                      l = 2, pvalreps = 0, eliminate = c(FALSE, TRUE),
-                      sig = 0.05, verbose = c(FALSE, TRUE),
+                      l = 2, cumulative=c(TRUE,FALSE), pvalreps = 0, 
+                      eliminate = c(FALSE, TRUE), sig = 0.05, verbose = c(FALSE, TRUE),
                       type = c("bass", "gompertz", "sgompertz"),
                       optim = c("nm", "hj")){
 
@@ -103,12 +104,13 @@ diffusion <- function(x, w = NULL, cleanlead = c(TRUE, FALSE), prew = NULL,
     x <- cleanzero(x)$x
   }
   
+  cumulative <- cumulative[1]
   eliminate <- eliminate[1]
   verbose <- verbose[1]
   
   # Optimise parameters
   if (is.null(w)){
-    opt <- diffusionEstim(x, l, prew, pvalreps, eliminate,
+    opt <- diffusionEstim(x, l, cumulative, prew, pvalreps, eliminate,
                           sig, verbose, type = type, optim  =optim)
     w <- opt$w
     pval <- opt$pval
@@ -141,7 +143,8 @@ diffusion <- function(x, w = NULL, cleanlead = c(TRUE, FALSE), prew = NULL,
 }
 
 
-diffusionEstim <- function(x, l = 2, prew = NULL, pvalreps = 0,
+diffusionEstim <- function(x, l = 2, cumulative= c(FALSE, TRUE),
+                           prew = NULL, pvalreps = 0,
                            eliminate = c(FALSE, TRUE), sig = 0.05,
                            verbose = c(FALSE, TRUE),
                            type = c("bass", "gompertz", "sgompertz"),
@@ -149,6 +152,7 @@ diffusionEstim <- function(x, l = 2, prew = NULL, pvalreps = 0,
   # Internal function: estimate bass parameters 
   # x, adoption per period
   # l, the l-norm (1 is absolute errors, 2 is squared errors)
+  # cumulative, if TRUE optimise on cumulative adoption. 
   # prew, the w of the previous generation - this is used for sequential fitting
   # pvalreps, bootstrap repetitions to estimate (marginal) p-values
   # eliminate, if TRUE eliminates insignificant parameters from estimation.
@@ -161,7 +165,8 @@ diffusionEstim <- function(x, l = 2, prew = NULL, pvalreps = 0,
   type <- match.arg(type,c("bass", "gompertz", "sgompertz"))
   optim <- match.arg(optim,c("nm", "hj"))
   
-  # Defaults for eliminating parameters
+  # Defaults 
+  cumulative <- cumulative[1]
   eliminate <- eliminate[1]
   verbose <- verbose[1]
   
@@ -223,22 +228,22 @@ diffusionEstim <- function(x, l = 2, prew = NULL, pvalreps = 0,
         # Nelder-Meade works typically quite well
         switch(type,
                "bass" = w.new <- dfoptim::nmk(par=init[w.idx], fn=bassCost, x=x, l=l, 
-                                              prew=prew, w.idx=w.idx)$par,
+                                              cumulative=cumulative, prew=prew, w.idx=w.idx)$par,
                "gompertz" = w.new <- dfoptim::nmk(par=init[w.idx], fn=gompertzCost, x=x, l=l, 
-                                                  prew=prew, w.idx=w.idx)$par,
+                                                  cumulative=cumulative, prew=prew, w.idx=w.idx)$par,
                "sgompertz" = w.new <- dfoptim::nmk(par=init[w.idx], fn=sgompertzCost, x=x, l=l, 
-                                                   prew=prew, w.idx=w.idx)$par)
+                                                   cumulative=cumulative, prew=prew, w.idx=w.idx)$par)
       
       } else {
         
         # Hooker-Jeeves is slow but optimises tough stuff
         switch(type,
                "bass" = w.new <- dfoptim::hjk(par=init[w.idx], fn=bassCost, x=x, l=l, 
-                                              prew=prew, w.idx=w.idx)$par,
+                                              cumulative=cumulative, prew=prew, w.idx=w.idx)$par,
                "gompertz" = w.new <- dfoptim::hjk(par=init[w.idx], fn=gompertzCost, x=x, l=l, 
-                                                  prew=prew, w.idx=w.idx)$par,
+                                                  cumulative=cumulative, prew=prew, w.idx=w.idx)$par,
                "sgompertz" = w.new <- dfoptim::hjk(par=init[w.idx], fn=sgompertzCost, x=x, l=l, 
-                                                   prew=prew, w.idx=w.idx)$par)
+                                                   cumulative=cumulative, prew=prew, w.idx=w.idx)$par)
         
       }
         
@@ -247,11 +252,11 @@ diffusionEstim <- function(x, l = 2, prew = NULL, pvalreps = 0,
       
       switch(type,
              "bass" = w.new <- optim(init[w.idx], bassCost, method = "BFGS", x = x, l = l,
-                                     prew = prew, w.idx = w.idx)$par,
+                                     cumulative=cumulative, prew = prew, w.idx = w.idx)$par,
              "gompertz" = w.new <- optim(init[w.idx], gompertzCost, method = "BFGS", x = x, l = l,
-                                         prew = prew, w.idx = w.idx)$par,
+                                         cumulative=cumulative, prew = prew, w.idx = w.idx)$par,
              "sgompertz" = w.new <- optim(init[w.idx], sgompertzCost, method = "BFGS", x = x, l = l,
-                                          prew = prew, w.idx = w.idx)$par)
+                                          cumulative=cumulative, prew = prew, w.idx = w.idx)$par)
       
     }
     
