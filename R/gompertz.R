@@ -125,7 +125,7 @@ print.gompertz <- function(x, ...){
   # Print console output for gompertz
   # x, object estimated using diffusion
   
-  diffusionPrint(x, ...)
+  print.diffusion(x, ...)
 }
 
 #' @method plot gompertz

@@ -93,7 +93,7 @@ diffusion <- function(x, w = NULL, cleanlead = c(TRUE, FALSE), prew = NULL,
                       l = 2, pvalreps = 0, eliminate = c(FALSE, TRUE),
                       sig = 0.05, verbose = c(FALSE, TRUE),
                       type = c("bass", "gompertz", "sgompertz"),
-                      optim = c("nm", "hj")){
+                      optim = c("nm", "hj"), maxiter = Inf, opttol = 1.e-06){
 
   type <- match.arg(type, c("bass", "gompertz", "sgompertz"))
   optim <- match.arg(optim, c("nm", "hj"))
@@ -109,7 +109,8 @@ diffusion <- function(x, w = NULL, cleanlead = c(TRUE, FALSE), prew = NULL,
   # Optimise parameters
   if (is.null(w)){
     opt <- diffusionEstim(x, l, prew, pvalreps, eliminate,
-                          sig, verbose, type = type, optim  =optim)
+                          sig, verbose, type = type, optim  = optim,
+                          maxiter = maxiter)
     w <- opt$w
     pval <- opt$pval
   } else {
@@ -145,7 +146,7 @@ diffusionEstim <- function(x, l = 2, prew = NULL, pvalreps = 0,
                            eliminate = c(FALSE, TRUE), sig = 0.05,
                            verbose = c(FALSE, TRUE),
                            type = c("bass", "gompertz", "sgompertz"),
-                           optim = c("nm", "hj")){
+                           optim = c("nm", "hj"), maxiter = Inf, opttol = 1.e-06){
   # Internal function: estimate bass parameters 
   # x, adoption per period
   # l, the l-norm (1 is absolute errors, 2 is squared errors)
@@ -157,6 +158,7 @@ diffusionEstim <- function(x, l = 2, prew = NULL, pvalreps = 0,
   # verbose, if TRUE provide console output during estimation
   # type, diffusion model to use
   # optim, optimisation algorithm, "nm" is nelder-mead, "hj" is hooke-jeeves
+  # maxiter, numbers of iterations the optimsation algorithm is allowed to take
   
   type <- match.arg(type,c("bass", "gompertz", "sgompertz"))
   optim <- match.arg(optim,c("nm", "hj"))
@@ -220,42 +222,88 @@ diffusionEstim <- function(x, l = 2, prew = NULL, pvalreps = 0,
       
       if (optim == "nm"){
         
+        # set maximum iterations (see documentation of dfotpim::nmk)
+        if (maxiter < 5000){
+          #if (20*length(w.idx)^2 > 1500) {
+          maxiter <- 5000
+          warning("Set maxiter to 5'000 for Naelder-Maed optimiser")
+        }
+          
         # Nelder-Meade works typically quite well
         switch(type,
-               "bass" = w.new <- dfoptim::nmk(par=init[w.idx], fn=bassCost, x=x, l=l, 
-                                              prew=prew, w.idx=w.idx)$par,
-               "gompertz" = w.new <- dfoptim::nmk(par=init[w.idx], fn=gompertzCost, x=x, l=l, 
-                                                  prew=prew, w.idx=w.idx)$par,
-               "sgompertz" = w.new <- dfoptim::nmk(par=init[w.idx], fn=sgompertzCost, x=x, l=l, 
-                                                   prew=prew, w.idx=w.idx)$par)
+               "bass" = opt <- dfoptim::nmk(par = init[w.idx], fn = bassCost,
+                                            control = list(maxfeval = maxiter, tol = opttol),
+                                            x = x, l = l, prew = prew,
+                                            w.idx = w.idx),
+               "gompertz" = opt <- dfoptim::nmk(par = init[w.idx], fn = gompertzCost,
+                                                control = list(maxfeval = maxiter, tol = opttol),
+                                                x = x, l = l, prew = prew,
+                                                w.idx = w.idx),
+               "sgompertz" = opt <- dfoptim::nmk(par = init[w.idx], fn = sgompertzCost,
+                                                 control = list(maxfeval = maxiter, tol = opttol),
+                                                 x = x, l = l, prew = prew,
+                                                 w.idx = w.idx))
       
       } else {
         
+        # there is some problem that s gompertz switches to very large variables
+        # one way would be to set bounds but this does necessarliy mean that the
+        # bounds are correct. Use hjkb function for this but it also needs lower
+        # value to be set as there seems to be an error
+        # up <- c(5000, 100, 1000, 1e20)
+        # lo <- -Inf
+        # print(init[w.idx])
+        
+        if (maxiter < 100000){
+          maxiter <- 100000
+          warning("Set maxiter to 100'000 for hj optimiser")
+        }
+        
         # Hooker-Jeeves is slow but optimises tough stuff
         switch(type,
-               "bass" = w.new <- dfoptim::hjk(par=init[w.idx], fn=bassCost, x=x, l=l, 
-                                              prew=prew, w.idx=w.idx)$par,
-               "gompertz" = w.new <- dfoptim::hjk(par=init[w.idx], fn=gompertzCost, x=x, l=l, 
-                                                  prew=prew, w.idx=w.idx)$par,
-               "sgompertz" = w.new <- dfoptim::hjk(par=init[w.idx], fn=sgompertzCost, x=x, l=l, 
-                                                   prew=prew, w.idx=w.idx)$par)
-        
+               "bass" = opt <- dfoptim::hjk(par = init[w.idx], fn = bassCost,
+                                            control = list(maxfeval = maxiter, tol = opttol, info = T),
+                                            x = x, l = l, prew = prew,
+                                            w.idx = w.idx
+                                            ),
+               "gompertz" = opt <- dfoptim::hjk(par = init[w.idx],
+                                                fn = gompertzCost,
+                                                control = list(maxfeval = maxiter, tol = opttol, info = T),
+                                                x = x, l = l, prew = prew,
+                                                w.idx = w.idx
+                                                ),
+               
+               "sgompertz" = opt <- dfoptim::hjk(par = init[w.idx],
+                                                 fn = sgompertzCost,
+                                                  control = list(maxfeval = maxiter, tol = opttol, info = T),
+                                                  x = x, l = l, prew = prew,
+                                                  w.idx = w.idx)
+               # "sgompertz" = opt <- dfoptim::hjkb(par = init[w.idx], fn = sgompertzCost, upper = up, lower = lo,
+               #                                   control = list(maxfeval = maxiter, tol = opttol, info = T),
+               #                                   x = x, l = l, prew = prew,
+               #                                   w.idx = w.idx)
+        )
       }
         
     } else {
       # Revert to BFGS if only one parameter is required
+      # Max iterations included in the BFGS
       
       switch(type,
-             "bass" = w.new <- optim(init[w.idx], bassCost, method = "BFGS", x = x, l = l,
-                                     prew = prew, w.idx = w.idx)$par,
-             "gompertz" = w.new <- optim(init[w.idx], gompertzCost, method = "BFGS", x = x, l = l,
-                                         prew = prew, w.idx = w.idx)$par,
-             "sgompertz" = w.new <- optim(init[w.idx], sgompertzCost, method = "BFGS", x = x, l = l,
-                                          prew = prew, w.idx = w.idx)$par)
+             "bass" = opt <- optim(init[w.idx], bassCost, method = "BFGS", x = x, l = l,
+                                     prew = prew, w.idx = w.idx),
+             "gompertz" = opt <- optim(init[w.idx], gompertzCost, method = "BFGS", x = x, l = l,
+                                         prew = prew, w.idx = w.idx),
+             "sgompertz" = opt <- optim(init[w.idx], sgompertzCost, method = "BFGS", x = x, l = l,
+                                          prew = prew, w.idx = w.idx))
       
     }
     
-    w[w.idx] <- w.new
+    if (opt$convergence != 0) {
+      warning("Parameter esimation did not converge! Check maxiter.")
+    }
+    
+    w[w.idx] <- opt$par
     
     # Bootstrap p-values
     if (pvalreps > 0){
