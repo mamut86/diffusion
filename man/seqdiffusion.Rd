@@ -36,7 +36,7 @@ estimation. Forces \code{pvalreps = 1000} if left to 0.}
 
 \item{optim}{optimization method to use. This can be "nm" for Nelder-Meade or
 "hj" for Hooke-Jeeves. #' @param maxiter number of iterations the optimser
-takes (default == \code{10'000} for "nm" and \code{Inf} for "hj")}
+takes (default == \code{10000} for "nm" and \code{Inf} for "hj")}
 
 \item{opttol}{Tolerance for convergence (default == 1.e-06)}
 

@@ -43,7 +43,7 @@
 #'   "sgompertz"
 #' @param optim optimization method to use. This can be "nm" for Nelder-Meade or
 #'   "hj" for Hooke-Jeeves. #' @param maxiter number of iterations the optimser
-#'   takes (default == \code{10'000} for "nm" and \code{Inf} for "hj")
+#'   takes (default == \code{10000} for "nm" and \code{Inf} for "hj")
 #' @param opttol Tolerance for convergence (default == 1.e-06)
 #' 
 #' @return list of:
