@@ -66,7 +66,7 @@ gompertzInit <- function(x, l){
   return(w)
 }
 
-gompertzCost <- function(w, x, l, w.idx = rep(TRUE, 3), prew = NULL){
+gompertzCost <- function(w, x, l, w.idx = rep(TRUE, 3), prew = NULL, cumulative=c(TRUE,FALSE)){
   # Internal function: cost function for numerical optimisation
   # w, current parameters
   # x, adoption per period
