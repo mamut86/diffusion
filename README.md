@@ -3,14 +3,15 @@
 # diffusion
 An about to become R package __diffusion__ for forecasting with diffusion models
 
-Currently working on the following diffusion models:
+Currently the following diffusion models are supported:
 
 1. Bass model
-2. Norton Bass model for generational modelling
-3. Gompertz model
+2. Gompertz model
+3. Shifted Gompertz model
+4. Norton-Bass model for generational modelling (not working well)
+
 
 ### Installation 
 For installation from github use the following R code to run devtools:
 > if (!require("devtools")){install.packages("devtools")}
-
 > devtools::install_github("mamut86/diffusion")
