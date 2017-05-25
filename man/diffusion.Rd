@@ -5,9 +5,9 @@
 \title{diffusion}
 \usage{
 diffusion(x, w = NULL, cleanlead = c(TRUE, FALSE), prew = NULL, l = 2,
-  pvalreps = 0, eliminate = c(FALSE, TRUE), sig = 0.05,
-  verbose = c(FALSE, TRUE), type = c("bass", "gompertz", "sgompertz"),
-  optim = c("nm", "hj"))
+  cumulative = c(TRUE, FALSE), pvalreps = 0, eliminate = c(FALSE, TRUE),
+  sig = 0.05, verbose = c(FALSE, TRUE), type = c("bass", "gompertz",
+  "sgompertz"), optim = c("nm", "hj"), maxiter = Inf, opttol = 1e-06)
 }
 \arguments{
 \item{x}{vector with adoption per period}
@@ -22,6 +22,8 @@ sequential fitting.}
 
 \item{l}{the l-norm (1 is absolute errors, 2 is squared errors)}
 
+\item{cumulative}{If TRUE optimisation is done on cumulative adoption.}
+
 \item{pvalreps}{bootstrap repetitions to estimate (marginal) p-values}
 
 \item{eliminate}{if TRUE eliminates insignificant parameters from the
@@ -35,6 +37,11 @@ estimation. Forces \code{pvalreps = 1000} if left to 0.}
 \item{type}{diffusion model to use. This can be "bass", "gompertz" and "sgompertz"}
 
 \item{optim}{optimization method to use. This can be "nm" for Nelder-Meade or "hj" for Hooke-Jeeves.}
+
+\item{maxiter}{number of iterations the optimser takes (default ==
+\code{10'000} for "nm" and \code{Inf} for "hj")}
+
+\item{opttol}{Tolerance for convergence (default == 1.e-06)}
 }
 \value{
 returns list of:

@@ -57,7 +57,7 @@ bassInit <- function(x){
   return(init)
 }
 
-bassCost <- function(w, x, l, w.idx = rep(TRUE, 3), prew = NULL, cumulative=(TRUE,FALSE)){
+bassCost <- function(w, x, l, w.idx = rep(TRUE, 3), prew = NULL, cumulative = c(TRUE, FALSE)){
   # Internal function: cost function for numerical optimisation
   # w, current parameters
   # x, adoption per period
@@ -74,7 +74,7 @@ bassCost <- function(w, x, l, w.idx = rep(TRUE, 3), prew = NULL, cumulative=(TRU
   w.all[w.idx] <- w
   
   # If sequential construct total parameters
-  if (is.null(prew)){
+  if (is.null(prew)) {
     bassw <- w.all    
   } else {
     bassw <- w.all + prew
@@ -82,7 +82,7 @@ bassCost <- function(w, x, l, w.idx = rep(TRUE, 3), prew = NULL, cumulative=(TRU
   
   fit <- bassCurve(n, bassw)
   
-  if (cumulative == FALSE){
+  if (cumulative == FALSE) {
     if (l == 1){
       se <- sum(abs(x-fit[, 2]))
     } else if (l == 2){
@@ -91,9 +91,9 @@ bassCost <- function(w, x, l, w.idx = rep(TRUE, 3), prew = NULL, cumulative=(TRU
       se <- sum(abs(x-fit[, 2])^l)
     }
   } else {
-    if (l == 1){
+    if (l == 1) {
       se <- sum(abs(cumsum(x)-fit[, 1]))
-    } else if (l == 2){
+    } else if (l == 2) {
       se <- sum((cumsum(x)-fit[, 1])^2)
     } else {
       se <- sum(abs(cumsum(x)-fit[, 1])^l)

@@ -40,6 +40,9 @@
 #'   == F)
 #' @param type diffusion model to use. This can be "bass", "gompertz" and "sgompertz"
 #' @param optim optimization method to use. This can be "nm" for Nelder-Meade or "hj" for Hooke-Jeeves.
+#' @param maxiter number of iterations the optimser takes (default ==
+#'   \code{10'000} for "nm" and \code{Inf} for "hj")
+#' @param opttol Tolerance for convergence (default == 1.e-06)
 #' 
 #' @return returns list of:
 #' \itemize{
@@ -151,7 +154,8 @@ diffusionEstim <- function(x, l = 2, cumulative = c(FALSE, TRUE),
                            eliminate = c(FALSE, TRUE), sig = 0.05,
                            verbose = c(FALSE, TRUE),
                            type = c("bass", "gompertz", "sgompertz"),
-                           optim = c("nm", "hj"), maxiter = Inf, opttol = 1.e-06){
+                           optim = c("nm", "hj"), maxiter = Inf, opttol = 1.e-06)
+                          {
   # Internal function: estimate bass parameters 
   # x, adoption per period
   # l, the l-norm (1 is absolute errors, 2 is squared errors)
@@ -235,23 +239,24 @@ diffusionEstim <- function(x, l = 2, cumulative = c(FALSE, TRUE),
           #if (20*length(w.idx)^2 > 1500) {
           maxiter <- 5000
           warning("Set maxiter to 5'000 for Naelder-Maed optimiser")
+        } else if (maxiter == Inf) {
+          maxiter <- 10000
         }
           
         # Nelder-Meade works typically quite well
         switch(type,
-               "bass" = opt.new <- dfoptim::nmk(par = init[w.idx], fn = bassCost,
-                                            control = list(maxfeval = maxiter, tol = opttol),
+               "bass" = w.new <- dfoptim::nmk(par = init[w.idx], fn = bassCost,
+                                            control = list(maxfeval = maxiter, tol = opttol, info = verbose),
                                             x = x, l = l, prew = prew,
-                                            cumulative = cumulative, w.idx = w.idx),
-               "gompertz" = opt.new <- dfoptim::nmk(par = init[w.idx], fn = gompertzCost,
-                                                control = list(maxfeval = maxiter, tol = opttol),
+                                            cumulative = cumulative, w.idx = w.idx)$par,
+               "gompertz" = w.new <- dfoptim::nmk(par = init[w.idx], fn = gompertzCost,
+                                                control = list(maxfeval = maxiter, tol = opttol, info = verbose),
                                                 x = x, l = l, prew = prew,
-                                                cumulative=cumulative, w.idx = w.idx),
-               "sgompertz" = opt.new <- dfoptim::nmk(par = init[w.idx], fn = sgompertzCost,
-                                                 control = list(maxfeval = maxiter, tol = opttol),
+                                                cumulative=cumulative, w.idx = w.idx)$par,
+               "sgompertz" = w.new <- dfoptim::nmk(par = init[w.idx], fn = sgompertzCost,
+                                                 control = list(maxfeval = maxiter, tol = opttol, info = verbose),
                                                  x = x, l = l, prew = prew,
-                                                 cumulative = cumulative, w.idx = w.idx))
-
+                                                 cumulative = cumulative, w.idx = w.idx)$par)
       } else {
         
         # there is some problem that s gompertz switches to very large variables
@@ -270,20 +275,20 @@ diffusionEstim <- function(x, l = 2, cumulative = c(FALSE, TRUE),
         # Hooker-Jeeves is slow but optimises tough stuff
         switch(type,
 
-               "bass" = opt.new <- dfoptim::hjk(par = init[w.idx], fn = bassCost,
-                                            control = list(maxfeval = maxiter, tol = opttol, info = T),
+               "bass" = w.new <- dfoptim::hjk(par = init[w.idx], fn = bassCost,
+                                            control = list(maxfeval = maxiter, tol = opttol, info = verbose),
                                             x = x, l = l, prew = prew,
-                                            cumulative = cumulative, w.idx = w.idx),
-               "gompertz" = opt.new <- dfoptim::hjk(par = init[w.idx],
+                                            cumulative = cumulative, w.idx = w.idx)$par,
+               "gompertz" = w.new <- dfoptim::hjk(par = init[w.idx],
                                                 fn = gompertzCost,
-                                                control = list(maxfeval = maxiter, tol = opttol, info = T),
+                                                control = list(maxfeval = maxiter, tol = opttol, info = verbose),
                                                 x = x, l = l, prew = prew,
-                                                cumulative = cumulative, w.idx = w.idx),
-               "sgompertz" = opt.new <- dfoptim::hjk(par = init[w.idx],
+                                                cumulative = cumulative, w.idx = w.idx)$par,
+               "sgompertz" = w.new <- dfoptim::hjk(par = init[w.idx],
                                                  fn = sgompertzCost,
-                                                  control = list(maxfeval = maxiter, tol = opttol, info = T),
+                                                  control = list(maxfeval = maxiter, tol = opttol, info = verbose),
                                                   x = x, l = l, prew = prew,
-                                                 cumulative = cumulative, w.idx = w.idx)
+                                                 cumulative = cumulative, w.idx = w.idx)$par
                # "sgompertz" = opt <- dfoptim::hjkb(par = init[w.idx], fn = sgompertzCost, upper = up, lower = lo,
                #                                   control = list(maxfeval = maxiter, tol = opttol, info = T),
                #                                   x = x, l = l, prew = prew,
@@ -297,20 +302,16 @@ diffusionEstim <- function(x, l = 2, cumulative = c(FALSE, TRUE),
       # Max iterations included in the BFGS
       
       switch(type,
-             "bass" = opt.new <- optim(init[w.idx], bassCost, method = "BFGS", x = x, l = l,
-                                   cumulative = cumulative, prew = prew, w.idx = w.idx),
-             "gompertz" = opt.new <- optim(init[w.idx], gompertzCost, method = "BFGS", x = x, l = l,
-                                       cumulative = cumulative, prew = prew, w.idx = w.idx),
-             "sgompertz" = opt.new <- optim(init[w.idx], sgompertzCost, method = "BFGS", x = x, l = l,
-                                        cumulative = cumulative, prew = prew, w.idx = w.idx))
+             "bass" = w.new <- optim(init[w.idx], bassCost, method = "BFGS", x = x, l = l,
+                                   cumulative = cumulative, prew = prew, w.idx = w.idx)$par,
+             "gompertz" = w.new <- optim(init[w.idx], gompertzCost, method = "BFGS", x = x, l = l,
+                                       cumulative = cumulative, prew = prew, w.idx = w.idx)$par,
+             "sgompertz" = w.new <- optim(init[w.idx], sgompertzCost, method = "BFGS", x = x, l = l,
+                                        cumulative = cumulative, prew = prew, w.idx = w.idx)$par)
 
     }
     
-    if (opt$convergence != 0) {
-      warning("Parameter esimation did not converge! Check maxiter.")
-    }
-    
-    w[w.idx] <- opt.new$par
+    w[w.idx] <- w.new
     
     # Bootstrap p-values
     if (pvalreps > 0){

@@ -39,8 +39,12 @@
 #' @param sig significance level used to eliminate parameters
 #' @param verbose if TRUE console output is provided during estimation (default
 #'   == F)
-#' @param type diffusion model to use. This can be "bass", "gompertz" and "sgompertz"
-#' @param optim optimization method to use. This can be "nm" for Nelder-Meade or "hj" for Hooke-Jeeves.
+#' @param type diffusion model to use. This can be "bass", "gompertz" and
+#'   "sgompertz"
+#' @param optim optimization method to use. This can be "nm" for Nelder-Meade or
+#'   "hj" for Hooke-Jeeves. #' @param maxiter number of iterations the optimser
+#'   takes (default == \code{10'000} for "nm" and \code{Inf} for "hj")
+#' @param opttol Tolerance for convergence (default == 1.e-06)
 #' 
 #' @return list of:
 #' \itemize{
@@ -89,11 +93,11 @@
 #' @rdname seqdiffusion  
 #' @export seqdiffusion
 seqdiffusion <- function(x, cleanlead = c(TRUE, FALSE), prew = NULL, l = 2,
-                         cumulative = c(TRUE,FALSE),
-                         pvalreps = 0, eliminate = c(FALSE,TRUE), sig = 0.05, 
-                         verbose = c(FALSE,TRUE),
+                         cumulative = c(TRUE, FALSE),
+                         pvalreps = 0, eliminate = c(FALSE, TRUE), sig = 0.05, 
+                         verbose = c(FALSE, TRUE),
                          type = c("bass", "gompertz", "sgompertz"),
-                         optim = c("nm", "hj")){
+                         optim = c("nm", "hj"), maxiter = Inf, opttol = 1.e-06){
   
   # todo:
   # - maybe this can be further simplified and merged to diffusion package as well?
@@ -124,7 +128,8 @@ seqdiffusion <- function(x, cleanlead = c(TRUE, FALSE), prew = NULL, l = 2,
     }
     
     fit[[i]] <- diffusion(x[, i], w = NULL, cleanlead, prew, l, cumulative, pvalreps, 
-                          elimin, sig, verbose, type = type, optim = optim)
+                          elimin, sig, verbose, type = type, optim = optim,
+                          maxiter, opttol)
     
   }
   

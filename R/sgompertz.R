@@ -47,7 +47,8 @@ sgompertzInit <- function(x, l){
   return(w)
 }
 
-sgompertzCost <- function(w, x, l, w.idx = rep(TRUE, 3), prew = NULL,cumulative=c(TRUE,FALSE)){
+sgompertzCost <- function(w, x, l, w.idx = rep(TRUE, 3), prew = NULL,
+                          cumulative = c(TRUE, FALSE)) {
   # Internal function: cost function for numerical optimisation
   # w, current parameters
   # x, adoption per period
@@ -73,16 +74,16 @@ sgompertzCost <- function(w, x, l, w.idx = rep(TRUE, 3), prew = NULL,cumulative=
   
   fit <- sgompertzCurve(n, sgompw)
   
-  if (cumulative == FALSE){
-    if (l == 1){
+  if (cumulative == FALSE) {
+    if (l == 1) {
       se <- sum(abs(x-fit[, 2]))
-    } else if (l == 2){
+    } else if (l == 2) {
       se <- sum((x-fit[, 2])^2)
     } else {
       se <- sum(abs(x-fit[, 2])^l)
     }
   } else {
-    if (l == 1){
+    if (l == 1) {
       se <- sum(abs(cumsum(x)-fit[, 1]))
     } else if (l == 2){
       se <- sum((cumsum(x)-fit[, 1])^2)
