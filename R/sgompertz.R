@@ -47,7 +47,7 @@ sgompertzInit <- function(x, l){
   return(w)
 }
 
-sgompertzCost <- function(w, x, l, w.idx = rep(TRUE, 3), prew = NULL){
+sgompertzCost <- function(w, x, l, w.idx = rep(TRUE, 3), prew = NULL,cumulative=c(TRUE,FALSE)){
   # Internal function: cost function for numerical optimisation
   # w, current parameters
   # x, adoption per period
@@ -55,7 +55,9 @@ sgompertzCost <- function(w, x, l, w.idx = rep(TRUE, 3), prew = NULL){
   # w.idx, logical vector with three elements. Use FALSE to not estimate
   # respective parameter
   # prew, the w of the previous generation - this is used for sequential fitting
+  # cumulative, use cumulative adoption or not
   
+  cumulative <- cumulative[1]
   n <- length(x)
   
   # If some elements of w are not optimised, sort out vectors
@@ -71,12 +73,22 @@ sgompertzCost <- function(w, x, l, w.idx = rep(TRUE, 3), prew = NULL){
   
   fit <- sgompertzCurve(n, sgompw)
   
-  if (l == 1){
-    se <- sum(abs(x-fit[, 2]))
-  } else if (l == 2){
-    se <- sum((x-fit[, 2])^2)
+  if (cumulative == FALSE){
+    if (l == 1){
+      se <- sum(abs(x-fit[, 2]))
+    } else if (l == 2){
+      se <- sum((x-fit[, 2])^2)
+    } else {
+      se <- sum(abs(x-fit[, 2])^l)
+    }
   } else {
-    se <- sum(abs(x-fit[, 2])^l)
+    if (l == 1){
+      se <- sum(abs(cumsum(x)-fit[, 1]))
+    } else if (l == 2){
+      se <- sum((cumsum(x)-fit[, 1])^2)
+    } else {
+      se <- sum(abs(cumsum(x)-fit[, 1])^l)
+    }
   }
   
   # Ensure positive coefficients
