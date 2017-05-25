@@ -32,6 +32,7 @@
 #' @param prew the \code{w} of the previous generation. This is used for
 #'   sequential fitting.
 #' @param l the l-norm (1 is absolute errors, 2 is squared errors)
+#' @param cumulative If TRUE optimisation is done on cumulative adoption.
 #' @param pvalreps bootstrap repetitions to estimate (marginal) p-values
 #' @param eliminate if TRUE eliminates insignificant parameters from the
 #'   estimation. Forces \code{pvalreps = 1000} if left to 0.
@@ -88,6 +89,7 @@
 #' @rdname seqdiffusion  
 #' @export seqdiffusion
 seqdiffusion <- function(x, cleanlead = c(TRUE, FALSE), prew = NULL, l = 2,
+                         cumulative = c(TRUE,FALSE),
                          pvalreps = 0, eliminate = c(FALSE,TRUE), sig = 0.05, 
                          verbose = c(FALSE,TRUE),
                          type = c("bass", "gompertz", "sgompertz"),
@@ -99,6 +101,8 @@ seqdiffusion <- function(x, cleanlead = c(TRUE, FALSE), prew = NULL, l = 2,
   type <- match.arg(type, c("bass", "gompertz", "sgompertz"))
   optim <- match.arg(optim, c("nm", "hj"))
   verbose <- verbose[1]
+  eliminate <- eliminate[1]
+  cumulative <- cumulative[1]
   
   # Number of curves
   k <- dim(x)[2]
@@ -119,7 +123,7 @@ seqdiffusion <- function(x, cleanlead = c(TRUE, FALSE), prew = NULL, l = 2,
       elimin <- FALSE
     }
     
-    fit[[i]] <- diffusion(x[, i], w = NULL, cleanlead, prew, l, pvalreps, 
+    fit[[i]] <- diffusion(x[, i], w = NULL, cleanlead, prew, l, cumulative, pvalreps, 
                           elimin, sig, verbose, type = type, optim = optim)
     
   }
