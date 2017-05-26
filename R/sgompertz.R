@@ -100,13 +100,22 @@ sgompertzCost <- function(w, x, l, w.idx = rep(TRUE, 3), prew = NULL,
   return(se)
 }
 
-forecast.sgompertz <- function(object, h){
+
+#' @method predict sgompertz
+#' @export
+predict.sgompertz <- function(object, h, np = F){
   # Produce forecasts for shifted-Gompertz
   # object, estimated gompertz model using diffuse
   # h, forecast horizon
+  # np, if TRUE forecast is considered from t+1 
   
   n <- length(object$x)
-  xhat <- sgompertzCurve(n+h, object$w)[(n+1):(n+h), ]
+  if (np == F) {
+    xhat <- sgompertzCurve(n+h, object$w)[(n+1):(n+h), ]
+  } else {
+    xhat <- sgompertzCurve(h, object$w)
+  }
+  
   
   # Append forecasts to bass object
   return(structure(c(object, list("mean" = xhat[, 2],"xhat" = xhat)),
@@ -119,7 +128,7 @@ print.sgompertz <- function(x, ...){
   # Print console output for shifted-gompertz
   # x, object estimated using diffusion
   
-  print.diffusion(x, ...)
+  diffusionPrint(x, ...)
 }
 
 #' @method plot sgompertz
@@ -129,5 +138,5 @@ plot.sgompertz <- function(x, cumulative = c(FALSE, TRUE), ...){
   # x, object estimated using shifted-Gompertz
   # cumulative, if TRUE plot cumulative adoption
   
-  plot.diffusion(x, cumulative, ...)
+  diffusionPlot(x, cumulative, ...)
 }

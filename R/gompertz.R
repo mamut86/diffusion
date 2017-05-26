@@ -118,13 +118,21 @@ gompertzCost <- function(w, x, l, w.idx = rep(TRUE, 3), prew = NULL, cumulative=
   return(se)
 }
 
-forecast.gompertz <- function(object, h){
+#' @method predict gompertz
+#' @export
+predict.gompertz <- function(object, h, np = F){
   # Produce forecasts for Gompertz
   # object, estimated gompertz model using diffuse
   # h, forecast horizon
+  # np, if TRUE forecast is considered from t+1 
   
   n <- length(object$x)
-  xhat <- gompertzCurve(n+h, object$w)[(n+1):(n+h), ]
+  if (np == F) {
+    xhat <- gompertzCurve(n+h, object$w)[(n+1):(n+h), ]
+  } else {
+    xhat <- gompertzCurve(h, object$w)
+  }
+  
   
   # Append forecasts to bass object
   return(structure(c(object, list("mean" = xhat[, 2],"xhat" = xhat)),
@@ -137,7 +145,7 @@ print.gompertz <- function(x, ...){
   # Print console output for gompertz
   # x, object estimated using diffusion
   
-  print.diffusion(x, ...)
+  diffusionPrint(x, ...)
 }
 
 #' @method plot gompertz
@@ -147,5 +155,5 @@ plot.gompertz <- function(x, cumulative = c(FALSE, TRUE), ...){
   # x, object estimated using bass
   # cumulative, if TRUE plot cumulative adoption
   
-  plot.diffusion(x, cumulative, ...)
+  diffusionPlot(x, cumulative, ...)
 }

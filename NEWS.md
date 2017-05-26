@@ -1,4 +1,10 @@
-#### v.0.2.2.910 (25/05/17) ####
+#### v.0.2.3.911 (27/05/17) ####
+
+changes
+- Added method predict() for diffusion models
+- New option np in predict() which allows to generate new product forecasts with 0 data
+
+#### v.0.2.3.910 (25/05/17) ####
 
 changes
 - added maxiter and tolerance option control

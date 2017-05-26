@@ -109,13 +109,21 @@ bassCost <- function(w, x, l, w.idx = rep(TRUE, 3), prew = NULL, cumulative = c(
   
 }
 
-forecast.bass <- function(object, h){
+#' @importFrom stats predict
+#' @method predict bass
+#' @export
+predict.bass <- function(object, h, np = F){
   # Produce forecasts for Bass
   # object, estimated bass model using bass
   # h, forecast horizon
+  # np, if TRUE forecast is considered from t+1 
   
   n <- length(object$x)
-  xhat <- bassCurve(n+h, object$w)[(n+1):(n+h), ]
+  if (np == F) {
+    xhat <- bassCurve(n+h, object$w)[(n+1):(n+h), ]
+  } else {
+    xhat <- bassCurve(h, object$w)
+  }
   
   # Append forecasts to bass object
   return(structure(c(object, list("mean" = xhat[, 2], "xhat" = xhat)), 
@@ -128,15 +136,16 @@ print.bass <- function(x, ...){
   # Print console output for bass
   # x, object estimated using diffusion
   
-  print.diffusion(x, ...)
+  diffusionPrint(x, ...)
 }
 
+#' @importFrom graphics plot
 #' @method plot bass
 #' @export
-plot.bass <- function(x, cumulative=c(FALSE, TRUE), ...){
+plot.bass <- function(x, cumulative = c(FALSE, TRUE), ...){
   # Plot bass curves
   # x, object estimated using bass
   # cumulative, if TRUE plot cumulative adoption
   
-  plot.diffusion(x, cumulative, ...)
+  diffusionPlot(x, cumulative, ...)
 }
