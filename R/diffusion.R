@@ -246,15 +246,15 @@ diffusionEstim <- function(x, l = 2, cumulative = c(FALSE, TRUE),
         # Nelder-Meade works typically quite well
         switch(type,
                "bass" = w.new <- dfoptim::nmk(par = init[w.idx], fn = bassCost,
-                                            control = list(maxfeval = maxiter, tol = opttol, info = verbose),
+                                            control = list(tol = opttol, maxfeval = maxiter),
                                             x = x, l = l, prew = prew,
                                             cumulative = cumulative, w.idx = w.idx)$par,
                "gompertz" = w.new <- dfoptim::nmk(par = init[w.idx], fn = gompertzCost,
-                                                control = list(maxfeval = maxiter, tol = opttol, info = verbose),
+                                                control = list(maxfeval = maxiter, tol = opttol),
                                                 x = x, l = l, prew = prew,
                                                 cumulative=cumulative, w.idx = w.idx)$par,
                "sgompertz" = w.new <- dfoptim::nmk(par = init[w.idx], fn = sgompertzCost,
-                                                 control = list(maxfeval = maxiter, tol = opttol, info = verbose),
+                                                 control = list(maxfeval = maxiter, tol = opttol),
                                                  x = x, l = l, prew = prew,
                                                  cumulative = cumulative, w.idx = w.idx)$par)
       } else {

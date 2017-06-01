@@ -93,7 +93,10 @@ gompertzCost <- function(w, x, l, w.idx = rep(TRUE, 3), prew = NULL, cumulative=
   fit <- gompertzCurve(n, gompw)
   
   if (cumulative == FALSE){
-    if (l == 1){
+    if (l == -1) {
+      se <- x - fit[,2]
+      se <- sum(se[se>0]) + sum(-se[se<0])
+    } else if (l == 1){
       se <- sum(abs(x-fit[, 2]))
     } else if (l == 2){
       se <- sum((x-fit[, 2])^2)
@@ -101,7 +104,10 @@ gompertzCost <- function(w, x, l, w.idx = rep(TRUE, 3), prew = NULL, cumulative=
       se <- sum(abs(x-fit[, 2])^l)
     }
   } else {
-    if (l == 1){
+    if (l == -1) {
+      se <- cumsum(x) - fit[,1]
+      se <- sum(se[se>0]) + sum(-se[se<0])
+    } else if (l == 1){
       se <- sum(abs(cumsum(x)-fit[, 1]))
     } else if (l == 2){
       se <- sum((cumsum(x)-fit[, 1])^2)
