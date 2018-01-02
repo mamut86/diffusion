@@ -1,4 +1,4 @@
-# some internal auxiliary functions
+# Some internal auxiliary functions
 
 cleanzero <- function(x){
   # Internal function: remove leadig zeros
