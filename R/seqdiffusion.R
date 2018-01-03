@@ -212,7 +212,7 @@ plot.seqdiffusion <- function(x, cumulative = c(FALSE, TRUE),...){
   
   cmp <- c("#B2182B", "#EF8A62", "#67A9CF", "#2166AC")
   k <- dim(x$x)[2]
-  cmp <- colorRampPalette(cmp)(k)
+  cmp <- grDevices::colorRampPalette(cmp)(k)
   N <- dim(x$x)[1]
   
   if (cumulative == FALSE){
@@ -227,7 +227,7 @@ plot.seqdiffusion <- function(x, cumulative = c(FALSE, TRUE),...){
   yy <- yy + c(-1, 1)*0.04*diff(yy)
   yy[1] <- max(0,yy[1])
   
-  plot(NA, NA, xlim = c(1, N), ylim = yy,
+  graphics::plot(NA, NA, xlim = c(1, N), ylim = yy,
        xlab = "Period", ylab = "Adoption", main = x$type)
   for (i in 1:k){
     x.temp <- X[, i]
@@ -235,7 +235,7 @@ plot.seqdiffusion <- function(x, cumulative = c(FALSE, TRUE),...){
     n <- length(x.temp$x)
     l <- x.temp$loc
     xx <- l:(l+n-1)
-    points(xx, x.temp$x, col = "black", pch = 21, bg = cmp[i], cex = 0.7)
-    lines(xx, x$diffusion[[i]]$fit[,ll], col = cmp[i], lwd = 2)
+    graphics::points(xx, x.temp$x, col = "black", pch = 21, bg = cmp[i], cex = 0.7)
+    graphics::lines(xx, x$diffusion[[i]]$fit[,ll], col = cmp[i], lwd = 2)
   }
 }

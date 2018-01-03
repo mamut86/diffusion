@@ -6,9 +6,9 @@
 \title{Time series: Broadcast subscribers}
 \format{A data frame with 51 observations and 4 variables
 \describe{
-\item{time}{Quarters}
+\item{Time}{Quarters}
 \item{DSL}{Adoption of DSL subscribers}
-\item{CableModem}{Adoption of CableModem users}
+\item{Cablemodem}{Adoption of CableModem users}
 \item{FTTPb}{Adoption of FTTPb sales}
   }}
 \description{

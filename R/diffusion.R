@@ -319,7 +319,7 @@ diffusionEstim <- function(x, l = 2, cumulative = c(FALSE, TRUE),
       
       # Construct bootstraps
       wboot <- array(NA, c(pvalreps, no.w))
-      yboot <- matrix(rnorm(n*pvalreps, 0, sigma), nrow = n) +
+      yboot <- matrix(stats::rnorm(n*pvalreps, 0, sigma), nrow = n) +
         matrix(rep(yhat, pvalreps), ncol = pvalreps)
       
       # This needs to become multiplicative
@@ -454,18 +454,18 @@ diffusionPlot <- function(x, cumulative = c(FALSE, TRUE), ...){
     yy[1] <- max(0, yy[1])
     
     # Plot fit
-    plot(x$x,type="p", pch = 20, ylab = "Adoption", xlab = "Period",
+    graphics::plot(x$x,type="p", pch = 20, ylab = "Adoption", xlab = "Period",
          ylim = yy, xlim = xx, main = x$method)
     for (i in 1:elmt){
-      lines(x$fit[, 1+i], col = cmp[i])
+      graphics::lines(x$fit[, 1+i], col = cmp[i])
     }
     # Check if forecasts exist and plot
     if (!is.null(x$frc)){
       for (i in 1:elmt){
-        lines((length(x$x)+1):xx[2], x$frc[, i+1], col=cmp[i])
+        graphics::lines((length(x$x)+1):xx[2], x$frc[, i+1], col=cmp[i])
       }
     }
-    legend("topleft", c("Adoption", "Innovators", "Imitators")[1:elmt],
+    graphics::legend("topleft", c("Adoption", "Innovators", "Imitators")[1:elmt],
            col = cmp, lty = 1, bty = "n")
     
   } else {
@@ -481,13 +481,13 @@ diffusionPlot <- function(x, cumulative = c(FALSE, TRUE), ...){
     yy[1] <- max(0, yy[1])
     
     # Plot fit
-    plot(cumsum(x$x), type = "p", pch = 20, ylab = "Cumulative Adoption",
+    graphics::plot(cumsum(x$x), type = "p", pch = 20, ylab = "Cumulative Adoption",
          xlab="Period", ylim=yy, xlim = xx, main = x$method)
-    lines(x$fit[, 1], col=cmp[1])
+    graphics::lines(x$fit[, 1], col=cmp[1])
     
     if (type == "bass"){
       for (i in 1:2){
-        lines(cumsum(x$fit[, 2+i]), col = cmp[i+1])
+        graphics::lines(cumsum(x$fit[, 2+i]), col = cmp[i+1])
       }
     }
     
@@ -495,11 +495,11 @@ diffusionPlot <- function(x, cumulative = c(FALSE, TRUE), ...){
     if (!is.null(x$frc)){
       fstart <- apply(x$fit, 2, cumsum)[length(x$x), 2:(1+elmt)]
       for (i in 1:elmt){
-        lines((length(x$x)+1):xx[2],
+        graphics::lines((length(x$x)+1):xx[2],
               cumsum(x$frc[, i+1]) + fstart[i], col = cmp[i])
       }
     }
-    legend("bottomright", c("Adoption", "Innovators", "Imitators")[1:elmt],
+    graphics::legend("bottomright", c("Adoption", "Innovators", "Imitators")[1:elmt],
            col = cmp, lty = 1, bty = "n")
   }
 }
@@ -566,9 +566,9 @@ diffusionPrint <- function(x, ...){
 #' \code{"gompertz"} or \code{"sgompertz"} type, given some parameters. 
 #' 
 #' @param n number of periods to calculate values for.
-#' @param w vector of curve parameters (see note). If the argument model is used this is ignored.
-#' @param type diffusion curve to use. This can be "bass", "gompertz" and "sgompertz".
-#' @param model if provided \code{w} and \code{type} are taken from an object of class \code{diffusion}, the output of \code{\link{diffusion}}.
+#' @param w vector of curve parameters (see note). If argument curve is used, this is ignored.
+#' @param type diffusion curve to use. This can be "bass", "gompertz" and "sgompertz". If argument curve is used, this is ignored.
+#' @param curve if provided \code{w} and \code{type} are taken from an object of class \code{diffusion}, the output of \code{\link{diffusion}}.
 #' 
 #' @return Returns a matrix of values with each row being a period.
 #' 
@@ -588,7 +588,7 @@ diffusionPrint <- function(x, ...){
 #'   point).
 #'   
 #' @examples 
-#'   diffusioncurve(w=c(0.01,0.1,10),20)
+#'   difcurve(w=c(0.01,0.1,10),20)
 #'   
 #' @seealso \code{\link{diffusion}} for fitting a diffusion curve.
 #'   

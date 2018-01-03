@@ -10,11 +10,11 @@ difcurve(n, w = c(0.01, 0.1, 10), type = c("bass", "gompertz", "sgompertz"),
 \arguments{
 \item{n}{number of periods to calculate values for.}
 
-\item{w}{vector of curve parameters (see note). If the argument model is used this is ignored.}
+\item{w}{vector of curve parameters (see note). If argument curve is used, this is ignored.}
 
-\item{type}{diffusion curve to use. This can be "bass", "gompertz" and "sgompertz".}
+\item{type}{diffusion curve to use. This can be "bass", "gompertz" and "sgompertz". If argument curve is used, this is ignored.}
 
-\item{model}{if provided \code{w} and \code{type} are taken from an object of class \code{diffusion}, the output of \code{\link{diffusion}}.}
+\item{curve}{if provided \code{w} and \code{type} are taken from an object of class \code{diffusion}, the output of \code{\link{diffusion}}.}
 }
 \value{
 Returns a matrix of values with each row being a period.
@@ -40,7 +40,7 @@ This function calculates the values of diffusion curves that can be of \code{"ba
   point).
 }
 \examples{
-  diffusioncurve(w=c(0.01,0.1,10),20)
+  difcurve(w=c(0.01,0.1,10),20)
   
 }
 \seealso{

@@ -40,7 +40,7 @@ bassInit <- function(x){
   # Estimate via linear regression as shown by Bass (1969)
   X <- cumsum(x)
   X2 <- X^2
-  cf <- lm(x ~ X + X2)$coefficients
+  cf <- stats::lm(x ~ X + X2)$coefficients
   
   # Solve the quadratic and get all p, q, m
   m <- polyroot(cf) 

@@ -27,9 +27,9 @@ NULL
 #' @docType data
 #' @format A data frame with 51 observations and 4 variables
 #' \describe{
-#' \item{time}{Quarters}
+#' \item{Time}{Quarters}
 #' \item{DSL}{Adoption of DSL subscribers}
-#' \item{CableModem}{Adoption of CableModem users}
+#' \item{Cablemodem}{Adoption of CableModem users}
 #' \item{FTTPb}{Adoption of FTTPb sales}
 #'   }
 #'   
@@ -79,9 +79,9 @@ NULL
 #' @docType data
 #' @format A data frame with 24 observations and 4 variables \describe{
 #' \item{SIU1}{1st generation}
-#' \item{SIu2}{2nd generation (starts 6 years after first generation)}
-#' \item{SIu3}{3rd generation (starts 11 years after first generation)}
-#' \item{SIu4}{4th generation (starts 16 years after first generation)}}
+#' \item{SIU2}{2nd generation (starts 6 years after first generation)}
+#' \item{SIU3}{3rd generation (starts 11 years after first generation)}
+#' \item{SIU4}{4th generation (starts 16 years after first generation)}}
 #'   
 #' @references Bass, P.I. and Bass, F.M., 2004. IT Waves: Two Completed
 #'   Generational Diffusion Models. Working Paper Basseconomics, 1-33.
@@ -106,6 +106,7 @@ NULL
 #'   \item{Safari7.0}{Market share of Safari browser v 7.1}
 #'   \item{Safari6.1}{Market share of Safari browser v 6.1} 
 #'   \item{Safari6.0}{Market share of Safari browser v 6.0}
+#'   \item{Safari5.1}{Market share of Safari browser v 5.1}
 #'   \item{Safari5.0}{Market share of Safari browser v 5.0}
 #'   \item{Safari4.1}{Market share of Safari browser v 4.1}
 #'   \item{Safari4.0}{Market share of Safari browser v 4.0}}

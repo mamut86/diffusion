@@ -14,6 +14,7 @@
   \item{Safari7.0}{Market share of Safari browser v 7.1}
   \item{Safari6.1}{Market share of Safari browser v 6.1} 
   \item{Safari6.0}{Market share of Safari browser v 6.0}
+  \item{Safari5.1}{Market share of Safari browser v 5.1}
   \item{Safari5.0}{Market share of Safari browser v 5.0}
   \item{Safari4.1}{Market share of Safari browser v 4.1}
   \item{Safari4.0}{Market share of Safari browser v 4.0}}}
