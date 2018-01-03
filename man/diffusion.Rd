@@ -57,15 +57,11 @@ returns list of:
 }
 }
 \description{
-\code{diffusion} enables to fit various diffusion models.
+\code{diffusion} fit various diffusion curves.
 }
 \details{
-This function fits diffusion models of the type \code{"bass"}, 
-\code{"gompertz"} or \code{"sgompertz"}. Parameters are estimated by 
-minimising the Mean Squared Error with a Subplex algorithm from the nloptr
-package. Optionally p-values of the coefficients can be determined via
-bootstraping. Furthermore, the bootstrapping allows to remove insignificant
-parameters from the optimisation process.
+This function fits diffusion curves that can be of \code{"bass"}, 
+\code{"gompertz"} or \code{"sgompertz"} type.
 }
 \note{
 vector \code{w} needs to be provided for the Bass model in the order of
@@ -82,26 +78,32 @@ vector \code{w} needs to be provided for the Bass model in the order of
   coefficient, "b" determines the growth rate, "c" is the shifting parameter
   and "m" sets, similarly to Bass model, the market potential (saturation
   point).
+
+Parameters are estimated by 
+minimising the Mean Squared Error with a Subplex algorithm from the nloptr
+package. Optionally p-values of the coefficients can be determined via
+bootstraping. Furthermore, the bootstrapping allows to remove insignificant
+parameters from the optimisation process.
 }
-\section{Bass model}{
+\section{Bass curve}{
 
 The optimisation of the Bass model is initialisated by the linear
 aproximation suggested in Bass (1969).
 }
 
-\section{Gompertz model}{
+\section{Gompertz curve}{
 
-The initialisation of the Gompertz model uses the approach suggested by Jukic
-et al. (2004) but is adopted to allow for the non-exponential version of
-Gompertz curve. This allows that m becomes Bass model equivalent. Hence for
-the market potential the Bass model is used as an initialisation.
+The initialisation of the Gompertz curve uses the approach suggested by Jukic
+et al. (2004), but is adapted to allow for the non-exponential version of
+Gompertz curve. This makes the market potential parameter equivalent to the Bass curves's 
+and the market potential from Bass curve is used for initialisation.
 }
 
-\section{Shifted-Gompertz model}{
+\section{Shifted-Gompertz curve}{
 
-The model is initialised by assuming the shift operator to be 1. At this 
-point the model becomes Bass equivalent as shown in Bemmaor (1994). A Bass
-model is therefore used as an estimator for the remaining parameters.
+The curve is initialised by assuming the shift operator to be 1 and 
+becomes equivalent to the Bass curve, as shown in Bemmaor (1994). A Bass
+curve is therefore used as an estimator for the remaining initial parameters.
 }
 
 \examples{

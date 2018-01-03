@@ -20,11 +20,7 @@
 \source{
 \url{http://gs.statcounter.com/browser-version-market-share}
 }
-\usage{
-tssafari
-}
 \description{
 A dataset containing the monthly market share of Safri browser generations
 from Safari 4.0 to Safari 10.
 }
-\keyword{datasets}

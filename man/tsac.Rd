@@ -15,13 +15,9 @@
 \item{ac7}{Assassins Creed 7}
 \item{ac8}{Assassins Creed 8}
   }}
-\usage{
-tsac
-}
 \description{
 A dataset containing the weekly sales of Assassins Creeds game.
 }
 \references{
 VGChartz
 }
-\keyword{datasets}

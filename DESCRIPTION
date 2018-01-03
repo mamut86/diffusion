@@ -2,9 +2,10 @@ Package: diffusion
 Type: Package
 Title: Forecasting Diffusion of New Products
 Version: 0.2.3.911
-Authors@R: person("Oliver", "Schaer", email = "info@oliverschaer.ch",
-                  role = c("aut", "cre"),
-                  comment = "PhD Student Lancaster Centre for Forecasting")
+Authors@R: c(person("Oliver", "Schaer", email = "info@oliverschaer.ch",
+                    role = c("aut", "cre")),
+             person("Nikolaos", "Kourentzes", email = "nikolaos@kourentzes.com",
+                    role = c("aut")))        
 URL: https://github.com/mamut86/diffusion
 BugReports: https://github.com/mamut86/diffusion/issues
 Description: Various diffusion models to forecast new product growth. Currently

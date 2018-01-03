@@ -10,9 +10,6 @@
 \item{raw}{Raw stock numbers}
 \item{smoothed}{Smoothed stock numbers as described by Franses (1994)}
   }}
-\usage{
-tscarstock
-}
 \description{
 A dataset containing the yearly stock of cars in the Netherlands (1965-1989).
 }
@@ -20,4 +17,3 @@ A dataset containing the yearly stock of cars in the Netherlands (1965-1989).
 Franses, P.H. (1994). Fitting a Gompertz curve. Journal of
   Operational Research Society, 45, 109-113.
 }
-\keyword{datasets}

@@ -13,9 +13,6 @@
 \source{
 \url{https://www.w3schools.com/browsers/browsers_os.asp}
 }
-\usage{
-tswindows
-}
 \description{
 A dataset containing the 3WSchools monthly log files of Windows operating 
 system usage from March 2003 until February 2017.
@@ -25,4 +22,3 @@ From March 2003 until January 2008 log file is only available
   bi-monthly. To retain monthly consistency, values have been linearly
   interpolated
 }
-\keyword{datasets}

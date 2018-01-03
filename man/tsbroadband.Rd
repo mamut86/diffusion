@@ -11,13 +11,9 @@
 \item{CableModem}{Adoption of CableModem users}
 \item{FTTPb}{Adoption of FTTPb sales}
   }}
-\usage{
-tsbroadband
-}
 \description{
 A dataset containing the broadcast subscribers to UK market 4Q 2011 to 2Q 2016.
 }
 \references{
 Telecoms Market Matrix
 }
-\keyword{datasets}
