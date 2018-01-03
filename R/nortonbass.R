@@ -1,7 +1,7 @@
 #' Norton-Bass model
 #'
-#' \code{Nortonbass} fits a generational Bass model proposed by (Norton and Bass
-#' 1987). Each subsequent generation influences the sales of the previous
+#' \code{Nortonbass} fits a generational Bass model proposed by Norton and Bass
+#' (1987). Each subsequent generation influences the sales of the previous
 #' generation. The set of equation is estimated simulataneously.
 #' 
 #' @param x matrix or dataframe containing demand for each generation in
@@ -42,6 +42,8 @@
 #'   Generations of a Technology: A More General Model. Technological
 #'   Forecasting and Social Change, 56, 49-60.
 #' @author Oliver Schaer, \email{info@@oliverschaer.ch}
+#' 
+#' @keywords internal
 #' 
 #' @example examples/example_nortonbass.R
 #'  
@@ -228,9 +230,7 @@ Nortonbass_estim <- function(x, gn, gstart, startval, flexpq, estim.met){
   return(param)
 }
 
-#' Nortonbass_error
-#'
-#' \code{Nortonbass_error} fits Norton Bass curve and estimated RMSE
+#' Fits Norton Bass curve and estimated RMSE
 #' 
 #' @param x matrix with generations
 #' @param param the parameters for curve to estimated
@@ -242,10 +242,10 @@ Nortonbass_estim <- function(x, gn, gstart, startval, flexpq, estim.met){
 #' 
 #' @author Oliver Schaer, \email{info@@oliverschaer.ch}
 #' 
+#' @keywords internal
+#' 
 #' @rdname Nortonbass_startvalgen
 #' @export Nortonbass_startvalgen
-
-
 Nortonbass_startvalgen <- function(x, gstart, flexpq, startval.met){
   # function to guess starting values to be past into the nonlinear optimiser
   # methods considered are:
@@ -295,9 +295,7 @@ Nortonbass_startvalgen <- function(x, gstart, flexpq, startval.met){
 }
 
 
-#' Nortonbass_error
-#'
-#' \code{Nortonbass_error} fits Norton Bass curve and estimated RMSE
+#' Fits Norton Bass curve and estimated RMSE
 #' 
 #' @param x matrix with generations
 #' @param param the parameters for curve to estimated
@@ -309,6 +307,8 @@ Nortonbass_startvalgen <- function(x, gstart, flexpq, startval.met){
 #' @return RMSE, the root mean squared error for each generation
 #' 
 #' @author Oliver Schaer, \email{info@@oliverschaer.ch}
+#' 
+#' @keywords internal
 #' 
 #' @rdname Nortonbass_error
 #' @export Nortonbass_error

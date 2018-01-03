@@ -38,8 +38,8 @@ values as suggested by Islam and Maed (1997)}
 \code{coef}: coefficients for p, q and m
 }
 \description{
-\code{Nortonbass} fits a generational Bass model proposed by (Norton and Bass
-1987). Each subsequent generation influences the sales of the previous
+\code{Nortonbass} fits a generational Bass model proposed by Norton and Bass
+(1987). Each subsequent generation influences the sales of the previous
 generation. The set of equation is estimated simulataneously.
 }
 \details{
@@ -116,3 +116,4 @@ Islam, T. and Meade, N., 1997. The Diffusion of Successive
 \author{
 Oliver Schaer, \email{info@oliverschaer.ch}
 }
+\keyword{internal}

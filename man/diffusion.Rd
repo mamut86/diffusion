@@ -2,7 +2,7 @@
 % Please edit documentation in R/diffusion.R
 \name{diffusion}
 \alias{diffusion}
-\title{diffusion}
+\title{Fit various diffusion curves.}
 \usage{
 diffusion(x, w = NULL, cleanlead = c(TRUE, FALSE), prew = NULL, l = 2,
   cumulative = c(TRUE, FALSE), pvalreps = 0, eliminate = c(FALSE, TRUE),
@@ -12,29 +12,27 @@ diffusion(x, w = NULL, cleanlead = c(TRUE, FALSE), prew = NULL, l = 2,
 \arguments{
 \item{x}{vector with adoption per period}
 
-\item{w}{vector of model parameters (see note). If provided no estimation
+\item{w}{vector of curve parameters (see note). If provided no estimation
 is done.}
 
-\item{cleanlead}{removes leading zeros for fitting purposes (default == T)}
+\item{cleanlead}{removes leading zeros for fitting purposes (default == TRUE)}
 
-\item{prew}{the \code{w} of the previous generation. This is used for
-sequential fitting.}
+\item{prew}{Experimental. Ignore!}
 
-\item{l}{the l-norm (1 is absolute errors, 2 is squared errors)}
+\item{l}{the l-norm (1 is absolute errors, 2 is squared errors).}
 
 \item{cumulative}{If TRUE optimisation is done on cumulative adoption.}
 
-\item{pvalreps}{bootstrap repetitions to estimate (marginal) p-values}
+\item{pvalreps}{Experimental. Ignore!}
 
-\item{eliminate}{if TRUE eliminates insignificant parameters from the
-estimation. Forces \code{pvalreps = 1000} if left to 0.}
+\item{eliminate}{Experimental. Ignore!}
 
-\item{sig}{significance level used to eliminate parameters}
+\item{sig}{Experimental. Ignore!}
 
 \item{verbose}{if TRUE console output is provided during estimation (default
-== F)}
+== FALSE)}
 
-\item{type}{diffusion model to use. This can be "bass", "gompertz" and "sgompertz"}
+\item{type}{diffusion curve to use. This can be "bass", "gompertz" and "sgompertz"}
 
 \item{optim}{optimization method to use. This can be "nm" for Nelder-Meade or "hj" for Hooke-Jeeves.}
 
@@ -44,36 +42,34 @@ estimation. Forces \code{pvalreps = 1000} if left to 0.}
 \item{opttol}{Tolerance for convergence (default == 1.e-06)}
 }
 \value{
-returns list of:
+Returns an object of class \code{diffusion}, which contains:
 \itemize{
-\item \code{type} diffusion model type used
+\item \code{type} diffusion curve type used
 \item \code{call} calls function fitted
 \item \code{w} named vector of fitted parameters
 \item \code{x} actuals
 \item \code{fit} fitted values of model
+\item \code{frc} forecasts for future periods. This is \code{NULL} until \code{\link{predict.diffusion}} is called.
 \item \code{mse} insample Mean Squared Error
 \item \code{prew} the \code{w} of the previous generation
 \item \code{pval} p-values for \code{w}
 }
 }
 \description{
-\code{diffusion} fit various diffusion curves.
-}
-\details{
 This function fits diffusion curves that can be of \code{"bass"}, 
 \code{"gompertz"} or \code{"sgompertz"} type.
 }
 \note{
-vector \code{w} needs to be provided for the Bass model in the order of
+vector \code{w} needs to be provided for the Bass curve in the order of
   \code{"p", "q", "m"}, where "p" is the coefficient of innovation, "q" is the
-  coeficient of imitation and "m" is the market size coefficient.
+  coefficient of imitation and "m" is the market size coefficient.
   
-  For the Gompertz model vector \code{w} needs to be in the form of
+  For the Gompertz curve, vector \code{w} needs to be in the form of
   \code{("a", "b", "m")}. Where "a" is the x-axis displacement coefficient, "b"
   determines the growth rate and "m" sets, similarly to Bass model, the
   market potential (saturation point).
   
-  For the Shifted-Gompertz model vector \code{w} needs to be in the form of 
+  For the Shifted-Gompertz curve, vector \code{w} needs to be in the form of 
   \code{("a", "b", "c", "m")}. Where "a" is the x-axis displacement
   coefficient, "b" determines the growth rate, "c" is the shifting parameter
   and "m" sets, similarly to Bass model, the market potential (saturation
@@ -81,13 +77,11 @@ vector \code{w} needs to be provided for the Bass model in the order of
 
 Parameters are estimated by 
 minimising the Mean Squared Error with a Subplex algorithm from the nloptr
-package. Optionally p-values of the coefficients can be determined via
-bootstraping. Furthermore, the bootstrapping allows to remove insignificant
-parameters from the optimisation process.
+package.
 }
 \section{Bass curve}{
 
-The optimisation of the Bass model is initialisated by the linear
+The optimisation of the Bass curve is initialisated by the linear
 aproximation suggested in Bass (1969).
 }
 
@@ -108,10 +102,9 @@ curve is therefore used as an estimator for the remaining initial parameters.
 
 \examples{
 # example for diffusion() function
-data("chicken")
-fitbass <- diffusion(chicken[, 2], type = "bass")
-fitgomp <- diffusion(chicken[, 2], type = "gompertz")
-fitsgomp <- diffusion(chicken[, 2], type = "sgompertz")
+fitbass <- diffusion(tschicken[, 2], type = "bass")
+fitgomp <- diffusion(tschicken[, 2], type = "gompertz")
+fitsgomp <- diffusion(tschicken[, 2], type = "sgompertz")
 
 # Produce some plots
 plot(fitbass)
@@ -119,21 +112,15 @@ plot(fitgomp)
 plot(fitsgomp)
 }
 \references{
-Bass, F.M., 1969. A new product growth for model consumer
-  durables. Management Science 15(5), 215-227.
-
-Bemmaor, A. 1994. Modeling the Diffusion of New Durable Goods:
-  Word-of-Mouth Effect versus Consumer Heterogeneity. In G. Laurent, G.L.
-  Lilien and B. Pras (Eds.). Research Traditions in Marketing. Boston:
-  Kluwer, pp. 201-223.
-
-Jukic, D., Kralik, G. and Scitovski, R., 2004. Least-squares
-  fitting Gompertz curve. Journal of Computational and Applied Mathematics,
-  169, 359-375.
+\itemize{
+\item{For an introduction to diffusion curves see: Ord K., Fildes R., Kourentzes N. (2017) \href{http://kourentzes.com/forecasting/2017/10/16/new-forecasting-book-principles-of-business-forecasting-2e/}{Principles of Business Forecasting 2e}. \emph{Wessex Press Publishing Co.}, Chapter 12.}
+\item{Bass, F.M., 1969. A new product growth for model consumer durables. Management Science 15(5), 215-227.}
+\item{Bemmaor, A. 1994. Modeling the Diffusion of New Durable Goods: Word-of-Mouth Effect versus Consumer Heterogeneity. In G. Laurent, G.L. Lilien and B. Pras (Eds.). Research Traditions in Marketing. Boston: Kluwer, pp. 201-223.}
+\item{Jukic, D., Kralik, G. and Scitovski, R., 2004. Least-squares fitting Gompertz curve. Journal of Computational and Applied Mathematics, 169, 359-375.}
+}
 }
 \seealso{
-\code{\link{seqdiffusion}} for sequential diffusion model fitting
-  across product generations.
+\code{\link{predict.diffusion}}, \code{\link{plot.diffusion}} and \code{\link{print.diffusion}}.
 }
 \author{
 Oliver Schaer, \email{info@oliverschaer.ch},

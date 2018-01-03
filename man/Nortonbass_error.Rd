@@ -2,7 +2,7 @@
 % Please edit documentation in R/nortonbass.R
 \name{Nortonbass_error}
 \alias{Nortonbass_error}
-\title{Nortonbass_error}
+\title{Fits Norton Bass curve and estimated RMSE}
 \usage{
 Nortonbass_error(x, param, gstart = NULL, flexpq = F)
 }
@@ -23,8 +23,9 @@ actuals, the actual values
 RMSE, the root mean squared error for each generation
 }
 \description{
-\code{Nortonbass_error} fits Norton Bass curve and estimated RMSE
+Fits Norton Bass curve and estimated RMSE
 }
 \author{
 Oliver Schaer, \email{info@oliverschaer.ch}
 }
+\keyword{internal}

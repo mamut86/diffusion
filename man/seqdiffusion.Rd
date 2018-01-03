@@ -2,7 +2,7 @@
 % Please edit documentation in R/seqdiffusion.R
 \name{seqdiffusion}
 \alias{seqdiffusion}
-\title{seqdiffusion}
+\title{Enables fitting various sequential diffusion curves.}
 \usage{
 seqdiffusion(x, cleanlead = c(TRUE, FALSE), prew = NULL, l = 2,
   cumulative = c(TRUE, FALSE), pvalreps = 0, eliminate = c(FALSE, TRUE),
@@ -31,7 +31,7 @@ estimation. Forces \code{pvalreps = 1000} if left to 0.}
 \item{verbose}{if TRUE console output is provided during estimation (default
 == F)}
 
-\item{type}{diffusion model to use. This can be "bass", "gompertz" and
+\item{type}{of diffusion curve to use. This can be "bass", "gompertz" and
 "sgompertz"}
 
 \item{optim}{optimization method to use. This can be "nm" for Nelder-Meade or
@@ -40,11 +40,11 @@ takes (default == \code{10000} for "nm" and \code{Inf} for "hj")}
 
 \item{opttol}{Tolerance for convergence (default == 1.e-06)}
 
-\item{w}{vector of model parameters (see note). If provided no estimation
+\item{w}{vector of curve parameters (see note). If provided no estimation
 is done.}
 }
 \value{
-list of:
+Returns an object of class \code{seqdiffusion}, which contains:
 \itemize{
 \item \code{type} diffusion model type used
 \item \code{diffusion} returns model specification for each generation (see
@@ -57,10 +57,7 @@ list of:
 }
 }
 \description{
-\code{seqdiffusion} enables to fit various sequential diffusion models.
-}
-\details{
-This function fits diffusion models of the type \code{"bass"}, 
+This function fits diffusion curves of the type \code{"bass"}, 
 \code{"gompertz"} or \code{sgompertz} across generations. Parameters are 
 estimated for each generation individually by minimising the Mean Squared 
 Error with the subplex algorithm from the nloptr package. Optionally p-values
@@ -69,69 +66,62 @@ bootstrapping allows to remove insignificant parameters from the optimisation
 process.
 }
 \note{
-vector \code{w} needs to be provided for the Bass model in the order of
+vector \code{w} needs to be provided for the Bass curve in the order of
   \code{"p", "q", "m"}, where "p" is the coefficient of innovation, "q" is the
   coeficient of imitation and "m" is the market size coefficient.
   
-  For the Gompertz model vector \code{w} needs to be in the form of
+  For the Gompertz curve vector \code{w} needs to be in the form of
   \code{("a", "b", "m")}. Where "a" is the x-axis displacement coefficient, "b"
   determines the growth rate and "m" sets, similarly to Bass model, the
   market potential (saturation point).
   
-  For the Shifted-Gompertz model vector \code{w} needs to be in the form of 
+  For the Shifted-Gompertz curve vector \code{w} needs to be in the form of 
   \code{("a", "b", "c", "m")}. Where "a" is the x-axis displacement
   coefficient, "b" determines the growth rate, "c" is the shifting parameter
   and "m" sets, similarly to Bass model, the market potential (saturation
   point).
 }
-\section{Bass model}{
+\section{Bass curve}{
 
-The optimisation of the Bass model is initialisated by the linear
+The optimisation of the Bass curve is initialisated by the linear
 aproximation suggested in Bass (1969).
 }
 
-\section{Gompertz model}{
+\section{Gompertz curve}{
 
-The initialisation of the Gompertz model uses the approach suggested by Jukic
-et al. (2004) but is adopted to allow for the non-exponential version of
-Gompertz curve. This allows that m becomes Bass model equivalent. Hence for
-the market potential the Bass model is used as an initialisation.
+The initialisation of the Gompertz curve uses the approach suggested by Jukic
+et al. (2004), but is adapted to allow for the non-exponential version of
+Gompertz curve. This makes the market potential parameter equivalent to the Bass curves's 
+and the market potential from Bass curve is used for initialisation.
 }
 
-\section{Shifted-Gompertz model}{
+\section{Shifted-Gompertz curve}{
 
-The model is initialised by assuming the shift operator to be 1. At this 
-point the model becomes Bass equivalent as shown in Bemmaor (1994). A Bass
-model is therefore used as an estimator for the remaining parameters.
+The curve is initialised by assuming the shift operator to be 1 and 
+becomes equivalent to the Bass curve, as shown in Bemmaor (1994). A Bass
+curve is therefore used as an estimator for the remaining initial parameters.
 }
 
 \examples{
 # example for seqdiffusion() function
-  data("ibm")
-  fitsgomp <- seqdiffusion(ibm, type = "sgompertz")
-  fitgomp <- seqdiffusion(ibm, type = "gompertz")
-  fitbass <- seqdiffusion(ibm, type = "bass")
-  
-  plot(fitgomp)
-  plot(fitsgomp)
-  plot(fitbass)
+  fit <- seqdiffusion(tsibm)
+  plot(fit)
   
 }
 \references{
-Bass, F.M., 1969. A new product growth for model consumer
-  durables. Management Science 15(5), 215-227.
-
-Bemmaor, A. 1994. Modeling the Diffusion of New Durable Goods:
-  Word-of-Mouth Effect versus Consumer Heterogeneity. In G. Laurent, G.L.
-  Lilien and B. Pras (Eds.). Research Traditions in Marketing. Boston:
-  Kluwer, pp. 201-223.
-
-Jukic, D., Kralik, G. and Scitovski, R., 2004. Least-squares
-  fitting Gompertz curve. Journal of Computational and Applied Mathematics,
-  169, 359-375.
+\itemize{
+\item{For an introduction to diffusion curves see: Ord K., Fildes R., Kourentzes N. (2017) \href{http://kourentzes.com/forecasting/2017/10/16/new-forecasting-book-principles-of-business-forecasting-2e/}{Principles of Business Forecasting 2e}. \emph{Wessex Press Publishing Co.}, Chapter 12.}
+\item{Bass, F.M., 1969. A new product growth for model consumer durables. Management Science 15(5), 215-227.}
+\item{Bemmaor, A. 1994. Modeling the Diffusion of New Durable Goods: Word-of-Mouth Effect versus Consumer Heterogeneity. In G. Laurent, G.L. Lilien and B. Pras (Eds.). Research Traditions in Marketing. Boston: Kluwer, pp. 201-223.}
+\item{Jukic, D., Kralik, G. and Scitovski, R., 2004. Least-squares fitting Gompertz curve. Journal of Computational and Applied Mathematics, 169, 359-375.}
+}
+}
+\seealso{
+\code{\link{plot.seqdiffusion}} and \code{\link{print.seqdiffusion}}.
 }
 \author{
 Oliver Schaer, \email{info@oliverschaer.ch},
 
 Nikoloas Kourentzes, \email{nikoloas@kourentzes.com}
 }
+\keyword{internal}

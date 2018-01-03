@@ -1,8 +1,6 @@
-#' seqdiffusion
+#' Enables fitting various sequential diffusion curves.
 #' 
-#' \code{seqdiffusion} enables to fit various sequential diffusion models.
-#' 
-#' This function fits diffusion models of the type \code{"bass"}, 
+#' This function fits diffusion curves of the type \code{"bass"}, 
 #' \code{"gompertz"} or \code{sgompertz} across generations. Parameters are 
 #' estimated for each generation individually by minimising the Mean Squared 
 #' Error with the subplex algorithm from the nloptr package. Optionally p-values
@@ -10,23 +8,12 @@
 #' bootstrapping allows to remove insignificant parameters from the optimisation
 #' process.
 #' 
-#' @section Bass model:
-#' The optimisation of the Bass model is initialisated by the linear
-#' aproximation suggested in Bass (1969).
-#' 
-#' @section Gompertz model:
-#' The initialisation of the Gompertz model uses the approach suggested by Jukic
-#' et al. (2004) but is adopted to allow for the non-exponential version of
-#' Gompertz curve. This allows that m becomes Bass model equivalent. Hence for
-#' the market potential the Bass model is used as an initialisation.
-#' 
-#' @section Shifted-Gompertz model:
-#' The model is initialised by assuming the shift operator to be 1. At this 
-#' point the model becomes Bass equivalent as shown in Bemmaor (1994). A Bass
-#' model is therefore used as an estimator for the remaining parameters.
+#' @inheritSection diffusion Bass curve
+#' @inheritSection diffusion Gompertz curve
+#' @inheritSection diffusion Shifted-Gompertz curve
 #' 
 #' @param x matrix containing in each column the adoption per period for generation k
-#' @param w vector of model parameters (see note). If provided no estimation
+#' @param w vector of curve parameters (see note). If provided no estimation
 #'   is done.
 #' @param cleanlead removes leading zeros for fitting purposes (default == T)
 #' @param prew the \code{w} of the previous generation. This is used for
@@ -39,14 +26,14 @@
 #' @param sig significance level used to eliminate parameters
 #' @param verbose if TRUE console output is provided during estimation (default
 #'   == F)
-#' @param type diffusion model to use. This can be "bass", "gompertz" and
+#' @param type of diffusion curve to use. This can be "bass", "gompertz" and
 #'   "sgompertz"
 #' @param optim optimization method to use. This can be "nm" for Nelder-Meade or
 #'   "hj" for Hooke-Jeeves. #' @param maxiter number of iterations the optimser
 #'   takes (default == \code{10000} for "nm" and \code{Inf} for "hj")
 #' @param opttol Tolerance for convergence (default == 1.e-06)
 #' 
-#' @return list of:
+#' @return Returns an object of class \code{seqdiffusion}, which contains:
 #' \itemize{
 #' \item \code{type} diffusion model type used
 #' \item \code{diffusion} returns model specification for each generation (see
@@ -58,16 +45,16 @@
 #' \item \code{pval} all p-values for \code{w} at each generation
 #' }
 #' 
-#' @note vector \code{w} needs to be provided for the Bass model in the order of
+#' @note vector \code{w} needs to be provided for the Bass curve in the order of
 #'   \code{"p", "q", "m"}, where "p" is the coefficient of innovation, "q" is the
 #'   coeficient of imitation and "m" is the market size coefficient.
 #'   
-#'   For the Gompertz model vector \code{w} needs to be in the form of
+#'   For the Gompertz curve vector \code{w} needs to be in the form of
 #'   \code{("a", "b", "m")}. Where "a" is the x-axis displacement coefficient, "b"
 #'   determines the growth rate and "m" sets, similarly to Bass model, the
 #'   market potential (saturation point).
 #'   
-#'   For the Shifted-Gompertz model vector \code{w} needs to be in the form of 
+#'   For the Shifted-Gompertz curve vector \code{w} needs to be in the form of 
 #'   \code{("a", "b", "c", "m")}. Where "a" is the x-axis displacement
 #'   coefficient, "b" determines the growth rate, "c" is the shifting parameter
 #'   and "m" sets, similarly to Bass model, the market potential (saturation
@@ -75,20 +62,14 @@
 #'   
 #' @example examples/example_seqdiffusion.R
 #' 
-#' @references Bass, F.M., 1969. A new product growth for model consumer
-#'   durables. Management Science 15(5), 215-227.
-#'   
-#' @references Bemmaor, A. 1994. Modeling the Diffusion of New Durable Goods:
-#'   Word-of-Mouth Effect versus Consumer Heterogeneity. In G. Laurent, G.L.
-#'   Lilien and B. Pras (Eds.). Research Traditions in Marketing. Boston:
-#'   Kluwer, pp. 201-223.
+#' @inherit diffusion references
 #' 
-#' @references Jukic, D., Kralik, G. and Scitovski, R., 2004. Least-squares
-#'   fitting Gompertz curve. Journal of Computational and Applied Mathematics,
-#'   169, 359-375.
+#' @seealso \code{\link{plot.seqdiffusion}} and \code{\link{print.seqdiffusion}}.   
 #'   
 #' @author Oliver Schaer, \email{info@@oliverschaer.ch}, 
 #' @author Nikoloas Kourentzes, \email{nikoloas@@kourentzes.com}
+#' 
+#' @keywords internal
 #' 
 #' @rdname seqdiffusion  
 #' @export seqdiffusion
@@ -99,9 +80,6 @@ seqdiffusion <- function(x, cleanlead = c(TRUE, FALSE), prew = NULL, l = 2,
                          type = c("bass", "gompertz", "sgompertz"),
                          optim = c("nm", "hj"), maxiter = Inf, opttol = 1.e-06){
   
-  # todo:
-  # - maybe this can be further simplified and merged to diffusion package as well?
-
   type <- match.arg(type, c("bass", "gompertz", "sgompertz"))
   optim <- match.arg(optim, c("nm", "hj"))
   verbose <- verbose[1]
@@ -144,7 +122,24 @@ seqdiffusion <- function(x, cleanlead = c(TRUE, FALSE), prew = NULL, l = 2,
                    class = "seqdiffusion"))
 }
 
+#' Print sequentially fitted diffusion curves.
+#'
+#' Outputs the result of sequentially fitted diffusion curves.
+#'
+#' @param x \code{seqdiffusion} object, produced using \code{\link{seqdiffusion}}.
+#' @param ... Unused argument.
+#'
+#' @return None. Console output only. 
+#' @author Oliver Schaer, \email{info@@oliverschaer.ch}, 
+#' @author Nikoloas Kourentzes, \email{nikoloas@@kourentzes.com}
+#' @seealso \code{\link{seqdiffusion}}.
+#' @keywords internal
+#' @examples
+#'  fit <- seqdiffusion(tsibm)
+#'  print(fit)
+#'
 #' @export
+#' @method print seqdiffusion
 print.seqdiffusion <- function(x,...){
   # Print console output for bass
   # x, object estimated using bass
@@ -189,8 +184,25 @@ print.seqdiffusion <- function(x,...){
   
 }
 
-#' @method plot seqdiffusion
+#' Plot sequentially fitted diffusion curves.
+#'
+#' Produces a plot of sequentially fitted diffusion curves.
+#'
+#' @param x \code{seqdiffusion} object, produced using \code{\link{seqdiffusion}}.
+#' @param cumulative If TRUE plot cumulative adoption.
+#' @param ... Unused argument.
+#'
+#' @return None. Function produces a plot.
+#' @author Oliver Schaer, \email{info@@oliverschaer.ch}, 
+#' @author Nikoloas Kourentzes, \email{nikoloas@@kourentzes.com}
+#' @seealso \code{\link{seqdiffusion}}.
+#' @keywords internal
+#' @examples
+#'  fit <- seqdiffusion(tsibm)
+#'  plot(fit)
+#'
 #' @export
+#' @method plot seqdiffusion
 plot.seqdiffusion <- function(x, cumulative = c(FALSE, TRUE),...){
   # Plot sequential bass curves
   # x, object estimated using bass

@@ -1,3 +1,13 @@
+#### v.0.2.4.000 (03/01/17) ####
+
+changes
+- Fixed roxygen2 documentation
+- Fixed datasets
+- Added difcurve function to produce curves for given parameters
+- Reintroduced predict, print and plot functions for diffusion objects
+- Created new diffusion class for outputs of diffusion()
+- Hidden (until fixed) seqdiffusion and norton-bass
+
 #### v.0.2.3.911 (27/05/17) ####
 
 changes

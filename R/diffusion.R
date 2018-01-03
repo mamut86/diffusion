@@ -1,12 +1,10 @@
-#' diffusion
-#' 
-#' \code{diffusion} fit various diffusion curves.
+#' Fit various diffusion curves.
 #' 
 #' This function fits diffusion curves that can be of \code{"bass"}, 
 #' \code{"gompertz"} or \code{"sgompertz"} type. 
 #' 
 #' @section Bass curve:
-#' The optimisation of the Bass model is initialisated by the linear
+#' The optimisation of the Bass curve is initialisated by the linear
 #' aproximation suggested in Bass (1969).
 #' 
 #' @section Gompertz curve:
@@ -21,47 +19,52 @@
 #' curve is therefore used as an estimator for the remaining initial parameters.
 #' 
 #' @param x vector with adoption per period
-#' @param w vector of model parameters (see note). If provided no estimation
+#' @param w vector of curve parameters (see note). If provided no estimation
 #'   is done.
-#' @param cleanlead removes leading zeros for fitting purposes (default == T)
-#' @param prew the \code{w} of the previous generation. This is used for
-#'   sequential fitting.
-#' @param l the l-norm (1 is absolute errors, 2 is squared errors)
+#' @param cleanlead removes leading zeros for fitting purposes (default == TRUE)
+#' @param prew Experimental. Ignore!
+# #'  the \code{w} of the previous generation. This is used for
+# #'  sequential fitting.
+#' @param l the l-norm (1 is absolute errors, 2 is squared errors).
 #' @param cumulative If TRUE optimisation is done on cumulative adoption.
-#' @param pvalreps bootstrap repetitions to estimate (marginal) p-values
-#' @param eliminate if TRUE eliminates insignificant parameters from the
-#'   estimation. Forces \code{pvalreps = 1000} if left to 0.
-#' @param sig significance level used to eliminate parameters
+#' @param pvalreps Experimental. Ignore!
+# #' bootstrap repetitions to estimate (marginal) p-values
+#' @param eliminate Experimental. Ignore!
+# #'   if TRUE eliminates insignificant parameters from the
+# #'   estimation. Forces \code{pvalreps = 1000} if left to 0.
+#' @param sig Experimental. Ignore! 
+# #' significance level used to eliminate parameters
 #' @param verbose if TRUE console output is provided during estimation (default
-#'   == F)
-#' @param type diffusion model to use. This can be "bass", "gompertz" and "sgompertz"
+#'   == FALSE)
+#' @param type diffusion curve to use. This can be "bass", "gompertz" and "sgompertz"
 #' @param optim optimization method to use. This can be "nm" for Nelder-Meade or "hj" for Hooke-Jeeves.
 #' @param maxiter number of iterations the optimser takes (default ==
 #'   \code{10000} for "nm" and \code{Inf} for "hj")
 #' @param opttol Tolerance for convergence (default == 1.e-06)
 #' 
-#' @return returns list of:
+#' @return Returns an object of class \code{diffusion}, which contains:
 #' \itemize{
-#' \item \code{type} diffusion model type used
+#' \item \code{type} diffusion curve type used
 #' \item \code{call} calls function fitted
 #' \item \code{w} named vector of fitted parameters
 #' \item \code{x} actuals
 #' \item \code{fit} fitted values of model
+#' \item \code{frc} forecasts for future periods. This is \code{NULL} until \code{\link{predict.diffusion}} is called.
 #' \item \code{mse} insample Mean Squared Error
 #' \item \code{prew} the \code{w} of the previous generation
 #' \item \code{pval} p-values for \code{w}
 #' }
 #' 
-#' @note vector \code{w} needs to be provided for the Bass model in the order of
+#' @note vector \code{w} needs to be provided for the Bass curve in the order of
 #'   \code{"p", "q", "m"}, where "p" is the coefficient of innovation, "q" is the
-#'   coeficient of imitation and "m" is the market size coefficient.
+#'   coefficient of imitation and "m" is the market size coefficient.
 #'   
-#'   For the Gompertz model vector \code{w} needs to be in the form of
+#'   For the Gompertz curve, vector \code{w} needs to be in the form of
 #'   \code{("a", "b", "m")}. Where "a" is the x-axis displacement coefficient, "b"
 #'   determines the growth rate and "m" sets, similarly to Bass model, the
 #'   market potential (saturation point).
 #'   
-#'   For the Shifted-Gompertz model vector \code{w} needs to be in the form of 
+#'   For the Shifted-Gompertz curve, vector \code{w} needs to be in the form of 
 #'   \code{("a", "b", "c", "m")}. Where "a" is the x-axis displacement
 #'   coefficient, "b" determines the growth rate, "c" is the shifting parameter
 #'   and "m" sets, similarly to Bass model, the market potential (saturation
@@ -69,26 +72,25 @@
 #'   
 #' @example examples/example_diffusion.R
 #' 
-#' @references Bass, F.M., 1969. A new product growth for model consumer
-#'   durables. Management Science 15(5), 215-227.
+#' @references
+#' \itemize{
+#' \item{For an introduction to diffusion curves see: Ord K., Fildes R., Kourentzes N. (2017) \href{http://kourentzes.com/forecasting/2017/10/16/new-forecasting-book-principles-of-business-forecasting-2e/}{Principles of Business Forecasting 2e}. \emph{Wessex Press Publishing Co.}, Chapter 12.}
+#' \item{Bass, F.M., 1969. A new product growth for model consumer durables. Management Science 15(5), 215-227.}
+#' \item{Bemmaor, A. 1994. Modeling the Diffusion of New Durable Goods: Word-of-Mouth Effect versus Consumer Heterogeneity. In G. Laurent, G.L. Lilien and B. Pras (Eds.). Research Traditions in Marketing. Boston: Kluwer, pp. 201-223.}
+#' \item{Jukic, D., Kralik, G. and Scitovski, R., 2004. Least-squares fitting Gompertz curve. Journal of Computational and Applied Mathematics, 169, 359-375.}
+#' }
 #'   
-#' @references Bemmaor, A. 1994. Modeling the Diffusion of New Durable Goods:
-#'   Word-of-Mouth Effect versus Consumer Heterogeneity. In G. Laurent, G.L.
-#'   Lilien and B. Pras (Eds.). Research Traditions in Marketing. Boston:
-#'   Kluwer, pp. 201-223.
-#' 
-#' @references Jukic, D., Kralik, G. and Scitovski, R., 2004. Least-squares
-#'   fitting Gompertz curve. Journal of Computational and Applied Mathematics,
-#'   169, 359-375.
+#' @seealso \code{\link{predict.diffusion}}, \code{\link{plot.diffusion}} and \code{\link{print.diffusion}}.   
 #'   
 #' @note Parameters are estimated by 
 #' minimising the Mean Squared Error with a Subplex algorithm from the nloptr
-#' package. Optionally p-values of the coefficients can be determined via
-#' bootstraping. Furthermore, the bootstrapping allows to remove insignificant
-#' parameters from the optimisation process.   
+#' package. 
+# #' Optionally p-values of the coefficients can be determined via
+# #' bootstraping. Furthermore, the bootstrapping allows to remove insignificant
+# #' parameters from the optimisation process.   
 #'   
-#' @seealso \code{\link{seqdiffusion}} for sequential diffusion model fitting
-#'   across product generations.
+# #' @seealso \code{\link{seqdiffusion}} for sequential diffusion model fitting
+# #'   across product generations.
 #'   
 #' @author Oliver Schaer, \email{info@@oliverschaer.ch}, 
 #' @author Nikoloas Kourentzes, \email{nikoloas@@kourentzes.com}
@@ -134,19 +136,9 @@ diffusion <- function(x, w = NULL, cleanlead = c(TRUE, FALSE), prew = NULL,
   
   mse <- mean((x - fit[,2])^2)
   
-  switch(type,
-         "bass" = out <- structure(list("type" = "Bass", "call" = sys.call(),
-                                      "w" = w, "x" = x, "fit" = fit,
-                                      "mse" = mse, "prew" = prew, "pval" = pval),
-                                 class = "bass"),
-         "gompertz" = out <- structure(list("type" = "Gompertz", "call" = sys.call(),
-                                          "w" = w, "x" = x, "fit" = fit,
-                                          "mse" = mse, "prew" = prew, "pval" = pval),
-                                     class = "gompertz"),
-         "sgompertz" = out <- structure(list("type" = "SGompertz", "call" = sys.call(),
-                                           "w" = w, "x" = x, "fit" = fit,"mse" = mse,
-                                           "prew" = prew, "pval" = pval),
-                                      class = "sgompertz"))
+  out <- structure(list("type" = type, "call" = sys.call(),
+                        "w" = w, "x" = x, "fit" = fit, "frc" = NULL, 
+                        "mse" = mse, "prew" = prew, "pval" = pval), class="diffusion")
   return(out)
 }
 
@@ -405,12 +397,34 @@ diffusionEstim <- function(x, l = 2, cumulative = c(FALSE, TRUE),
   
 }
 
+#' Plot a fitted diffusion curve.
+#'
+#' Produces a plot of a fitted diffusion curve.
+#'
+#' @param x \code{diffusion} object, produced using \code{\link{diffusion}}.
+#' @param cumulative If TRUE plot cumulative adoption.
+#' @param ... Unused argument.
+#'
+#' @return None. Function produces a plot.
+#' @author Oliver Schaer, \email{info@@oliverschaer.ch}, 
+#' @author Nikoloas Kourentzes, \email{nikoloas@@kourentzes.com}
+#' @seealso \code{\link{diffusion}}.
+#' @examples
+#'  fit <- diffusion(tschicken[, 2])
+#'  plot(fit)
+#'
+#' @export
+#' @method plot diffusion
+plot.diffusion <- function(x, cumulative = c(FALSE, TRUE), ...){
+  diffusionPlot(x, cumulative = cumulative, ...)
+}
+
 diffusionPlot <- function(x, cumulative = c(FALSE, TRUE), ...){
-  # Plot diffusion curves
+  # Internal function: plot diffusion curves
   # x, object estimated using diffusion
   # cumulative, if TRUE plot cumulative adoption
   
-  type <- class(x)
+  type <- tolower(x$type)
   # set numbers of elements to be plotted, i.e. including innov. and immiat.
   switch(type,
          "bass" = elmt <- 3,
@@ -422,8 +436,8 @@ diffusionPlot <- function(x, cumulative = c(FALSE, TRUE), ...){
   # Colorbrewer colours
   cmp <- c("#E41A1C", "#377EB8", "#4DAF4A")
   # Check if forecasts exist and construct xx
-  if (exists("xhat", where = x)){
-    xx <- c(1, (length(x$x) + length(x$mean)))
+  if (!is.null(x$frc)){
+    xx <- c(1, (length(x$x) + dim(x$frc)[1]))
   } else {
     xx <- c(1, (length(x$x)))
   }
@@ -431,7 +445,11 @@ diffusionPlot <- function(x, cumulative = c(FALSE, TRUE), ...){
   if (cumulative == FALSE){
     
     # Get yy min-max
-    yy <- range(cbind(x$x, x$fit[, 2:(1 + elmt)]))
+    if (!is.null(x$frc)){
+      yy <- range(c(x$x, x$fit[, 2:(1 + elmt)], x$frc[, 2:(1 + elmt)]))
+    } else {
+      yy <- range(cbind(x$x, x$fit[, 2:(1 + elmt)]))
+    }
     yy <- yy + c(-1, 1) * 0.04 * diff(yy)
     yy[1] <- max(0, yy[1])
     
@@ -442,9 +460,9 @@ diffusionPlot <- function(x, cumulative = c(FALSE, TRUE), ...){
       lines(x$fit[, 1+i], col = cmp[i])
     }
     # Check if forecasts exist and plot
-    if (exists("xhat", where = x)){
+    if (!is.null(x$frc)){
       for (i in 1:elmt){
-        lines((length(x$x)+1):xx[2], x$xhat[, i+1], col=cmp[i])
+        lines((length(x$x)+1):xx[2], x$frc[, i+1], col=cmp[i])
       }
     }
     legend("topleft", c("Adoption", "Innovators", "Imitators")[1:elmt],
@@ -454,7 +472,11 @@ diffusionPlot <- function(x, cumulative = c(FALSE, TRUE), ...){
     # Cumulative plot
     
     # Get yy min-max
-    yy <- range(cbind(cumsum(x$x), x$fit[, 1]))
+    if (!is.null(x$frc)){
+      yy <- range(c(cumsum(x$x), x$frc[, 1]))
+    } else {
+      yy <- range(cbind(cumsum(x$x), x$fit[, 1]))
+    }
     yy <- yy + c(-1,1) * 0.04 * diff(yy)
     yy[1] <- max(0, yy[1])
     
@@ -470,11 +492,11 @@ diffusionPlot <- function(x, cumulative = c(FALSE, TRUE), ...){
     }
     
     # Check if forecasts exist and plot
-    if (exists("xhat", where = x)){
+    if (!is.null(x$frc)){
       fstart <- apply(x$fit, 2, cumsum)[length(x$x), 2:(1+elmt)]
       for (i in 1:elmt){
         lines((length(x$x)+1):xx[2],
-              cumsum(x$xhat[, i+1]) + fstart[i], col = cmp[i])
+              cumsum(x$frc[, i+1]) + fstart[i], col = cmp[i])
       }
     }
     legend("bottomright", c("Adoption", "Innovators", "Imitators")[1:elmt],
@@ -482,8 +504,29 @@ diffusionPlot <- function(x, cumulative = c(FALSE, TRUE), ...){
   }
 }
 
+#' Print a fitted diffusion curve.
+#'
+#' Outputs the result of a fitted diffusion curve.
+#'
+#' @param x \code{diffusion} object, produced using \code{\link{diffusion}}.
+#' @param ... Unused argument.
+#'
+#' @return None. Console output only. 
+#' @author Oliver Schaer, \email{info@@oliverschaer.ch}, 
+#' @author Nikoloas Kourentzes, \email{nikoloas@@kourentzes.com}
+#' @seealso \code{\link{diffusion}}.
+#' @examples
+#'  fit <- diffusion(tschicken[, 2])
+#'  print(fit)
+#'
+#' @export
+#' @method print diffusion
+print.diffusion <- function(x, ...){
+  diffusionPrint(x, ...)
+}
+
 diffusionPrint <- function(x, ...){
-  # Print console output for diffusion models
+  # Internal function: print console output for diffusion models
   # x, object estimated using diffusion
   
   type <- tolower(x$type)
@@ -515,4 +558,132 @@ diffusionPrint <- function(x, ...){
   print(temp)
   writeLines("")
   writeLines(paste("sigma:", round(sqrt(x$mse), 4)))
+}
+
+#' Calculates the values for various diffusion curves, given some parameters.
+#' 
+#' This function calculates the values of diffusion curves that can be of \code{"bass"}, 
+#' \code{"gompertz"} or \code{"sgompertz"} type, given some parameters. 
+#' 
+#' @param n number of periods to calculate values for.
+#' @param w vector of curve parameters (see note). If the argument model is used this is ignored.
+#' @param type diffusion curve to use. This can be "bass", "gompertz" and "sgompertz".
+#' @param model if provided \code{w} and \code{type} are taken from an object of class \code{diffusion}, the output of \code{\link{diffusion}}.
+#' 
+#' @return Returns a matrix of values with each row being a period.
+#' 
+#' @note \code{w} needs to be provided for the Bass model in the order of
+#'   \code{"p", "q", "m"}, where "p" is the coefficient of innovation, "q" is the
+#'   coefficient of imitation and "m" is the market size coefficient.
+#'   
+#'   For the Gompertz model vector \code{w} needs to be in the form of
+#'   \code{("a", "b", "m")}. Where "a" is the x-axis displacement coefficient, "b"
+#'   determines the growth rate and "m" sets, similarly to Bass model, the
+#'   market potential (saturation point).
+#'   
+#'   For the Shifted-Gompertz model vector \code{w} needs to be in the form of 
+#'   \code{("a", "b", "c", "m")}. Where "a" is the x-axis displacement
+#'   coefficient, "b" determines the growth rate, "c" is the shifting parameter
+#'   and "m" sets, similarly to Bass model, the market potential (saturation
+#'   point).
+#'   
+#' @examples 
+#'   diffusioncurve(w=c(0.01,0.1,10),20)
+#'   
+#' @seealso \code{\link{diffusion}} for fitting a diffusion curve.
+#'   
+#' @author Oliver Schaer, \email{info@@oliverschaer.ch}, 
+#' @author Nikoloas Kourentzes, \email{nikoloas@@kourentzes.com}
+#' 
+#' @rdname difcurve 
+#' @export difcurve
+difcurve <- function(n, w=c(0.01,0.1,10), type=c("bass", "gompertz", "sgompertz"),curve=NULL){
+  
+  # Check inputs
+  if (!is.null(curve)){
+    if (class(curve) == "diffusion"){
+      type <- curve$type
+      w <- curve$w
+    }
+  } else {
+    type <- match.arg(type, c("bass", "gompertz", "sgompertz"))
+    if (type == "sgompertz"){
+      if (length(w) != 4){
+        stop("sgompertz requires 4 parameters.")
+      }
+    } else {
+      if (length(w) != 3){
+        stop("bass and gompertz require 3 parameters.")
+      }
+    }
+  }
+  
+  if (n < 1){
+    stop("At least 1 point must be generated!")
+  }
+  
+  switch(type,
+         "bass" = {y <- bassCurve(n, w)},
+         "gompertz" = {y <- gompertzCurve(n, w)},
+         "sgompertz" = {y <- sgompertzCurve(n, w)})
+  
+  return(y)
+  
+}
+
+#' Predict future periods of a fitted diffusion curve.
+#'
+#' Calculates the values for h future periods of a fitted diffusion curve.
+#'
+#' @param object \code{diffusion} object, produced using \code{\link{diffusion}}.
+#' @param h Forecast horizon. 
+#' @param ... Unused argument.
+#'
+#' @return Returns an object of class \code{diffusion}, which contains:
+#' \itemize{
+#' \item \code{type} diffusion curve type used
+#' \item \code{call} calls function fitted
+#' \item \code{w} named vector of fitted parameters
+#' \item \code{x} actuals
+#' \item \code{fit} fitted values of model
+#' \item \code{frc} forecasts for future periods.
+#' \item \code{mse} insample Mean Squared Error
+#' \item \code{prew} the \code{w} of the previous generation
+#' \item \code{pval} p-values for \code{w}
+#' }
+#' 
+#' @note This function populates the matrix frc of the \code{diffusion} object used as input.
+#' 
+#' @author Oliver Schaer, \email{info@@oliverschaer.ch}, 
+#' @author Nikoloas Kourentzes, \email{nikoloas@@kourentzes.com}
+#' @seealso \code{\link{diffusion}}.
+#' @examples
+#'  fit <- diffusion(tschicken[, 2])
+#'  fti <- predict(fit,20)
+#'  plot(fit)
+#'
+#' @export
+#' @method predict diffusion
+predict.diffusion <- function(object,h=10,...){
+  # Calculate forecasts for fitted diffusion curves
+  
+  if (h < 1){
+    stop("Horizon h must be positive integer.")
+  }
+  
+  type <- object$type
+  w <- object$w
+  n <- length(object$x) + h
+  
+  switch(type,
+         "bass" = {y <- bassCurve(n, w)},
+         "gompertz" = {y <- gompertzCurve(n, w)},
+         "sgompertz" = {y <- sgompertzCurve(n, w)})
+  
+  y <- y[(n-h):n,]
+  
+  object$frc <- y
+  
+  return(object)
+  
 }

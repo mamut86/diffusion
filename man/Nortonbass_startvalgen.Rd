@@ -2,7 +2,7 @@
 % Please edit documentation in R/nortonbass.R
 \name{Nortonbass_startvalgen}
 \alias{Nortonbass_startvalgen}
-\title{Nortonbass_error}
+\title{Fits Norton Bass curve and estimated RMSE}
 \usage{
 Nortonbass_startvalgen(x, gstart, flexpq, startval.met)
 }
@@ -20,8 +20,9 @@ Nortonbass_startvalgen(x, gstart, flexpq, startval.met)
 starting values for all parameters
 }
 \description{
-\code{Nortonbass_error} fits Norton Bass curve and estimated RMSE
+Fits Norton Bass curve and estimated RMSE
 }
 \author{
 Oliver Schaer, \email{info@oliverschaer.ch}
 }
+\keyword{internal}
