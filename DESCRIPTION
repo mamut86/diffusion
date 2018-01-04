@@ -9,7 +9,7 @@ Authors@R: c(person("Oliver", "Schaer", email = "info@oliverschaer.ch",
 URL: https://github.com/mamut86/diffusion
 BugReports: https://github.com/mamut86/diffusion/issues
 Description: Various diffusion models to forecast new product growth. Currently
-    the package contains Bass, Gompertz and Shifted Gompertz curves.
+    the package contains Bass, Gompertz and Gamma/Shifted Gompertz curves.
 License: GPL (>=2)
 Encoding: UTF-8
 LazyData: true
