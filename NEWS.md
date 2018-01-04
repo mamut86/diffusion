@@ -1,3 +1,9 @@
+#### v.0.2.4.001 (04/01/17) ####
+
+changes
+- renamed sgompertz function to gsgompertz to reflect the correct name Gamma/Shifted Gompertz
+- fixed some missing functions in norton-bass function
+
 #### v.0.2.4.000 (03/01/17) ####
 
 changes

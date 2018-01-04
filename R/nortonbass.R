@@ -1,53 +1,51 @@
 #' Norton-Bass model
-#'
-#' \code{Nortonbass} fits a generational Bass model proposed by Norton and Bass
-#' (1987). Each subsequent generation influences the sales of the previous
+#' 
+#' \code{Nortonbass} fits a generational Bass model proposed by Norton and Bass 
+#' (1987). Each subsequent generation influences the sales of the previous 
 #' generation. The set of equation is estimated simulataneously.
 #' 
-#' @param x matrix or dataframe containing demand for each generation in
+#' @param x matrix or dataframe containing demand for each generation in 
 #'   non-cumulative form.
-#' @param startval.met Different methods of obtaining starting values.
-#' \describe{
-#'   \item{\code{"2ST"}}{Two stage approach taking \code{"BB"} method first and
-#'   then re-estimate if \code{flexpq == T} (default)}
-#'   \item{\code{"BB"}}{Bass
-#'   and Bass (2004) method which sets \eqn{p_{1,\dots,j} = 0.003, q_{1,\dots,j}
-#'   = 0.05}{pj = 0.003, qj = 0.05} and \eqn{m_j}{mj} is the maximum observed
-#'   value for generation \eqn{j}{j}}
-#'   \item{\code{"iBM"}}{Fits individual Bass
-#'   models and uses this as estimators. In case \code{flexpq == F} the median
-#'   of p and q is used }}
-#' @param estim.met Estimation method, \code{"BOBYQA"} see \code{\link[systemfit]{nlsystemfit}}
-#'   (\code{BOBYQA} default)
-#' @param gstart optional vector with starting points of generations#'   
+#' @param startval.met Different methods of obtaining starting values. 
+#'   \describe{ \item{\code{"2ST"}}{Two stage approach taking \code{"BB"} method
+#'   first and then re-estimate if \code{flexpq == T} (default)} 
+#'   \item{\code{"BB"}}{Bass and Bass (2004) method which sets
+#'   \eqn{p_{1,\dots,j} = 0.003, q_{1,\dots,j} = 0.05}{pj = 0.003, qj = 0.05}
+#'   and \eqn{m_j}{mj} is the maximum observed value for generation \eqn{j}{j}} 
+#'   \item{\code{"iBM"}}{Fits individual Bass models and uses this as
+#'   estimators. In case \code{flexpq == F} the median of p and q is used }}
+#' @param estim.met Estimation method, \code{"BOBYQA"} see
+#'   \code{\link[systemfit]{nlsystemfit}} (\code{BOBYQA} default)
+#' @param gstart optional vector with starting points of generations#'
 #' @param startval an optional Vector with starting for manual estimation
-#' @param flexpq If \code{TRUE}, generations will have independent p and q
-#'   values as suggested by Islam and Maed (1997)
+#' @param flexpq If \code{TRUE}, generations will have independent p and q 
+#'   values as suggested by Islam and Maed (1997). Note that model might
+#'   not converge.
 #'   
 #' @return \code{coef}: coefficients for p, q and m
-#' 
+#'   
 #' @details For starting values the Vector values need to be named in the case 
-#'   \code{flexpq == T}
+#'   \code{flexpq == T} 
 #'   \eqn{p_1,\dots,p_j,q_1,\dots,q_j,m_1,\dots,m_j}{p1,..,pj,q1,...,qj,m1,...,mj}.
-#'    In the case of \code{flexpq == F} \eqn{p_1, q_1, m_1,\dots, m_j}{p1,
+#'    In the case of \code{flexpq == F} \eqn{p_1, q_1, m_1,\dots, m_j}{p1, 
 #'   q1,m1,..., mj}.
 #'   
-#'   If \code{gstart} is not provided, the generation starting points will be
+#'   If \code{gstart} is not provided, the generation starting points will be 
 #'   detected automatically selecting the first value that is non-zero.
-#'    
-#' @references Norton, J.A. and Bass, F.M., 1987. A Diffusion Theory Model of
-#'   Adoption and Substitution for Successive Generations of High-Technology
+#'   
+#' @references Norton, J.A. and Bass, F.M., 1987. A Diffusion Theory Model of 
+#'   Adoption and Substitution for Successive Generations of High-Technology 
 #'   Products.
-#' @references Islam, T. and Meade, N., 1997. The Diffusion of Successive
-#'   Generations of a Technology: A More General Model. Technological
+#' @references Islam, T. and Meade, N., 1997. The Diffusion of Successive 
+#'   Generations of a Technology: A More General Model. Technological 
 #'   Forecasting and Social Change, 56, 49-60.
 #' @author Oliver Schaer, \email{info@@oliverschaer.ch}
-#' 
+#'   
 #' @keywords internal
-#' 
+#'   
 #' @example examples/example_nortonbass.R
-#'  
-#' @rdname Nortonbass  
+#'   
+#' @rdname Nortonbass
 #' @export Nortonbass
 
 Nortonbass <- function(x, startval.met = c("2ST", "BB", "iBM"),
@@ -259,7 +257,9 @@ Nortonbass_startvalgen <- function(x, gstart, flexpq, startval.met){
   if (startval.met == "iBM") {
     
     for (i in 1:gn) {
-      fitBass <- Bass_estim(x[gstart[i]:n, i], estim = "nls")
+      # fitBass <- Bass_estim(x, estim = "nls")
+      fitBass <- diffusion(x[gstart[i]:n, i], type = "bass", optim = "nm")$w
+      
       # print(fitBass)
       names(fitBass) <- c(paste0("p", i), paste0("q", i), paste0("m", i))
       startval <- c(startval, fitBass)

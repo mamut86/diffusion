@@ -1,4 +1,4 @@
-# shifted-Gompertz function ----------------------------------------------------
+# gamma/shifted Gompertz (G/SG) function ----------------------------------------------------
 #
 # References
 # Bemmaor, A.C. 1994. Modeling the Diffusion of New Durable Goods: Word-of-Mouth
@@ -11,7 +11,7 @@
 #
 # author Oliver Schaer, info@oliverschaer.ch
 
-sgompertzCurve <- function(n, w){
+gsgCurve <- function(n, w){
   # Generate Gompertz curve
   # n, sample size
   # w, vector of parameters
@@ -27,7 +27,7 @@ sgompertzCurve <- function(n, w){
   return(Y)
 }
 
-sgompertzInit <- function(x, l){
+gsgInit <- function(x, l){
   # Internal function: get initial values
   # We use Bass model paramters assuming c = 1 (see Bemmaor 1994)
   # x in adoption per period
@@ -47,7 +47,7 @@ sgompertzInit <- function(x, l){
   return(w)
 }
 
-sgompertzCost <- function(w, x, l, w.idx = rep(TRUE, 3), prew = NULL,
+gsgCost <- function(w, x, l, w.idx = rep(TRUE, 3), prew = NULL,
                           cumulative = c(TRUE, FALSE)) {
   # Internal function: cost function for numerical optimisation
   # w, current parameters
@@ -67,12 +67,12 @@ sgompertzCost <- function(w, x, l, w.idx = rep(TRUE, 3), prew = NULL,
   
   # If sequential construct total parameters
   if (is.null(prew)){
-    sgompw <- w.all    
+    gsgpw <- w.all    
   } else {
-    sgompw <- w.all + prew
+    gsgpw <- w.all + prew
   }
   
-  fit <- sgompertzCurve(n, sgompw)
+  fit <- gsgCurve(n, gsgpw)
 
   if (cumulative == FALSE) {
     if (l == -1) {
@@ -99,7 +99,7 @@ sgompertzCost <- function(w, x, l, w.idx = rep(TRUE, 3), prew = NULL,
   }
   
   # Ensure positive coefficients
-  if (any(sgompw <= 0)){
+  if (any(gsgpw <= 0)){
     se <- 10e200
   }
   

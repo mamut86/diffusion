@@ -1,7 +1,7 @@
 #' Enables fitting various sequential diffusion curves.
 #' 
 #' This function fits diffusion curves of the type \code{"bass"}, 
-#' \code{"gompertz"} or \code{sgompertz} across generations. Parameters are 
+#' \code{"gompertz"} or \code{gsgompertz} across generations. Parameters are 
 #' estimated for each generation individually by minimising the Mean Squared 
 #' Error with the subplex algorithm from the nloptr package. Optionally p-values
 #' of the coefficients can be determined via bootstraping. Furthermore, the
@@ -27,7 +27,7 @@
 #' @param verbose if TRUE console output is provided during estimation (default
 #'   == F)
 #' @param type of diffusion curve to use. This can be "bass", "gompertz" and
-#'   "sgompertz"
+#'   "gsgompertz"
 #' @param optim optimization method to use. This can be "nm" for Nelder-Meade or
 #'   "hj" for Hooke-Jeeves. #' @param maxiter number of iterations the optimser
 #'   takes (default == \code{10000} for "nm" and \code{Inf} for "hj")
@@ -77,10 +77,10 @@ seqdiffusion <- function(x, cleanlead = c(TRUE, FALSE), prew = NULL, l = 2,
                          cumulative = c(TRUE, FALSE),
                          pvalreps = 0, eliminate = c(FALSE, TRUE), sig = 0.05, 
                          verbose = c(FALSE, TRUE),
-                         type = c("bass", "gompertz", "sgompertz"),
+                         type = c("bass", "gompertz", "gsgompertz"),
                          optim = c("nm", "hj"), maxiter = Inf, opttol = 1.e-06){
   
-  type <- match.arg(type, c("bass", "gompertz", "sgompertz"))
+  type <- match.arg(type, c("bass", "gompertz", "gsgompertz"))
   optim <- match.arg(optim, c("nm", "hj"))
   verbose <- verbose[1]
   eliminate <- eliminate[1]
@@ -165,7 +165,7 @@ print.seqdiffusion <- function(x,...){
                                     "M size", "pval.", "sigma"),
          gompertz = colnames(temp) <- c("p coef.", "pval.", "q coef.", "pval.",
                                         "M size", "pval.", "sigma"),
-         sgompertz = colnames(temp) <- c("a coef.", "pval.", "b coef.",
+         gsgompertz = colnames(temp) <- c("a coef.", "pval.", "b coef.",
                                          "pval.", "c coef", "pval.", "M size",
                                          "pval.", "sigma"))
   
@@ -175,7 +175,7 @@ print.seqdiffusion <- function(x,...){
 #   } else if (type == "gompertz"){
 #     colnames(temp) <- c("a coef.", "pval.", "b coef.",
 #                         "pval.", "M size", "pval.", "sigma")
-#   } else if (type == "sgompertz"){
+#   } else if (type == "gsgompertz"){
 #     colnames(temp) <- c("a coef.", "pval.", "b coef.",
 #                         "pval.", "c coef", "pval.", "M size", "pval.", "sigma")
 #   }

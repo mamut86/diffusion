@@ -1,7 +1,7 @@
 #' Fit various diffusion curves.
 #' 
 #' This function fits diffusion curves that can be of \code{"bass"}, 
-#' \code{"gompertz"} or \code{"sgompertz"} type. 
+#' \code{"gompertz"} or \code{"gsgompertz"} type. 
 #' 
 #' @section Bass curve:
 #' The optimisation of the Bass curve is initialisated by the linear
@@ -13,7 +13,7 @@
 #' Gompertz curve. This makes the market potential parameter equivalent to the Bass curves's 
 #' and the market potential from Bass curve is used for initialisation.
 #' 
-#' @section Shifted-Gompertz curve:
+#' @section Gamma/Shifted Gompertz (G/SG):
 #' The curve is initialised by assuming the shift operator to be 1 and 
 #' becomes equivalent to the Bass curve, as shown in Bemmaor (1994). A Bass
 #' curve is therefore used as an estimator for the remaining initial parameters.
@@ -36,7 +36,7 @@
 # #' significance level used to eliminate parameters
 #' @param verbose if TRUE console output is provided during estimation (default
 #'   == FALSE)
-#' @param type diffusion curve to use. This can be "bass", "gompertz" and "sgompertz"
+#' @param type diffusion curve to use. This can be "bass", "gompertz" and "gsgompertz"
 #' @param optim optimization method to use. This can be "nm" for Nelder-Meade or "hj" for Hooke-Jeeves.
 #' @param maxiter number of iterations the optimser takes (default ==
 #'   \code{10000} for "nm" and \code{Inf} for "hj")
@@ -100,10 +100,10 @@
 diffusion <- function(x, w = NULL, cleanlead = c(TRUE, FALSE), prew = NULL,
                       l = 2, cumulative = c(TRUE, FALSE), pvalreps = 0, 
                       eliminate = c(FALSE, TRUE), sig = 0.05, verbose = c(FALSE, TRUE),
-                      type = c("bass", "gompertz", "sgompertz"),
+                      type = c("bass", "gompertz", "gsgompertz"),
                       optim = c("nm", "hj"), maxiter = Inf, opttol = 1.e-06){
 
-  type <- match.arg(type, c("bass", "gompertz", "sgompertz"))
+  type <- match.arg(type, c("bass", "gompertz", "gsgompertz"))
   optim <- match.arg(optim, c("nm", "hj"))
   
   cleanlead <- cleanlead[1]
@@ -132,7 +132,7 @@ diffusion <- function(x, w = NULL, cleanlead = c(TRUE, FALSE), prew = NULL,
   switch(type,
          "bass" = fit <- bassCurve(n, w),
          "gompertz" = fit <- gompertzCurve(n, w),
-         "sgompertz" = fit <- sgompertzCurve(n, w))
+         "gsgompertz" = fit <- gsgCurve(n, w))
   
   mse <- mean((x - fit[,2])^2)
   
@@ -147,7 +147,7 @@ diffusionEstim <- function(x, l = 2, cumulative = c(FALSE, TRUE),
                            prew = NULL, pvalreps = 0,
                            eliminate = c(FALSE, TRUE), sig = 0.05,
                            verbose = c(FALSE, TRUE),
-                           type = c("bass", "gompertz", "sgompertz"),
+                           type = c("bass", "gompertz", "gsgompertz"),
                            optim = c("nm", "hj"), maxiter = Inf, opttol = 1.e-06)
                           {
   # Internal function: estimate bass parameters 
@@ -165,7 +165,7 @@ diffusionEstim <- function(x, l = 2, cumulative = c(FALSE, TRUE),
   # maxiter, numbers of iterations the optimsation algorithm is allowed to take
   # opttol, convergence tolerance for nm and hj algorithm
   
-  type <- match.arg(type,c("bass", "gompertz", "sgompertz"))
+  type <- match.arg(type,c("bass", "gompertz", "gsgompertz"))
   optim <- match.arg(optim,c("nm", "hj"))
   
   # Defaults 
@@ -176,7 +176,7 @@ diffusionEstim <- function(x, l = 2, cumulative = c(FALSE, TRUE),
   # determine how many paramters needed
   if (type == "bass" | type == "gompertz"){
     no.w <- 3
-  } else if (type == "sgompertz"){
+  } else if (type == "gsgompertz"){
     no.w <- 4
   }
   
@@ -207,7 +207,7 @@ diffusionEstim <- function(x, l = 2, cumulative = c(FALSE, TRUE),
   switch(type,
          "bass" = init <- bassInit(x),
          "gompertz" = init <- gompertzInit(x, l),
-         "sgompertz" = init <- sgompertzInit(x, l))
+         "gsgompertz" = init <- gsgInit(x, l))
   
   init <- init - prew
   init[(init + prew) <= 0] <- 0.00001
@@ -247,7 +247,7 @@ diffusionEstim <- function(x, l = 2, cumulative = c(FALSE, TRUE),
                                                 control = list(maxfeval = maxiter, tol = opttol),
                                                 x = x, l = l, prew = prew,
                                                 cumulative=cumulative, w.idx = w.idx)$par,
-               "sgompertz" = w.new <- dfoptim::nmk(par = init[w.idx], fn = sgompertzCost,
+               "gsgompertz" = w.new <- dfoptim::nmk(par = init[w.idx], fn = gsgCost,
                                                  control = list(maxfeval = maxiter, tol = opttol),
                                                  x = x, l = l, prew = prew,
                                                  cumulative = cumulative, w.idx = w.idx)$par)
@@ -278,12 +278,12 @@ diffusionEstim <- function(x, l = 2, cumulative = c(FALSE, TRUE),
                                                 control = list(maxfeval = maxiter, tol = opttol, info = verbose),
                                                 x = x, l = l, prew = prew,
                                                 cumulative = cumulative, w.idx = w.idx)$par,
-               "sgompertz" = w.new <- dfoptim::hjk(par = init[w.idx],
-                                                 fn = sgompertzCost,
+               "gsgompertz" = w.new <- dfoptim::hjk(par = init[w.idx],
+                                                 fn = gsgCost,
                                                   control = list(maxfeval = maxiter, tol = opttol, info = verbose),
                                                   x = x, l = l, prew = prew,
                                                  cumulative = cumulative, w.idx = w.idx)$par
-               # "sgompertz" = opt <- dfoptim::hjkb(par = init[w.idx], fn = sgompertzCost, upper = up, lower = lo,
+               # "gsgompertz" = opt <- dfoptim::hjkb(par = init[w.idx], fn = gsgCost, upper = up, lower = lo,
                #                                   control = list(maxfeval = maxiter, tol = opttol, info = T),
                #                                   x = x, l = l, prew = prew,
                #                                   w.idx = w.idx)
@@ -300,7 +300,7 @@ diffusionEstim <- function(x, l = 2, cumulative = c(FALSE, TRUE),
                                    cumulative = cumulative, prew = prew, w.idx = w.idx)$par,
              "gompertz" = w.new <- optim(init[w.idx], gompertzCost, method = "BFGS", x = x, l = l,
                                        cumulative = cumulative, prew = prew, w.idx = w.idx)$par,
-             "sgompertz" = w.new <- optim(init[w.idx], sgompertzCost, method = "BFGS", x = x, l = l,
+             "gsgompertz" = w.new <- optim(init[w.idx], gsgCost, method = "BFGS", x = x, l = l,
                                         cumulative = cumulative, prew = prew, w.idx = w.idx)$par)
 
     }
@@ -313,7 +313,7 @@ diffusionEstim <- function(x, l = 2, cumulative = c(FALSE, TRUE),
       switch(type,
              "bass" = yhat <- bassCurve(n, prew+w)[, 2],
              "gompertz" = yhat <- gompertzCurve(n, prew+w)[, 2],
-             "sgompertz" = yhat <- sgompertzCurve(n, prew+w)[, 2])
+             "sgompertz" = yhat <- gsgCurve(n, prew+w)[, 2])
       
       sigma <- sqrt(mean((x - yhat)^2))
       
@@ -332,8 +332,8 @@ diffusionEstim <- function(x, l = 2, cumulative = c(FALSE, TRUE),
                                                     type = "bass")$w - prew,
                "gompertz" = wboot[i,] <- diffusionEstim(yboot[, i], l, pvalreps = 0,
                                                         type = "gompertz")$w - prew,
-               "sgompertz" = wboot[i,] <- diffusionEstim(yboot[, i], l, pvalreps = 0,
-                                                         type = "sgompertz")$w - prew)
+               "gsgompertz" = wboot[i,] <- diffusionEstim(yboot[, i], l, pvalreps = 0,
+                                                         type = "gsgompertz")$w - prew)
       }
 
       pval <- colMeans((abs(wboot - 
@@ -376,7 +376,7 @@ diffusionEstim <- function(x, l = 2, cumulative = c(FALSE, TRUE),
       switch(type,
              "bass" = rownames(temp) <- c("p", "q", "m"),
              "gompertz" = rownames(temp) <- c("a", "b", "m"),
-             "sgompertz" = rownames(temp) <- c("a", "b", "c", "m"))
+             "gsgompertz" = rownames(temp) <- c("a", "b", "c", "m"))
       
       colnames(temp) <- c("Estimate", "p-value", "")[1:(2+!is.na(loc))]
       print(temp, quote = FALSE)
@@ -429,7 +429,7 @@ diffusionPlot <- function(x, cumulative = c(FALSE, TRUE), ...){
   switch(type,
          "bass" = elmt <- 3,
          "gompertz" = elmt <- 1,
-         "sgompertz" = elmt <- 1)
+         "gsgompertz" = elmt <- 1)
   
   cumulative <- cumulative[1]
   
@@ -550,7 +550,7 @@ diffusionPrint <- function(x, ...){
          "gompertz" = rownames(temp) <- c("a - displacement",
                                           "b - growth",
                                           "m - Market potential"),
-         "sgompertz" = rownames(temp) <- c("a - displacement",
+         "gsgompertz" = rownames(temp) <- c("a - displacement",
                                            "b - growth",
                                            "c - shift",
                                            "m - Market potential"))
@@ -563,11 +563,11 @@ diffusionPrint <- function(x, ...){
 #' Calculates the values for various diffusion curves, given some parameters.
 #' 
 #' This function calculates the values of diffusion curves that can be of \code{"bass"}, 
-#' \code{"gompertz"} or \code{"sgompertz"} type, given some parameters. 
+#' \code{"gompertz"} or \code{"gsgompertz"} type, given some parameters. 
 #' 
 #' @param n number of periods to calculate values for.
 #' @param w vector of curve parameters (see note). If argument curve is used, this is ignored.
-#' @param type diffusion curve to use. This can be "bass", "gompertz" and "sgompertz". If argument curve is used, this is ignored.
+#' @param type diffusion curve to use. This can be "bass", "gompertz" and "gsgompertz". If argument curve is used, this is ignored.
 #' @param curve if provided \code{w} and \code{type} are taken from an object of class \code{diffusion}, the output of \code{\link{diffusion}}.
 #' 
 #' @return Returns a matrix of values with each row being a period.
@@ -597,7 +597,7 @@ diffusionPrint <- function(x, ...){
 #' 
 #' @rdname difcurve 
 #' @export difcurve
-difcurve <- function(n, w=c(0.01,0.1,10), type=c("bass", "gompertz", "sgompertz"),curve=NULL){
+difcurve <- function(n, w=c(0.01,0.1,10), type=c("bass", "gompertz", "gsgompertz"),curve=NULL){
   
   # Check inputs
   if (!is.null(curve)){
@@ -606,10 +606,10 @@ difcurve <- function(n, w=c(0.01,0.1,10), type=c("bass", "gompertz", "sgompertz"
       w <- curve$w
     }
   } else {
-    type <- match.arg(type, c("bass", "gompertz", "sgompertz"))
-    if (type == "sgompertz"){
+    type <- match.arg(type, c("bass", "gompertz", "gsgompertz"))
+    if (type == "gsgompertz"){
       if (length(w) != 4){
-        stop("sgompertz requires 4 parameters.")
+        stop("gsgompertz requires 4 parameters.")
       }
     } else {
       if (length(w) != 3){
@@ -625,7 +625,7 @@ difcurve <- function(n, w=c(0.01,0.1,10), type=c("bass", "gompertz", "sgompertz"
   switch(type,
          "bass" = {y <- bassCurve(n, w)},
          "gompertz" = {y <- gompertzCurve(n, w)},
-         "sgompertz" = {y <- sgompertzCurve(n, w)})
+         "gsgompertz" = {y <- gsgCurve(n, w)})
   
   return(y)
   
@@ -678,7 +678,7 @@ predict.diffusion <- function(object,h=10,...){
   switch(type,
          "bass" = {y <- bassCurve(n, w)},
          "gompertz" = {y <- gompertzCurve(n, w)},
-         "sgompertz" = {y <- sgompertzCurve(n, w)})
+         "gsgompertz" = {y <- gsgCurve(n, w)})
   
   y <- y[(n-h):n,]
   

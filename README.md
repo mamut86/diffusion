@@ -7,7 +7,7 @@ Currently the following diffusion models are implemented:
 
 1. Bass model
 2. Gompertz model
-3. Shifted Gompertz model
+3. Gamma/Shifted Gompertz model
 4. Norton-Bass model for generational modelling (not working well)
 
 
