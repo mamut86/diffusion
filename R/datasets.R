@@ -2,7 +2,7 @@
 #' 
 #' A dataset containing the weekly sales of Assassins Creeds game.
 #' 
-#' @name tsac
+#' @name tsAc
 #' @docType data
 #' @format A matrix with 380 observations and 8 variables
 #' \describe{
@@ -23,7 +23,7 @@ NULL
 #' 
 #' A dataset containing the broadcast subscribers to UK market 4Q 2011 to 2Q 2016.
 #' 
-#' @name tsbroadband
+#' @name tsBroadband
 #' @docType data
 #' @format A data frame with 51 observations and 4 variables
 #' \describe{
@@ -40,7 +40,7 @@ NULL
 #' 
 #' A dataset containing the yearly stock of cars in the Netherlands (1965-1989).
 #' 
-#' @name tscarstock
+#' @name tsCarstock
 #' @docType data
 #' @format A data frame with 25 observations and 3 variables
 #' \describe{
@@ -57,7 +57,7 @@ NULL
 #' 
 #' A dataset containing the average weekly female chicken weight.
 #' 
-#' @name tschicken
+#' @name tsChicken
 #' @docType data
 #' @format A data frame with 13 observations and 2 variables
 #' \describe{
@@ -75,7 +75,7 @@ NULL
 #' A dataset containing the first four generations of yearly IBM general-purpose
 #' computers installations in the USA.
 #' 
-#' @name tsibm
+#' @name tsIbm
 #' @docType data
 #' @format A data frame with 24 observations and 4 variables \describe{
 #' \item{SIU1}{1st generation}
@@ -94,7 +94,7 @@ NULL
 #' A dataset containing the monthly market share of Safri browser generations
 #' from Safari 4.0 to Safari 10.
 #' 
-#' @name tssafari
+#' @name tsSafari
 #' @docType data
 #' @format A data frame with 98 observations and 13 variables \describe{ 
 #'   \item{Date}{Log file date}
@@ -119,7 +119,7 @@ NULL
 #' A dataset containing the 3WSchools monthly log files of Windows operating 
 #' system usage from March 2003 until February 2017.
 #' 
-#' @name tswindows
+#' @name tsWindows
 #' @docType data
 #' @format A data frame with 168 observations and 9 variables \describe{ 
 #'   \item{Date}{Log file date} \item{Win10}{Usage of Windows 10} 

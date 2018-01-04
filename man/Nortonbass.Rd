@@ -9,108 +9,99 @@ Nortonbass(x, startval.met = c("2ST", "BB", "iBM"), estim.met = c("BOBYQA",
   flexpq = F)
 }
 \arguments{
-\item{x}{matrix or dataframe containing demand for each generation in
+\item{x}{matrix or dataframe containing demand for each generation in 
 non-cumulative form.}
 
-\item{startval.met}{Different methods of obtaining starting values.
-\describe{
-  \item{\code{"2ST"}}{Two stage approach taking \code{"BB"} method first and
-  then re-estimate if \code{flexpq == T} (default)}
-  \item{\code{"BB"}}{Bass
-  and Bass (2004) method which sets \eqn{p_{1,\dots,j} = 0.003, q_{1,\dots,j}
-  = 0.05}{pj = 0.003, qj = 0.05} and \eqn{m_j}{mj} is the maximum observed
-  value for generation \eqn{j}{j}}
-  \item{\code{"iBM"}}{Fits individual Bass
-  models and uses this as estimators. In case \code{flexpq == F} the median
-  of p and q is used }}}
+\item{startval.met}{Different methods of obtaining starting values. 
+\describe{ \item{\code{"2ST"}}{Two stage approach taking \code{"BB"} method
+first and then re-estimate if \code{flexpq == T} (default)} 
+\item{\code{"BB"}}{Bass and Bass (2004) method which sets
+\eqn{p_{1,\dots,j} = 0.003, q_{1,\dots,j} = 0.05}{pj = 0.003, qj = 0.05}
+and \eqn{m_j}{mj} is the maximum observed value for generation \eqn{j}{j}} 
+\item{\code{"iBM"}}{Fits individual Bass models and uses this as
+estimators. In case \code{flexpq == F} the median of p and q is used }}}
 
-\item{estim.met}{Estimation method, \code{"BOBYQA"} see \code{\link[systemfit]{nlsystemfit}}
-(\code{BOBYQA} default)}
+\item{estim.met}{Estimation method, \code{"BOBYQA"} see
+\code{\link[systemfit]{nlsystemfit}} (\code{BOBYQA} default)}
 
 \item{gstart}{optional vector with starting points of generations#'}
 
 \item{startval}{an optional Vector with starting for manual estimation}
 
-\item{flexpq}{If \code{TRUE}, generations will have independent p and q
-values as suggested by Islam and Maed (1997)}
+\item{flexpq}{If \code{TRUE}, generations will have independent p and q 
+values as suggested by Islam and Maed (1997). Note that model might
+not converge.}
 }
 \value{
 \code{coef}: coefficients for p, q and m
 }
 \description{
-\code{Nortonbass} fits a generational Bass model proposed by Norton and Bass
-(1987). Each subsequent generation influences the sales of the previous
+\code{Nortonbass} fits a generational Bass model proposed by Norton and Bass 
+(1987). Each subsequent generation influences the sales of the previous 
 generation. The set of equation is estimated simulataneously.
 }
 \details{
 For starting values the Vector values need to be named in the case 
-  \code{flexpq == T}
+  \code{flexpq == T} 
   \eqn{p_1,\dots,p_j,q_1,\dots,q_j,m_1,\dots,m_j}{p1,..,pj,q1,...,qj,m1,...,mj}.
-   In the case of \code{flexpq == F} \eqn{p_1, q_1, m_1,\dots, m_j}{p1,
+   In the case of \code{flexpq == F} \eqn{p_1, q_1, m_1,\dots, m_j}{p1, 
   q1,m1,..., mj}.
   
-  If \code{gstart} is not provided, the generation starting points will be
+  If \code{gstart} is not provided, the generation starting points will be 
   detected automatically selecting the first value that is non-zero.
 }
 \examples{
-### Norton Bass
-
-\dontrun{
-  data(ibm)
+ \dontrun{
+   fitNB1 <- Nortonbass(tsIbm, startval.met = "2ST", estim.met = "OLS",
+                        startval = NULL, flexpq = F, gstart = NULL)
+   fitNB2 <- Nortonbass(tsIbm, startval.met = "2ST", estim.met = "SUR",
+                        startval = NULL, flexpq = F, gstart = NULL)
+   # using BOBYQA algorithm
+   fitNB3 <- Nortonbass(tsIbm, startval.met = "2ST", estim.met = "BOBYQA",
+                        startval = NULL, flexpq = F, gstart = NULL)
+   # Create some plots
+   plot(tsibm[, 1],type = "l", ylim=c(0,35000))
+   lines(tsibm[, 2],col ="blue")
+   lines(tsibm[, 3],col ="green")
+   lines(tsibm[, 4],col ="pink")
+   lines(fitNB1$fit$fitted[[1]], col = "black", lty = 2)
+   lines(fitNB1$fit$fitted[[2]], col = "blue", lty = 2)
+   lines(fitNB1$fit$fitted[[3]], col = "green", lty = 2)
+   lines(fitNB1$fit$fitted[[4]], col = "pink", lty = 2)
+   lines(fitNB2$fit$fitted[[1]], col = "black", lty = 3)
+   lines(fitNB2$fit$fitted[[2]], col = "blue", lty = 3)
+   lines(fitNB2$fit$fitted[[3]], col = "green", lty = 3)
+   lines(fitNB2$fit$fitted[[4]], col = "pink", lty = 3)
+   lines(fitNB3$fit$fitted[[1]], col = "black", lty = 4)
+   lines(fitNB3$fit$fitted[[2]], col = "blue", lty = 4)
+   lines(fitNB3$fit$fitted[[3]], col = "green", lty = 4)
+   lines(fitNB3$fit$fitted[[4]], col = "pink", lty = 4)
+   # read out RMSE
+   fitNB1$fit$RMSE[[1]]
+   fitNB1$fit$RMSE[[2]]
+   fitNB1$fit$RMSE[[3]]
+   fitNB1$fit$RMSE[[4]]
+   fitNB2$fit$RMSE[[1]]
+   fitNB2$fit$RMSE[[2]]
+   fitNB2$fit$RMSE[[3]]
+   fitNB2$fit$RMSE[[4]]
+   fitNB3$fit$RMSE[[1]]
+   fitNB3$fit$RMSE[[2]]
+   fitNB3$fit$RMSE[[3]]
+   fitNB3$fit$RMSE[[4]]
+ }
+ \dontshow{
+   Nortonbass(tsIbm, startval.met = "2ST", estim.met = "OLS", startval = NULL, flexpq = FALSE, gstart = NULL)
+ }
   
-  fitNB1 <- Nortonbass(ibm, startval.met = "2ST", estim.met = "OLS",
-                       startval = NULL, flexpq = F, gstart = NULL)
-  fitNB2 <- Nortonbass(ibm, startval.met = "2ST", estim.met = "OLS",
-                       startval = NULL, flexpq = T, gstart = NULL)
-  # using BOBYQA algorithm
-  fitNB3 <- Nortonbass(ibm, startval.met = "2ST", estim.met = "BOBYQA",
-                       startval = NULL, flexpq = F, gstart = NULL)
-  
-  # Create some plots
-  plot(ibm[, 1],type = "l", ylim=c(0,35000))
-  lines(ibm[, 2],col ="blue")
-  lines(ibm[, 3],col ="green")
-  lines(ibm[, 4],col ="pink")
-  
-  lines(fitNB1$fit$fitted[[1]], col = "black", lty = 2)
-  lines(fitNB1$fit$fitted[[2]], col = "blue", lty = 2)
-  lines(fitNB1$fit$fitted[[3]], col = "green", lty = 2)
-  lines(fitNB1$fit$fitted[[4]], col = "pink", lty = 2)
-  
-  lines(fitNB2$fit$fitted[[1]], col = "black", lty = 3)
-  lines(fitNB2$fit$fitted[[2]], col = "blue", lty = 3)
-  lines(fitNB2$fit$fitted[[3]], col = "green", lty = 3)
-  lines(fitNB2$fit$fitted[[4]], col = "pink", lty = 3)
-  
-  lines(fitNB3$fit$fitted[[1]], col = "black", lty = 4)
-  lines(fitNB3$fit$fitted[[2]], col = "blue", lty = 4)
-  lines(fitNB3$fit$fitted[[3]], col = "green", lty = 4)
-  lines(fitNB3$fit$fitted[[4]], col = "pink", lty = 4)
-  
-  # read out RMSE
-  fitNB1$fitted[[1]]$rmse
-  fitNB1$fitted[[2]]$rmse
-  fitNB1$fitted[[3]]$rmse
-  fitNB1$fitted[[4]]$rmse
-  
-  fitNB2$fitted[[1]]$rmse
-  fitNB2$fitted[[2]]$rmse
-  fitNB2$fitted[[3]]$rmse
-  fitNB2$fitted[[4]]$rmse
-  
-  fitNB3$fit$RMSE[[1]]
-  fitNB3$fit$RMSE[[2]]
-  fitNB3$fit$RMSE[[3]]
-  fitNB3$fit$RMSE[[4]]
-}
 }
 \references{
-Norton, J.A. and Bass, F.M., 1987. A Diffusion Theory Model of
-  Adoption and Substitution for Successive Generations of High-Technology
+Norton, J.A. and Bass, F.M., 1987. A Diffusion Theory Model of 
+  Adoption and Substitution for Successive Generations of High-Technology 
   Products.
 
-Islam, T. and Meade, N., 1997. The Diffusion of Successive
-  Generations of a Technology: A More General Model. Technological
+Islam, T. and Meade, N., 1997. The Diffusion of Successive 
+  Generations of a Technology: A More General Model. Technological 
   Forecasting and Social Change, 56, 49-60.
 }
 \author{

@@ -7,7 +7,7 @@
 diffusion(x, w = NULL, cleanlead = c(TRUE, FALSE), prew = NULL, l = 2,
   cumulative = c(TRUE, FALSE), pvalreps = 0, eliminate = c(FALSE, TRUE),
   sig = 0.05, verbose = c(FALSE, TRUE), type = c("bass", "gompertz",
-  "sgompertz"), optim = c("nm", "hj"), maxiter = Inf, opttol = 1e-06)
+  "gsgompertz"), optim = c("nm", "hj"), maxiter = Inf, opttol = 1e-06)
 }
 \arguments{
 \item{x}{vector with adoption per period}
@@ -32,7 +32,7 @@ is done.}
 \item{verbose}{if TRUE console output is provided during estimation (default
 == FALSE)}
 
-\item{type}{diffusion curve to use. This can be "bass", "gompertz" and "sgompertz"}
+\item{type}{diffusion curve to use. This can be "bass", "gompertz" and "gsgompertz"}
 
 \item{optim}{optimization method to use. This can be "nm" for Nelder-Meade or "hj" for Hooke-Jeeves.}
 
@@ -57,7 +57,7 @@ Returns an object of class \code{diffusion}, which contains:
 }
 \description{
 This function fits diffusion curves that can be of \code{"bass"}, 
-\code{"gompertz"} or \code{"sgompertz"} type.
+\code{"gompertz"} or \code{"gsgompertz"} type.
 }
 \note{
 vector \code{w} needs to be provided for the Bass curve in the order of
@@ -93,7 +93,7 @@ Gompertz curve. This makes the market potential parameter equivalent to the Bass
 and the market potential from Bass curve is used for initialisation.
 }
 
-\section{Shifted-Gompertz curve}{
+\section{Gamma/Shifted Gompertz}{
 
 The curve is initialised by assuming the shift operator to be 1 and 
 becomes equivalent to the Bass curve, as shown in Bemmaor (1994). A Bass
@@ -101,15 +101,15 @@ curve is therefore used as an estimator for the remaining initial parameters.
 }
 
 \examples{
-# example for diffusion() function
-fitbass <- diffusion(tschicken[, 2], type = "bass")
-fitgomp <- diffusion(tschicken[, 2], type = "gompertz")
-fitsgomp <- diffusion(tschicken[, 2], type = "sgompertz")
+ fitbass <- diffusion(tsChicken[, 2], type = "bass")
+ fitgomp <- diffusion(tsChicken[, 2], type = "gompertz")
+ fitgsg <- diffusion(tsChicken[, 2], type = "gsgompertz")
+ 
+ # Produce some plots
+ plot(fitbass)
+ plot(fitgomp)
+ plot(fitgsg)
 
-# Produce some plots
-plot(fitbass)
-plot(fitgomp)
-plot(fitsgomp)
 }
 \references{
 \itemize{

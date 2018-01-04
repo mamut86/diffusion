@@ -20,7 +20,7 @@ None. Function produces a plot.
 Produces a plot of sequentially fitted diffusion curves.
 }
 \examples{
- fit <- seqdiffusion(tsibm)
+ fit <- seqdiffusion(tsIbm)
  plot(fit)
 
 }

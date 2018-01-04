@@ -13,7 +13,7 @@
 #' Gompertz curve. This makes the market potential parameter equivalent to the Bass curves's 
 #' and the market potential from Bass curve is used for initialisation.
 #' 
-#' @section Gamma/Shifted Gompertz (G/SG):
+#' @section Gamma/Shifted Gompertz:
 #' The curve is initialised by assuming the shift operator to be 1 and 
 #' becomes equivalent to the Bass curve, as shown in Bemmaor (1994). A Bass
 #' curve is therefore used as an estimator for the remaining initial parameters.
@@ -70,7 +70,15 @@
 #'   and "m" sets, similarly to Bass model, the market potential (saturation
 #'   point).
 #'   
-#' @example examples/example_diffusion.R
+#' @examples 
+#'  fitbass <- diffusion(tsChicken[, 2], type = "bass")
+#'  fitgomp <- diffusion(tsChicken[, 2], type = "gompertz")
+#'  fitgsg <- diffusion(tsChicken[, 2], type = "gsgompertz")
+#'  
+#'  # Produce some plots
+#'  plot(fitbass)
+#'  plot(fitgomp)
+#'  plot(fitgsg)
 #' 
 #' @references
 #' \itemize{
@@ -410,7 +418,7 @@ diffusionEstim <- function(x, l = 2, cumulative = c(FALSE, TRUE),
 #' @author Nikoloas Kourentzes, \email{nikoloas@@kourentzes.com}
 #' @seealso \code{\link{diffusion}}.
 #' @examples
-#'  fit <- diffusion(tschicken[, 2])
+#'  fit <- diffusion(tsChicken[, 2])
 #'  plot(fit)
 #'
 #' @export
@@ -516,7 +524,7 @@ diffusionPlot <- function(x, cumulative = c(FALSE, TRUE), ...){
 #' @author Nikoloas Kourentzes, \email{nikoloas@@kourentzes.com}
 #' @seealso \code{\link{diffusion}}.
 #' @examples
-#'  fit <- diffusion(tschicken[, 2])
+#'  fit <- diffusion(tsChicken[, 2])
 #'  print(fit)
 #'
 #' @export
@@ -572,16 +580,16 @@ diffusionPrint <- function(x, ...){
 #' 
 #' @return Returns a matrix of values with each row being a period.
 #' 
-#' @note \code{w} needs to be provided for the Bass model in the order of
+#' @note \code{w} needs to be provided for the Bass curve in the order of
 #'   \code{"p", "q", "m"}, where "p" is the coefficient of innovation, "q" is the
 #'   coefficient of imitation and "m" is the market size coefficient.
 #'   
-#'   For the Gompertz model vector \code{w} needs to be in the form of
+#'   For the Gompertz curve, vector \code{w} needs to be in the form of
 #'   \code{("a", "b", "m")}. Where "a" is the x-axis displacement coefficient, "b"
 #'   determines the growth rate and "m" sets, similarly to Bass model, the
 #'   market potential (saturation point).
 #'   
-#'   For the Shifted-Gompertz model vector \code{w} needs to be in the form of 
+#'   For the Shifted-Gompertz curve, vector \code{w} needs to be in the form of 
 #'   \code{("a", "b", "c", "m")}. Where "a" is the x-axis displacement
 #'   coefficient, "b" determines the growth rate, "c" is the shifting parameter
 #'   and "m" sets, similarly to Bass model, the market potential (saturation
@@ -658,7 +666,7 @@ difcurve <- function(n, w=c(0.01,0.1,10), type=c("bass", "gompertz", "gsgompertz
 #' @author Nikoloas Kourentzes, \email{nikoloas@@kourentzes.com}
 #' @seealso \code{\link{diffusion}}.
 #' @examples
-#'  fit <- diffusion(tschicken[, 2])
+#'  fit <- diffusion(tsChicken[, 2])
 #'  fti <- predict(fit,20)
 #'  plot(fit)
 #'

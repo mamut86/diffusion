@@ -10,7 +10,7 @@
 #' 
 #' @inheritSection diffusion Bass curve
 #' @inheritSection diffusion Gompertz curve
-#' @inheritSection diffusion Shifted-Gompertz curve
+#' @inheritSection diffusion Gamma/Shifted Gompertz
 #' 
 #' @param x matrix containing in each column the adoption per period for generation k
 #' @param w vector of curve parameters (see note). If provided no estimation
@@ -60,7 +60,9 @@
 #'   and "m" sets, similarly to Bass model, the market potential (saturation
 #'   point).
 #'   
-#' @example examples/example_seqdiffusion.R
+#' @examples 
+#'   fit <- seqdiffusion(tsIbm)
+#'   plot(fit)
 #' 
 #' @inherit diffusion references
 #' 
@@ -135,7 +137,7 @@ seqdiffusion <- function(x, cleanlead = c(TRUE, FALSE), prew = NULL, l = 2,
 #' @seealso \code{\link{seqdiffusion}}.
 #' @keywords internal
 #' @examples
-#'  fit <- seqdiffusion(tsibm)
+#'  fit <- seqdiffusion(tsIbm)
 #'  print(fit)
 #'
 #' @export
@@ -198,7 +200,7 @@ print.seqdiffusion <- function(x,...){
 #' @seealso \code{\link{seqdiffusion}}.
 #' @keywords internal
 #' @examples
-#'  fit <- seqdiffusion(tsibm)
+#'  fit <- seqdiffusion(tsIbm)
 #'  plot(fit)
 #'
 #' @export

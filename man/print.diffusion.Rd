@@ -18,7 +18,7 @@ None. Console output only.
 Outputs the result of a fitted diffusion curve.
 }
 \examples{
- fit <- diffusion(tschicken[, 2])
+ fit <- diffusion(tsChicken[, 2])
  print(fit)
 
 }

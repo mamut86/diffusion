@@ -20,7 +20,7 @@ None. Function produces a plot.
 Produces a plot of a fitted diffusion curve.
 }
 \examples{
- fit <- diffusion(tschicken[, 2])
+ fit <- diffusion(tsChicken[, 2])
  plot(fit)
 
 }

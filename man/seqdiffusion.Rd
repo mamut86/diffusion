@@ -7,7 +7,7 @@
 seqdiffusion(x, cleanlead = c(TRUE, FALSE), prew = NULL, l = 2,
   cumulative = c(TRUE, FALSE), pvalreps = 0, eliminate = c(FALSE, TRUE),
   sig = 0.05, verbose = c(FALSE, TRUE), type = c("bass", "gompertz",
-  "sgompertz"), optim = c("nm", "hj"), maxiter = Inf, opttol = 1e-06)
+  "gsgompertz"), optim = c("nm", "hj"), maxiter = Inf, opttol = 1e-06)
 }
 \arguments{
 \item{x}{matrix containing in each column the adoption per period for generation k}
@@ -32,7 +32,7 @@ estimation. Forces \code{pvalreps = 1000} if left to 0.}
 == F)}
 
 \item{type}{of diffusion curve to use. This can be "bass", "gompertz" and
-"sgompertz"}
+"gsgompertz"}
 
 \item{optim}{optimization method to use. This can be "nm" for Nelder-Meade or
 "hj" for Hooke-Jeeves. #' @param maxiter number of iterations the optimser
@@ -58,7 +58,7 @@ Returns an object of class \code{seqdiffusion}, which contains:
 }
 \description{
 This function fits diffusion curves of the type \code{"bass"}, 
-\code{"gompertz"} or \code{sgompertz} across generations. Parameters are 
+\code{"gompertz"} or \code{gsgompertz} across generations. Parameters are 
 estimated for each generation individually by minimising the Mean Squared 
 Error with the subplex algorithm from the nloptr package. Optionally p-values
 of the coefficients can be determined via bootstraping. Furthermore, the
@@ -95,7 +95,7 @@ Gompertz curve. This makes the market potential parameter equivalent to the Bass
 and the market potential from Bass curve is used for initialisation.
 }
 
-\section{Shifted-Gompertz curve}{
+\section{Gamma/Shifted Gompertz}{
 
 The curve is initialised by assuming the shift operator to be 1 and 
 becomes equivalent to the Bass curve, as shown in Bemmaor (1994). A Bass
@@ -103,10 +103,9 @@ curve is therefore used as an estimator for the remaining initial parameters.
 }
 
 \examples{
-# example for seqdiffusion() function
-  fit <- seqdiffusion(tsibm)
+  fit <- seqdiffusion(tsIbm)
   plot(fit)
-  
+
 }
 \references{
 \itemize{

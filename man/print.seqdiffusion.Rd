@@ -18,7 +18,7 @@ None. Console output only.
 Outputs the result of sequentially fitted diffusion curves.
 }
 \examples{
- fit <- seqdiffusion(tsibm)
+ fit <- seqdiffusion(tsIbm)
  print(fit)
 
 }

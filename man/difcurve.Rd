@@ -4,15 +4,15 @@
 \alias{difcurve}
 \title{Calculates the values for various diffusion curves, given some parameters.}
 \usage{
-difcurve(n, w = c(0.01, 0.1, 10), type = c("bass", "gompertz", "sgompertz"),
-  curve = NULL)
+difcurve(n, w = c(0.01, 0.1, 10), type = c("bass", "gompertz",
+  "gsgompertz"), curve = NULL)
 }
 \arguments{
 \item{n}{number of periods to calculate values for.}
 
 \item{w}{vector of curve parameters (see note). If argument curve is used, this is ignored.}
 
-\item{type}{diffusion curve to use. This can be "bass", "gompertz" and "sgompertz". If argument curve is used, this is ignored.}
+\item{type}{diffusion curve to use. This can be "bass", "gompertz" and "gsgompertz". If argument curve is used, this is ignored.}
 
 \item{curve}{if provided \code{w} and \code{type} are taken from an object of class \code{diffusion}, the output of \code{\link{diffusion}}.}
 }
@@ -21,19 +21,19 @@ Returns a matrix of values with each row being a period.
 }
 \description{
 This function calculates the values of diffusion curves that can be of \code{"bass"}, 
-\code{"gompertz"} or \code{"sgompertz"} type, given some parameters.
+\code{"gompertz"} or \code{"gsgompertz"} type, given some parameters.
 }
 \note{
-\code{w} needs to be provided for the Bass model in the order of
+\code{w} needs to be provided for the Bass curve in the order of
   \code{"p", "q", "m"}, where "p" is the coefficient of innovation, "q" is the
   coefficient of imitation and "m" is the market size coefficient.
   
-  For the Gompertz model vector \code{w} needs to be in the form of
+  For the Gompertz curve, vector \code{w} needs to be in the form of
   \code{("a", "b", "m")}. Where "a" is the x-axis displacement coefficient, "b"
   determines the growth rate and "m" sets, similarly to Bass model, the
   market potential (saturation point).
   
-  For the Shifted-Gompertz model vector \code{w} needs to be in the form of 
+  For the Shifted-Gompertz curve, vector \code{w} needs to be in the form of 
   \code{("a", "b", "c", "m")}. Where "a" is the x-axis displacement
   coefficient, "b" determines the growth rate, "c" is the shifting parameter
   and "m" sets, similarly to Bass model, the market potential (saturation

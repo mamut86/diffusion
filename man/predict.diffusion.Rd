@@ -34,7 +34,7 @@ Calculates the values for h future periods of a fitted diffusion curve.
 This function populates the matrix frc of the \code{diffusion} object used as input.
 }
 \examples{
- fit <- diffusion(tschicken[, 2])
+ fit <- diffusion(tsChicken[, 2])
  fti <- predict(fit,20)
  plot(fit)
 
