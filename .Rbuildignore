@@ -1,3 +1,6 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
 ^sync\.ffs_db$
+^testing$
+^NEWS\.md$
+^README\.Rmd$

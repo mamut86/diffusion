@@ -1,3 +1,9 @@
+#### v.0.2.5 (04/01/17) ####
+
+changes
+- updated naming for datasets
+- merged examples into main code
+
 #### v.0.2.4.001 (04/01/17) ####
 
 changes
