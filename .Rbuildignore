@@ -4,4 +4,4 @@
 ^testing$
 ^NEWS\.md$
 ^README\.Rmd$
-^\.travis\.ylm$
+^\.travis\.yml$
