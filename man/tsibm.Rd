@@ -10,13 +10,13 @@
 \item{SIU3}{3rd generation (starts 11 years after first generation)}
 \item{SIU4}{4th generation (starts 16 years after first generation)}}}
 \source{
-\url{http://www.bassbasement.org/F/N/BBDL/Bass and Bass 2004 AS.pdf}
+\url{https://goo.gl/VSEkgM}
 }
 \description{
 A dataset containing the first four generations of yearly IBM general-purpose
 computers installations in the USA.
 }
 \references{
-Bass, P.I. and Bass, F.M., 2004. IT Waves: Two Completed
+Bass, P.I. and Bass, F.M. 2004. IT Waves: Two Completed
   Generational Diffusion Models. Working Paper Basseconomics, 1-33.
 }

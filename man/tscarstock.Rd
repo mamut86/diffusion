@@ -14,6 +14,6 @@
 A dataset containing the yearly stock of cars in the Netherlands (1965-1989).
 }
 \references{
-Franses, P.H. (1994). Fitting a Gompertz curve. Journal of
+Franses, P.H. 1994. Fitting a Gompertz curve. Journal of
   Operational Research Society, 45, 109-113.
 }

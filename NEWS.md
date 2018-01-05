@@ -1,3 +1,8 @@
+#### v.0.2.6 (05/01/17) ####
+
+changes
+- fixed dataset urls
+
 #### v.0.2.5 (04/01/17) ####
 
 changes

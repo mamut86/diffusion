@@ -13,7 +13,7 @@
 A dataset containing the average weekly female chicken weight.
 }
 \references{
-Jukic, D., Kralik, G. and Scitovski, R. (2004). Least-square
+Jukic, D., Kralik, G. and Scitovski, R. 2004. Least-square
   fitting Gompertz curve. Journal of Computational and Applied Mathematics,
   169, 359-375.
 }

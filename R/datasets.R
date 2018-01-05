@@ -49,7 +49,7 @@ NULL
 #' \item{smoothed}{Smoothed stock numbers as described by Franses (1994)}
 #'   }
 #'   
-#' @references Franses, P.H. (1994). Fitting a Gompertz curve. Journal of
+#' @references Franses, P.H. 1994. Fitting a Gompertz curve. Journal of
 #'   Operational Research Society, 45, 109-113.
 NULL
 
@@ -65,7 +65,7 @@ NULL
 #' \item{weight}{Weight of the female chicken in Kg}
 #'   }
 #'   
-#' @references Jukic, D., Kralik, G. and Scitovski, R. (2004). Least-square
+#' @references Jukic, D., Kralik, G. and Scitovski, R. 2004. Least-square
 #'   fitting Gompertz curve. Journal of Computational and Applied Mathematics,
 #'   169, 359-375.
 NULL
@@ -83,10 +83,10 @@ NULL
 #' \item{SIU3}{3rd generation (starts 11 years after first generation)}
 #' \item{SIU4}{4th generation (starts 16 years after first generation)}}
 #'   
-#' @references Bass, P.I. and Bass, F.M., 2004. IT Waves: Two Completed
+#' @references Bass, P.I. and Bass, F.M. 2004. IT Waves: Two Completed
 #'   Generational Diffusion Models. Working Paper Basseconomics, 1-33.
-#' 
-#' @source \url{http://www.bassbasement.org/F/N/BBDL/Bass and Bass 2004 AS.pdf}
+#'   
+#' @source \url{https://goo.gl/VSEkgM}
 NULL
 
 #' Time series: Safari Browser market share
@@ -126,7 +126,7 @@ NULL
 #'   \item{Win8}{Usage of Windows 8} \item{Win7}{Usage of Windows 7} 
 #'   \item{Vista}{Usage of Windows Vista} \item{WinXP}{Usage of Windows XP} 
 #'   \item{Win2000}{Usage of Windows 2000} \item{Win98}{Usage of Windows 98} 
-#'   \item{Win95}{Usage of Windows 95} }
+#'   \item{Win95}{Usage of Windows 95}}
 #'   
 #' @note From March 2003 until January 2008 log file is only available
 #'   bi-monthly. To retain monthly consistency, values have been linearly
