@@ -1,12 +1,12 @@
 #' Enables fitting various sequential diffusion curves.
 #' 
-#' This function fits diffusion curves of the type \code{"bass"}, 
-#' \code{"gompertz"} or \code{gsgompertz} across generations. Parameters are 
-#' estimated for each generation individually by minimising the Mean Squared 
-#' Error with the subplex algorithm from the nloptr package. Optionally p-values
-#' of the coefficients can be determined via bootstraping. Furthermore, the
-#' bootstrapping allows to remove insignificant parameters from the optimisation
-#' process.
+#' This function fits diffusion curves of the type \code{"bass"},
+#' \code{"gompertz"}, \code{gsgompertz} or \code{weibull} across generations.
+#' Parameters are estimated for each generation individually by minimising the
+#' Mean Squared Error with the subplex algorithm from the nloptr package.
+#' Optionally p-values of the coefficients can be determined via bootstraping.
+#' Furthermore, the bootstrapping allows to remove insignificant parameters from
+#' the optimisation process.
 #' 
 #' @inheritSection diffusion Bass curve
 #' @inheritSection diffusion Gompertz curve
@@ -60,6 +60,11 @@
 #'   and "m" sets, similarly to Bass model, the market potential (saturation
 #'   point).
 #'   
+#'   For the Weibull curve, vector \code{w} needs to be in the form of
+#'   \cod{("a", "b", "m")}. Where "a" is the scale parameter, "b" determines the
+#'   shape. Together, "a" and "b" determine the stepness of the curve. The "m"
+#'   parameter sets the market potential (saturation point).
+#'   
 #' @examples 
 #'   fit <- seqdiffusion(tsIbm)
 #'   plot(fit)
@@ -79,10 +84,10 @@ seqdiffusion <- function(x, cleanlead = c(TRUE, FALSE), prew = NULL, l = 2,
                          cumulative = c(TRUE, FALSE),
                          pvalreps = 0, eliminate = c(FALSE, TRUE), sig = 0.05, 
                          verbose = c(FALSE, TRUE),
-                         type = c("bass", "gompertz", "gsgompertz"),
+                         type = c("bass", "gompertz", "gsgompertz", "weibull"),
                          optim = c("nm", "hj"), maxiter = Inf, opttol = 1.e-06){
   
-  type <- match.arg(type, c("bass", "gompertz", "gsgompertz"))
+  type <- match.arg(type, c("bass", "gompertz", "gsgompertz", "weibull"))
   optim <- match.arg(optim, c("nm", "hj"))
   verbose <- verbose[1]
   eliminate <- eliminate[1]
@@ -169,7 +174,9 @@ print.seqdiffusion <- function(x,...){
                                         "M size", "pval.", "sigma"),
          gsgompertz = colnames(temp) <- c("a coef.", "pval.", "b coef.",
                                          "pval.", "c coef", "pval.", "M size",
-                                         "pval.", "sigma"))
+                                         "pval.", "sigma"),
+         weibull = colnames(temp) <- c("a coef.", "pval.", "b coef.",
+                                          "pval.", "M size", "pval.", "sigma"))
   
 #   if (type == "bass"){
 #     colnames(temp) <- c("p coef.", "pval.", "q coef.", "pval.",

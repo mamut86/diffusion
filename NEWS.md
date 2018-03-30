@@ -1,26 +1,31 @@
-#### v.0.2.7 (05/01/17) ####
+#### v.0.3.0 (05/01/18) ####
+
+changes
+- added Weibull curve
+
+#### v.0.2.7 (05/01/18) ####
 
 changes
 - update description file
 
-#### v.0.2.6 (05/01/17) ####
+#### v.0.2.6 (05/01/18) ####
 
 changes
 - fixed dataset urls
 
-#### v.0.2.5 (04/01/17) ####
+#### v.0.2.5 (04/01/18) ####
 
 changes
 - updated naming for datasets
 - merged examples into main code
 
-#### v.0.2.4.001 (04/01/17) ####
+#### v.0.2.4.001 (04/01/18) ####
 
 changes
 - renamed sgompertz function to gsgompertz to reflect the correct name Gamma/Shifted Gompertz
 - fixed some missing functions in norton-bass function
 
-#### v.0.2.4.000 (03/01/17) ####
+#### v.0.2.4.000 (03/01/18) ####
 
 changes
 - Fixed roxygen2 documentation
