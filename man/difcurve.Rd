@@ -4,8 +4,8 @@
 \alias{difcurve}
 \title{Calculates the values for various diffusion curves, given some parameters.}
 \usage{
-difcurve(n, w = c(0.01, 0.1, 10), type = c("bass", "gompertz",
-  "gsgompertz"), curve = NULL)
+difcurve(n, w = c(0.01, 0.1, 10), type = c("bass", "gompertz", "gsgompertz",
+  "weibull"), curve = NULL)
 }
 \arguments{
 \item{n}{number of periods to calculate values for.}
@@ -21,7 +21,7 @@ Returns a matrix of values with each row being a period.
 }
 \description{
 This function calculates the values of diffusion curves that can be of \code{"bass"}, 
-\code{"gompertz"} or \code{"gsgompertz"} type, given some parameters.
+\code{"gompertz"}, \code{"gsgompertz"} or \code{"weibull} type, given some parameters.
 }
 \note{
 \code{w} needs to be provided for the Bass curve in the order of
@@ -38,6 +38,11 @@ This function calculates the values of diffusion curves that can be of \code{"ba
   coefficient, "b" determines the growth rate, "c" is the shifting parameter
   and "m" sets, similarly to Bass model, the market potential (saturation
   point).
+  
+  For the Weibull curve, vector \code{w} needs to be in the form of
+  \cod{("a", "b", "m")}. Where "a" is the scale parameter, "b" determines the
+  shape. Together, "a" and "b" determine the stepness of the curve. The "m"
+  parameter sets the market potential (saturation point).
 }
 \examples{
   difcurve(w=c(0.01,0.1,10),20)

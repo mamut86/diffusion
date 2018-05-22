@@ -7,7 +7,8 @@
 seqdiffusion(x, cleanlead = c(TRUE, FALSE), prew = NULL, l = 2,
   cumulative = c(TRUE, FALSE), pvalreps = 0, eliminate = c(FALSE, TRUE),
   sig = 0.05, verbose = c(FALSE, TRUE), type = c("bass", "gompertz",
-  "gsgompertz"), optim = c("nm", "hj"), maxiter = Inf, opttol = 1e-06)
+  "gsgompertz", "weibull"), optim = c("nm", "hj"), maxiter = Inf,
+  opttol = 1e-06)
 }
 \arguments{
 \item{x}{matrix containing in each column the adoption per period for generation k}
@@ -57,13 +58,13 @@ Returns an object of class \code{seqdiffusion}, which contains:
 }
 }
 \description{
-This function fits diffusion curves of the type \code{"bass"}, 
-\code{"gompertz"} or \code{gsgompertz} across generations. Parameters are 
-estimated for each generation individually by minimising the Mean Squared 
-Error with the subplex algorithm from the nloptr package. Optionally p-values
-of the coefficients can be determined via bootstraping. Furthermore, the
-bootstrapping allows to remove insignificant parameters from the optimisation
-process.
+This function fits diffusion curves of the type \code{"bass"},
+\code{"gompertz"}, \code{gsgompertz} or \code{weibull} across generations.
+Parameters are estimated for each generation individually by minimising the
+Mean Squared Error with the subplex algorithm from the nloptr package.
+Optionally p-values of the coefficients can be determined via bootstraping.
+Furthermore, the bootstrapping allows to remove insignificant parameters from
+the optimisation process.
 }
 \note{
 vector \code{w} needs to be provided for the Bass curve in the order of
@@ -80,6 +81,11 @@ vector \code{w} needs to be provided for the Bass curve in the order of
   coefficient, "b" determines the growth rate, "c" is the shifting parameter
   and "m" sets, similarly to Bass model, the market potential (saturation
   point).
+  
+  For the Weibull curve, vector \code{w} needs to be in the form of
+  \cod{("a", "b", "m")}. Where "a" is the scale parameter, "b" determines the
+  shape. Together, "a" and "b" determine the stepness of the curve. The "m"
+  parameter sets the market potential (saturation point).
 }
 \section{Bass curve}{
 
@@ -89,10 +95,11 @@ aproximation suggested in Bass (1969).
 
 \section{Gompertz curve}{
 
-The initialisation of the Gompertz curve uses the approach suggested by Jukic
-et al. (2004), but is adapted to allow for the non-exponential version of
-Gompertz curve. This makes the market potential parameter equivalent to the Bass curves's 
-and the market potential from Bass curve is used for initialisation.
+The initialisation of the Gompertz curve uses the
+approach suggested by Jukic et al. (2004), but is adapted to allow for the
+non-exponential version of Gompertz curve. This makes the market potential
+parameter equivalent to the Bass curves's and the market potential from
+Bass curve is used for initialisation.
 }
 
 \section{Gamma/Shifted Gompertz}{
@@ -113,6 +120,7 @@ curve is therefore used as an estimator for the remaining initial parameters.
 \item{Bass, F.M., 1969. A new product growth for model consumer durables. Management Science 15(5), 215-227.}
 \item{Bemmaor, A. 1994. Modeling the Diffusion of New Durable Goods: Word-of-Mouth Effect versus Consumer Heterogeneity. In G. Laurent, G.L. Lilien and B. Pras (Eds.). Research Traditions in Marketing. Boston: Kluwer, pp. 201-223.}
 \item{Jukic, D., Kralik, G. and Scitovski, R., 2004. Least-squares fitting Gompertz curve. Journal of Computational and Applied Mathematics, 169, 359-375.}
+\item{Sharif, N.M. and Islam, M.N. 1980. The Weibull Distribution as a General Model for Forecasting Technological Change. Technological Forecasting and Social Change, 18, 247-256.}
 }
 }
 \seealso{

@@ -7,7 +7,8 @@
 diffusion(x, w = NULL, cleanlead = c(TRUE, FALSE), prew = NULL, l = 2,
   cumulative = c(TRUE, FALSE), pvalreps = 0, eliminate = c(FALSE, TRUE),
   sig = 0.05, verbose = c(FALSE, TRUE), type = c("bass", "gompertz",
-  "gsgompertz"), optim = c("nm", "hj"), maxiter = Inf, opttol = 1e-06)
+  "gsgompertz", "weibull"), optim = c("nm", "hj"), maxiter = Inf,
+  opttol = 1e-06)
 }
 \arguments{
 \item{x}{vector with adoption per period}
@@ -17,17 +18,23 @@ is done.}
 
 \item{cleanlead}{removes leading zeros for fitting purposes (default == TRUE)}
 
-\item{prew}{Experimental. Ignore!}
+\item{prew}{Experimental. Ignore!
+the \code{w} of the previous generation. This is used for
+sequential fitting.}
 
 \item{l}{the l-norm (1 is absolute errors, 2 is squared errors).}
 
 \item{cumulative}{If TRUE optimisation is done on cumulative adoption.}
 
-\item{pvalreps}{Experimental. Ignore!}
+\item{pvalreps}{Experimental. Ignore!
+bootstrap repetitions to estimate (marginal) p-values}
 
-\item{eliminate}{Experimental. Ignore!}
+\item{eliminate}{Experimental. Ignore!
+if TRUE eliminates insignificant parameters from the
+estimation. Forces \code{pvalreps = 1000} if left to 0.}
 
-\item{sig}{Experimental. Ignore!}
+\item{sig}{Experimental. Ignore! 
+significance level used to eliminate parameters}
 
 \item{verbose}{if TRUE console output is provided during estimation (default
 == FALSE)}
@@ -74,10 +81,18 @@ vector \code{w} needs to be provided for the Bass curve in the order of
   coefficient, "b" determines the growth rate, "c" is the shifting parameter
   and "m" sets, similarly to Bass model, the market potential (saturation
   point).
+  
+  For the Weibull curve, vector \code{w} needs to be in the form of
+  \cod{("a", "b", "m")}. Where "a" is the scale parameter, "b" determines the
+  shape. Together, "a" and "b" determine the stepness of the curve. The "m"
+  parameter sets the market potential (saturation point).
 
 Parameters are estimated by 
 minimising the Mean Squared Error with a Subplex algorithm from the nloptr
-package.
+package. 
+Optionally p-values of the coefficients can be determined via
+bootstraping. Furthermore, the bootstrapping allows to remove insignificant
+parameters from the optimisation process.
 }
 \section{Bass curve}{
 
@@ -87,10 +102,11 @@ aproximation suggested in Bass (1969).
 
 \section{Gompertz curve}{
 
-The initialisation of the Gompertz curve uses the approach suggested by Jukic
-et al. (2004), but is adapted to allow for the non-exponential version of
-Gompertz curve. This makes the market potential parameter equivalent to the Bass curves's 
-and the market potential from Bass curve is used for initialisation.
+The initialisation of the Gompertz curve uses the
+approach suggested by Jukic et al. (2004), but is adapted to allow for the
+non-exponential version of Gompertz curve. This makes the market potential
+parameter equivalent to the Bass curves's and the market potential from
+Bass curve is used for initialisation.
 }
 
 \section{Gamma/Shifted Gompertz}{
@@ -100,15 +116,23 @@ becomes equivalent to the Bass curve, as shown in Bemmaor (1994). A Bass
 curve is therefore used as an estimator for the remaining initial parameters.
 }
 
+\section{Weibull}{
+
+The initialisation is obatained through by a linear approximation
+median-ranked OLS described in Sharif and Islam 1980.
+}
+
 \examples{
- fitbass <- diffusion(tsChicken[, 2], type = "bass")
- fitgomp <- diffusion(tsChicken[, 2], type = "gompertz")
- fitgsg <- diffusion(tsChicken[, 2], type = "gsgompertz")
+ fitbass <- diffusion(diff(tsChicken[, 2]), type = "bass")
+ fitgomp <- diffusion(diff(tsChicken[, 2]), type = "gompertz")
+ fitgsg <- diffusion(diff(tsChicken[, 2]), type = "gsgompertz")
+ fitgwb <- diffusion(diff(tsChicken[, 2]), type = "weibull")
  
  # Produce some plots
  plot(fitbass)
  plot(fitgomp)
  plot(fitgsg)
+ plot(fitgwb)
 
 }
 \references{
@@ -117,10 +141,14 @@ curve is therefore used as an estimator for the remaining initial parameters.
 \item{Bass, F.M., 1969. A new product growth for model consumer durables. Management Science 15(5), 215-227.}
 \item{Bemmaor, A. 1994. Modeling the Diffusion of New Durable Goods: Word-of-Mouth Effect versus Consumer Heterogeneity. In G. Laurent, G.L. Lilien and B. Pras (Eds.). Research Traditions in Marketing. Boston: Kluwer, pp. 201-223.}
 \item{Jukic, D., Kralik, G. and Scitovski, R., 2004. Least-squares fitting Gompertz curve. Journal of Computational and Applied Mathematics, 169, 359-375.}
+\item{Sharif, N.M. and Islam, M.N. 1980. The Weibull Distribution as a General Model for Forecasting Technological Change. Technological Forecasting and Social Change, 18, 247-256.}
 }
 }
 \seealso{
 \code{\link{predict.diffusion}}, \code{\link{plot.diffusion}} and \code{\link{print.diffusion}}.
+
+\code{\link{seqdiffusion}} for sequential diffusion model fitting
+ across product generations.
 }
 \author{
 Oliver Schaer, \email{info@oliverschaer.ch},

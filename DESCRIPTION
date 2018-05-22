@@ -1,7 +1,7 @@
 Package: diffusion
 Type: Package
 Title: Forecast the Diffusion of New Products
-Version: 0.2.7
+Version: 0.3.0
 Authors@R: c(person("Oliver", "Schaer", email = "info@oliverschaer.ch",
                     role = c("aut", "cre")),
              person("Nikolaos", "Kourentzes", email = "nikolaos@kourentzes.com",
