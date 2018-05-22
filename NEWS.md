@@ -1,7 +1,17 @@
-#### v.0.3.0 (05/01/18) ####
+#### v.0.3.1 (22/05/18) ####
+
+changes
+- added documentation for tsMetal.RData
+- added internal sum squared error function for the optimiser
+
+bugfixes
+- issues with log errors - reverted to v.0.2.7 for the time being
+
+#### v.0.3.0 30/04/18) ####
 
 changes
 - added Weibull curve
+- Changed the optimisation errors to log
 
 #### v.0.2.7 (05/01/18) ####
 
@@ -10,7 +20,7 @@ changes
 
 #### v.0.2.6 (05/01/18) ####
 
-changes
+bugfixes
 - fixed dataset urls
 
 #### v.0.2.5 (04/01/18) ####

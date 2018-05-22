@@ -335,7 +335,7 @@ diffusionEstim <- function(x, l = 2, cumulative = c(FALSE, TRUE),
                                        cumulative = cumulative, prew = prew, w.idx = w.idx)$par,
              "gsgompertz" = w.new <- optim(init[w.idx], gsgCost, method = "BFGS", x = x, l = l,
                                         cumulative = cumulative, prew = prew, w.idx = w.idx)$par,
-             "weibull" = w.new <- optim(init[w.idx], gsgCost, method = "BFGS", x = x, l = l,
+             "weibull" = w.new <- optim(init[w.idx], weibullCost, method = "BFGS", x = x, l = l,
                                            cumulative = cumulative, prew = prew, w.idx = w.idx)$par)
     }
     
