@@ -630,7 +630,7 @@ diffusionPrint <- function(x, ...){
 #'   point).
 #'   
 #'   For the Weibull curve, vector \code{w} needs to be in the form of
-#'   \cod{("a", "b", "m")}. Where "a" is the scale parameter, "b" determines the
+#'   \code{("a", "b", "m")}. Where "a" is the scale parameter, "b" determines the
 #'   shape. Together, "a" and "b" determine the stepness of the curve. The "m"
 #'   parameter sets the market potential (saturation point).
 #'   

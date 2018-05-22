@@ -114,6 +114,23 @@ NULL
 #' @source \url{http://gs.statcounter.com/browser-version-market-share}
 NULL
 
+#' Time series: U.S. Merchant Marine conversion to metal
+#' 
+#' A dataset with conversion of U.S. Merchant Marine from wood to metal.
+#' 
+#' @name tsMetal
+#' @docType data
+#' @format A data frame with 17 observations and 2 variables
+#' \describe{
+#' \item{year}{Year}
+#' \item{substitution}{Conversion to metal}
+#'   }
+#'   
+#' @references Martino, J.P. 1993. Technological Forecasting for Decision
+#'   Making. 3rd edition. New York: McGraw-Hill.
+NULL
+
+
 #' Time series: Windows OS Platform Statistics
 #' 
 #' A dataset containing the 3WSchools monthly log files of Windows operating 
