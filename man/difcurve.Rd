@@ -21,7 +21,7 @@ Returns a matrix of values with each row being a period.
 }
 \description{
 This function calculates the values of diffusion curves that can be of \code{"bass"}, 
-\code{"gompertz"}, \code{"gsgompertz"} or \code{"weibull} type, given some parameters.
+\code{"gompertz"}, \code{"gsgompertz"} or \code{"weibull"} type, given some parameters.
 }
 \note{
 \code{w} needs to be provided for the Bass curve in the order of

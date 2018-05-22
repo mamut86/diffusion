@@ -605,7 +605,7 @@ diffusionPrint <- function(x, ...){
 #' Calculates the values for various diffusion curves, given some parameters.
 #' 
 #' This function calculates the values of diffusion curves that can be of \code{"bass"}, 
-#' \code{"gompertz"}, \code{"gsgompertz"} or \code{"weibull} type, given some parameters. 
+#' \code{"gompertz"}, \code{"gsgompertz"} or \code{"weibull"} type, given some parameters. 
 #' 
 #' @param n number of periods to calculate values for.
 #' @param w vector of curve parameters (see note). If argument curve is used, this is ignored.
