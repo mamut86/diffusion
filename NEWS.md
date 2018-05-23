@@ -5,7 +5,9 @@ changes
 - added internal sum squared error function for the optimiser
 
 bugfixes
-- issues with log errors - reverted to v.0.2.7 for the time being
+- issues with log errors - reverted error measure to v.0.2.7 for the time being
+- fixed an initalisation issue on the weibull model
+- fixed titles for graphs
 
 #### v.0.3.0 30/04/18) ####
 

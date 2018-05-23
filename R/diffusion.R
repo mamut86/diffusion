@@ -494,7 +494,7 @@ diffusionPlot <- function(x, cumulative = c(FALSE, TRUE), ...){
     
     # Plot fit
     graphics::plot(x$x,type="p", pch = 20, ylab = "Adoption", xlab = "Period",
-         ylim = yy, xlim = xx, main = x$method)
+         ylim = yy, xlim = xx, main = x$type)
     for (i in 1:elmt){
       graphics::lines(x$fit[, 1+i], col = cmp[i])
     }

@@ -34,36 +34,28 @@ weibullCurve <- function(n, w){
 weibullInit <- function(x){
   # Internal function
   # get initial values using rank-median with OLS (see Abernethy 2006)
-  # x
-  
-  ts <- 1:length(x)
-  
+
   # we are fitting on the cumulative adoption
-  x <- cumsum(x)
+  X <- cumsum(x)
   
   # calculate Median rank
-  n <- length(y1)
+  n <- length(X)
   mdrk <- (1:n-0.3)/(n+0.4) #Benard's approximation faster
   # mdrk <- qbeta(p = 0.5,1:n,n:1) # alternative using more precise InvBetadist
-  
-  # Define Y and X for OLS
-  # Abernethy (2006) suggest to estimate X on Y for improved accuracy
   L <- 1 # we fix
-  X <- log(log(L/(L-mdrk)))
-  Y <- log(y1)
 
-  wbfit <- lm(Y ~ X)
+  # Abernethy (2006) suggest to estimate X on Y for improved accuracy
+  wbfit <- lm(log(X) ~ log(log(L/(L-mdrk))))
   
-  b <- fit1$coefficients[2]
-  a <- exp(-(fit1$coefficients[1]/beta.hat))
-  m <- x[length(x)]
+  b <- wbfit$coefficients[2]
+  a <- exp(-(wbfit$coefficients[1]/b))
+  m <- X[length(X)]
   
   init <- c(a, b, m)
   names(init) <- c("a", "b", "m")
   
   return(init)
 }
-
 
 
 weibullCost <- function(w, x, l, w.idx = rep(TRUE, 3), prew = NULL, cumulative = c(TRUE, FALSE)){
