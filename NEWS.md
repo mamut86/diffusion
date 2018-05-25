@@ -1,8 +1,9 @@
-#### v.0.3.1 (22/05/18) ####
+#### v.0.3.1.904 (25/05/18) ####
 
 changes
 - added documentation for tsMetal.RData
 - added internal sum squared error function for the optimiser
+- Passing optim setting int trough Gompertz and GSGompertz initialisation
 
 bugfixes
 - issues with log errors - reverted error measure to v.0.2.7 for the time being

@@ -228,8 +228,8 @@ diffusionEstim <- function(x, l = 2, cumulative = c(FALSE, TRUE),
   
   switch(type,
          "bass" = init <- bassInit(x),
-         "gompertz" = init <- gompertzInit(x, l),
-         "gsgompertz" = init <- gsgInit(x, l),
+         "gompertz" = init <- gompertzInit(x, l, optim),
+         "gsgompertz" = init <- gsgInit(x, l, optim),
          "weibull" = init <- weibullInit(x))
   
   init <- init - prew

@@ -25,7 +25,7 @@ gompertzCurve <- function(n, w){
   return(Y)
 }
 
-gompertzInit <- function(x, l){
+gompertzInit <- function(x, l, optim){
   # Internal function: get initial values
   # get approximation of initial values using Jukic et al. 2004 approach adopted
   # m to allow for x to be adoption per period
@@ -45,7 +45,7 @@ gompertzInit <- function(x, l){
   # m <- exp(log(x0[1]) - (((log(x0[2]) - log(x0[1]))^2) / (log(x0[3]) - (2*log(x0[2])) + log(x0[1]))))
   
   # calling bass estimates
-  what <- diffusionEstim(x, l, pvalreps = 0, type = "bass")$w
+  what <- diffusionEstim(x, l, pvalreps = 0, type = "bass", optim = optim)$w
   m <- what[3]
 
   a <- ((-(log(x0[2]) - log(x0[1]))^2)/(log(x0[3]) - (2 * log(x0[2])) + 

@@ -27,13 +27,13 @@ gsgCurve <- function(n, w){
   return(Y)
 }
 
-gsgInit <- function(x, l){
+gsgInit <- function(x, l, optim){
   # Internal function: get initial values
   # We use Bass model paramters assuming c = 1 (see Bemmaor 1994)
   # x in adoption per period
   
   # calling bass estimates
-  what <- diffusionEstim(x, l, pvalreps = 0, type = "bass")$w
+  what <- diffusionEstim(x, l, pvalreps = 0, type = "bass", optim =optim)$w
 
   # Bemmaor shows that if a = 1, Beta = p/q and b = p + q
   a <- what[1] / what[2] # the shape parameter beta
