@@ -1,4 +1,4 @@
-#### v.0.3.1.904 (25/05/18) ####
+#### v.0.3.1.905 ####
 
 changes
 - added documentation for tsMetal.RData
@@ -9,8 +9,10 @@ bugfixes
 - issues with log errors - reverted error measure to v.0.2.7 for the time being
 - fixed an initalisation issue on the weibull model
 - fixed titles for graphs
+- fixed typo in documentation for predict function
+- fixed fcst table to contain same number as horizons
 
-#### v.0.3.0 30/04/18) ####
+#### v.0.3.0 (30/04/18) ####
 
 changes
 - added Weibull curve
