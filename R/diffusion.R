@@ -709,7 +709,7 @@ difcurve <- function(n, w = c(0.01, 0.1, 10),
 #' @seealso \code{\link{diffusion}}.
 #' @examples
 #'  fit <- diffusion(tsChicken[, 2])
-#'  fti <- predict(fit,20)
+#'  fit <- predict(fit, 20)
 #'  plot(fit)
 #'
 #' @export
@@ -731,7 +731,7 @@ predict.diffusion <- function(object,h=10,...){
          "gsgompertz" = {y <- gsgCurve(n, w)},
          "weibull" = {y <- weibullCurve(n, w)})
   
-  y <- y[(n-h):n,]
+  y <- y[(n-h+1):n,]
   
   object$frc <- y
   
