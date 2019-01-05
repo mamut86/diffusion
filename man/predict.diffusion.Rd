@@ -35,7 +35,7 @@ This function populates the matrix frc of the \code{diffusion} object used as in
 }
 \examples{
  fit <- diffusion(tsChicken[, 2])
- fti <- predict(fit,20)
+ fit <- predict(fit, 20)
  plot(fit)
 
 }

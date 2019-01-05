@@ -66,27 +66,6 @@ Optionally p-values of the coefficients can be determined via bootstraping.
 Furthermore, the bootstrapping allows to remove insignificant parameters from
 the optimisation process.
 }
-\note{
-vector \code{w} needs to be provided for the Bass curve in the order of
-  \code{"p", "q", "m"}, where "p" is the coefficient of innovation, "q" is the
-  coeficient of imitation and "m" is the market size coefficient.
-  
-  For the Gompertz curve vector \code{w} needs to be in the form of
-  \code{("a", "b", "m")}. Where "a" is the x-axis displacement coefficient, "b"
-  determines the growth rate and "m" sets, similarly to Bass model, the
-  market potential (saturation point).
-  
-  For the Shifted-Gompertz curve vector \code{w} needs to be in the form of 
-  \code{("a", "b", "c", "m")}. Where "a" is the x-axis displacement
-  coefficient, "b" determines the growth rate, "c" is the shifting parameter
-  and "m" sets, similarly to Bass model, the market potential (saturation
-  point).
-  
-  For the Weibull curve, vector \code{w} needs to be in the form of
-  \cod{("a", "b", "m")}. Where "a" is the scale parameter, "b" determines the
-  shape. Together, "a" and "b" determine the stepness of the curve. The "m"
-  parameter sets the market potential (saturation point).
-}
 \section{Bass curve}{
 
 The optimisation of the Bass curve is initialisated by the linear
@@ -107,6 +86,12 @@ Bass curve is used for initialisation.
 The curve is initialised by assuming the shift operator to be 1 and 
 becomes equivalent to the Bass curve, as shown in Bemmaor (1994). A Bass
 curve is therefore used as an estimator for the remaining initial parameters.
+}
+
+\section{Weibull}{
+
+The initialisation is obatained through by a linear approximation
+median-ranked OLS described in Sharif and Islam 1980.
 }
 
 \examples{

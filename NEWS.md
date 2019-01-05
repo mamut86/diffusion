@@ -1,9 +1,10 @@
-#### v.0.3.1.905 ####
+#### v.0.3.1.906 ####
 
 changes
 - added documentation for tsMetal.RData
 - added internal sum squared error function for the optimiser
 - Passing optim setting int trough Gompertz and GSGompertz initialisation
+- cleaned documentation
 
 bugfixes
 - issues with log errors - reverted error measure to v.0.2.7 for the time being
@@ -11,6 +12,7 @@ bugfixes
 - fixed titles for graphs
 - fixed typo in documentation for predict function
 - fixed fcst table to contain same number as horizons
+- fixed number of paramters that go into G/GS (only relevant if w.idx is active) 
 
 #### v.0.3.0 (30/04/18) ####
 
