@@ -33,7 +33,7 @@ gsgInit <- function(x, l, optim){
   # x in adoption per period
   
   # calling bass estimates
-  what <- diffusionEstim(x, l, pvalreps = 0, type = "bass", optim =optim)$w
+  what <- diffusionEstim(x, l, pvalreps = 0, type = "bass", optim = optim)$w
 
   # Bemmaor shows that if a = 1, Beta = p/q and b = p + q
   a <- what[1] / what[2] # the shape parameter beta
@@ -47,7 +47,7 @@ gsgInit <- function(x, l, optim){
   return(w)
 }
 
-gsgCost <- function(w, x, l, w.idx = rep(TRUE, 3), prew = NULL,
+gsgCost <- function(w, x, l, w.idx = rep(TRUE, 4), prew = NULL,
                           cumulative = c(TRUE, FALSE)) {
   # Internal function: cost function for numerical optimisation
   # w, current parameters
