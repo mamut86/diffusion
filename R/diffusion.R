@@ -207,9 +207,6 @@ diffusionEstim <- function(x, l = 2, cumulative = c(FALSE, TRUE),
     warning("To eliminate parameters p-values must be estimated. Setting pvalreps = 1000.")
   }
   
-  # Initially all parameters are estimated
-  w.idx <- rep(TRUE, no.w)         # Which parameters to estimate 
-  
   # Check botstrap repetitions (pvalreps)
   if (pvalreps > 0 & pvalreps < 500){
     warning("Very few bootstraps, unreliable p-values.")
@@ -221,10 +218,18 @@ diffusionEstim <- function(x, l = 2, cumulative = c(FALSE, TRUE),
     stop("To eliminate coefficients from the estimation p-values need to be calculated. Use positive pvalreps.")
   }
   
-  # Initialise
-  if (is.null(prew)){
+  # Initially all parameters are estimated
+  w.idx <- rep(TRUE, no.w)         # Which parameters to estimate 
+  
+  # Initialise --> see commented out part for the fixing parameter
+    if (is.null(prew)) {
+    # no values from previous generation
     prew <- rep(0, no.w)
-  }
+  } # else if (anyNA(prew)) {
+  #   # partially fixed parameters
+  #   w.idx[!is.na(prew)] <- FALSE # disable parameters
+  #   prew[is.na(prew)] <- 0 # set NA to 0 in order to estimated
+  # }
   
   switch(type,
          "bass" = init <- bassInit(x),
@@ -573,8 +578,11 @@ diffusionPrint <- function(x, ...){
   writeLines(paste(x$type, "model"))
   writeLines("")
   writeLines("Parameters:")
-  
+
   if (is.null(x$prew)){
+    # If fixed parameter solution will be activated NA will cause to display
+    # 2nd condition with marginals fix below should handle it 
+    # if (is.null(x$prew) | anyNA(x$prew == 0)){
     temp <- round(cbind(x$w, x$pval), 4)    
     colnames(temp) <- c("Estimate", "p-value")
   } else {
