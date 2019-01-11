@@ -14,13 +14,13 @@ Currently the following diffusion models are implemented:
 
 
 ### Installation
-Stable version can be installed in R from CRAN:
-```s
+Stable version can be installed from CRAN:
+```r
 install.packages("diffusion")
 ```
 
-For installation from github use the following R code by using devtools:
-```s
+For installation from github use devtools:
+```r
 if (!require("devtools")){install.packages("devtools")}
 devtools::install_github("mamut86/diffusion")
 ```
