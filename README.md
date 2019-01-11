@@ -13,7 +13,12 @@ Currently the following diffusion models are implemented:
 5. Norton-Bass model for generational modelling (not working well)
 
 
-### Installation 
+### Installation
+Stable version can be installed in R from CRAN:
+```s
+install.packages("diffusion")
+```
+
 For installation from github use the following R code by using devtools:
 ```s
 if (!require("devtools")){install.packages("devtools")}
