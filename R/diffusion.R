@@ -1,7 +1,7 @@
 #' Fit various diffusion curves.
 #' 
 #' This function fits diffusion curves that can be of \code{"bass"}, 
-#' \code{"gompertz"} or \code{"gsgompertz"} type. 
+#' \code{"gompertz"}, \code{"gsgompertz"} (Gamma/Shifted Gompertz curve) or \code{"Weibull"} type. 
 #' 
 #' @section Bass curve:
 #' The optimisation of the Bass curve is initialisated by the linear

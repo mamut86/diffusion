@@ -1,4 +1,4 @@
-#### v.0.3.1.906 ####
+#### v.0.3.1.907 ####
 
 changes
 - added documentation for tsMetal.RData
@@ -12,7 +12,8 @@ bugfixes
 - fixed titles for graphs
 - fixed typo in documentation for predict function
 - fixed fcst table to contain same number as horizons
-- fixed number of paramters that go into G/GS (only relevant if w.idx is active) 
+- fixed number of paramters that go into G/GS (only relevant if w.idx is active)
+- updated documentation for diffusion() - Thx Ivan!
 
 #### v.0.3.0 (30/04/18) ####
 

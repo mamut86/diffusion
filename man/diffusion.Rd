@@ -64,7 +64,7 @@ Returns an object of class \code{diffusion}, which contains:
 }
 \description{
 This function fits diffusion curves that can be of \code{"bass"}, 
-\code{"gompertz"} or \code{"gsgompertz"} type.
+\code{"gompertz"}, \code{"gsgompertz"} (Gamma/Shifted Gompertz curve) or \code{"Weibull"} type.
 }
 \note{
 vector \code{w} needs to be provided for the Bass curve in the order of
