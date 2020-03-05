@@ -29,7 +29,7 @@ removena <- function(x) {
   # pos, position of removed values
   
   if (anyNA(x)) {
-    x <- x6
+    x <- x
     r <- na.omit(x)
     pos <- attributes(r)$na.action
     
