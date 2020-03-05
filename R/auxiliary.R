@@ -1,6 +1,6 @@
 # Some internal auxiliary functions
 
-cleanzero <- function(x){
+cleanzero <- function(x) {
   # Internal function: remove leadig zeros
   # x, vector of values
   
@@ -20,6 +20,34 @@ cleanzero <- function(x){
   }
   
   return(list("x" = x, "loc" = loc))
+}
+
+
+removena <- function(x) {
+  # Internal function: remove NA values
+  # x, vector of values
+  # pos, position of removed values
+  
+  if (anyNA(x)) {
+    x <- x6
+    r <- na.omit(x)
+    pos <- attributes(r)$na.action
+    
+    # # check if removed values is within time series
+    # if (length(pos) > 1 & pos[1] > 1 & pos[length(pos)]-pos[1] > length(pos) | pos[length(pos)] < length(x) & pos[length(pos)]-pos[1] > length(pos)) {
+    #   warning("NA value(s) within time-series removed. Consider using imputation methods to treat missing values.")
+    # } else if (length(pos) == 1 & pos[1] != 1 | length(pos) == 1 & pos[1] != length(pos)) {
+    #   warning("NA value(s) within time-series removed. Consider using imputation methods to treat missing values.")
+    # }
+    
+    # re-write x values with omitted NA values
+    x <- as.numeric(r)
+    
+    return(list("x" = x, "pos" = pos))  
+    
+  } else {
+    return(list("x" = x))
+  }
 }
 
 

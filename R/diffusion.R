@@ -46,6 +46,7 @@
 #' @param maxiter number of iterations the optimser takes (default ==
 #'   \code{10000} for "nm" and \code{Inf} for "hj")
 #' @param opttol Tolerance for convergence (default == 1.e-06)
+#' @param na.rm Removes NA values
 #' 
 #' @return Returns an object of class \code{diffusion}, which contains:
 #' \itemize{
@@ -122,14 +123,20 @@ diffusion <- function(x, w = NULL, cleanlead = c(TRUE, FALSE), prew = NULL,
                       l = 2, cumulative = c(TRUE, FALSE), pvalreps = 0, 
                       eliminate = c(FALSE, TRUE), sig = 0.05, verbose = c(FALSE, TRUE),
                       type = c("bass", "gompertz", "gsgompertz", "weibull"),
-                      optim = c("nm", "hj"), maxiter = Inf, opttol = 1.e-06){
+                      optim = c("nm", "hj"), maxiter = Inf, opttol = 1.e-06,
+                      na.rm = c(FALSE, TRUE)) {
 
   type <- match.arg(type, c("bass", "gompertz", "gsgompertz", "weibull"))
   optim <- match.arg(optim, c("nm", "hj"))
   
   cleanlead <- cleanlead[1]
-  if (cleanlead == TRUE){
+  if (cleanlead == TRUE) {
     x <- cleanzero(x)$x
+  }
+  
+  na.rm <- na.rm[1]
+  if (na.rm == TRUE) {
+    x <- removena(x)$x
   }
   
   cumulative <- cumulative[1]
@@ -137,7 +144,7 @@ diffusion <- function(x, w = NULL, cleanlead = c(TRUE, FALSE), prew = NULL,
   verbose <- verbose[1]
   
   # Optimise parameters
-  if (is.null(w)){
+  if (is.null(w)) {
 
     opt <- diffusionEstim(x, l, cumulative, prew, pvalreps, eliminate,
                           sig, verbose, type = type, optim  = optim,

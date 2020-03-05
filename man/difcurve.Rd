@@ -4,8 +4,12 @@
 \alias{difcurve}
 \title{Calculates the values for various diffusion curves, given some parameters.}
 \usage{
-difcurve(n, w = c(0.01, 0.1, 10), type = c("bass", "gompertz", "gsgompertz",
-  "weibull"), curve = NULL)
+difcurve(
+  n,
+  w = c(0.01, 0.1, 10),
+  type = c("bass", "gompertz", "gsgompertz", "weibull"),
+  curve = NULL
+)
 }
 \arguments{
 \item{n}{number of periods to calculate values for.}

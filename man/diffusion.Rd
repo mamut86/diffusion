@@ -4,11 +4,23 @@
 \alias{diffusion}
 \title{Fit various diffusion curves.}
 \usage{
-diffusion(x, w = NULL, cleanlead = c(TRUE, FALSE), prew = NULL, l = 2,
-  cumulative = c(TRUE, FALSE), pvalreps = 0, eliminate = c(FALSE, TRUE),
-  sig = 0.05, verbose = c(FALSE, TRUE), type = c("bass", "gompertz",
-  "gsgompertz", "weibull"), optim = c("nm", "hj"), maxiter = Inf,
-  opttol = 1e-06)
+diffusion(
+  x,
+  w = NULL,
+  cleanlead = c(TRUE, FALSE),
+  prew = NULL,
+  l = 2,
+  cumulative = c(TRUE, FALSE),
+  pvalreps = 0,
+  eliminate = c(FALSE, TRUE),
+  sig = 0.05,
+  verbose = c(FALSE, TRUE),
+  type = c("bass", "gompertz", "gsgompertz", "weibull"),
+  optim = c("nm", "hj"),
+  maxiter = Inf,
+  opttol = 1e-06,
+  na.rm = c(FALSE, TRUE)
+)
 }
 \arguments{
 \item{x}{vector with adoption per period}
@@ -47,6 +59,8 @@ significance level used to eliminate parameters}
 \code{10000} for "nm" and \code{Inf} for "hj")}
 
 \item{opttol}{Tolerance for convergence (default == 1.e-06)}
+
+\item{na.rm}{Removes NA values}
 }
 \value{
 Returns an object of class \code{diffusion}, which contains:

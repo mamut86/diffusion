@@ -4,9 +4,14 @@
 \alias{Nortonbass}
 \title{Norton-Bass model}
 \usage{
-Nortonbass(x, startval.met = c("2ST", "BB", "iBM"), estim.met = c("BOBYQA",
-  "OLS", "SUR", "2SLS", "3SLS"), gstart = NULL, startval = NULL,
-  flexpq = F)
+Nortonbass(
+  x,
+  startval.met = c("2ST", "BB", "iBM"),
+  estim.met = c("BOBYQA", "OLS", "SUR", "2SLS", "3SLS"),
+  gstart = NULL,
+  startval = NULL,
+  flexpq = F
+)
 }
 \arguments{
 \item{x}{matrix or dataframe containing demand for each generation in 

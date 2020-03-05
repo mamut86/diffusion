@@ -4,11 +4,21 @@
 \alias{seqdiffusion}
 \title{Enables fitting various sequential diffusion curves.}
 \usage{
-seqdiffusion(x, cleanlead = c(TRUE, FALSE), prew = NULL, l = 2,
-  cumulative = c(TRUE, FALSE), pvalreps = 0, eliminate = c(FALSE, TRUE),
-  sig = 0.05, verbose = c(FALSE, TRUE), type = c("bass", "gompertz",
-  "gsgompertz", "weibull"), optim = c("nm", "hj"), maxiter = Inf,
-  opttol = 1e-06)
+seqdiffusion(
+  x,
+  cleanlead = c(TRUE, FALSE),
+  prew = NULL,
+  l = 2,
+  cumulative = c(TRUE, FALSE),
+  pvalreps = 0,
+  eliminate = c(FALSE, TRUE),
+  sig = 0.05,
+  verbose = c(FALSE, TRUE),
+  type = c("bass", "gompertz", "gsgompertz", "weibull"),
+  optim = c("nm", "hj"),
+  maxiter = Inf,
+  opttol = 1e-06
+)
 }
 \arguments{
 \item{x}{matrix containing in each column the adoption per period for generation k}
