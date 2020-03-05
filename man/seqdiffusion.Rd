@@ -17,7 +17,8 @@ seqdiffusion(
   type = c("bass", "gompertz", "gsgompertz", "weibull"),
   optim = c("nm", "hj"),
   maxiter = Inf,
-  opttol = 1e-06
+  opttol = 1e-06,
+  na.rm = c(FALSE, TRUE)
 )
 }
 \arguments{
@@ -50,6 +51,8 @@ estimation. Forces \code{pvalreps = 1000} if left to 0.}
 takes (default == \code{10000} for "nm" and \code{Inf} for "hj")}
 
 \item{opttol}{Tolerance for convergence (default == 1.e-06)}
+
+\item{na.rm}{Remove NA values}
 
 \item{w}{vector of curve parameters (see note). If provided no estimation
 is done.}

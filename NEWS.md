@@ -5,7 +5,7 @@ changes
 - added internal sum squared error function for the optimiser
 - Passing optim setting int trough Gompertz and GSGompertz initialisation
 - cleaned documentation
-- added NA removal option in diffusion()
+- added NA removal option
 
 bugfixes
 - issues with log errors - reverted error measure to v.0.2.7 for the time being

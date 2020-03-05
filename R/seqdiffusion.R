@@ -33,6 +33,7 @@
 #'   "hj" for Hooke-Jeeves. #' @param maxiter number of iterations the optimser
 #'   takes (default == \code{10000} for "nm" and \code{Inf} for "hj")
 #' @param opttol Tolerance for convergence (default == 1.e-06)
+#' @param na.rm Remove NA values
 #' 
 #' @return Returns an object of class \code{seqdiffusion}, which contains:
 #' \itemize{
@@ -68,13 +69,15 @@ seqdiffusion <- function(x, cleanlead = c(TRUE, FALSE), prew = NULL, l = 2,
                          pvalreps = 0, eliminate = c(FALSE, TRUE), sig = 0.05, 
                          verbose = c(FALSE, TRUE),
                          type = c("bass", "gompertz", "gsgompertz", "weibull"),
-                         optim = c("nm", "hj"), maxiter = Inf, opttol = 1.e-06){
+                         optim = c("nm", "hj"), maxiter = Inf, opttol = 1.e-06,
+                         na.rm = c(FALSE, TRUE)) {
   
   type <- match.arg(type, c("bass", "gompertz", "gsgompertz", "weibull"))
   optim <- match.arg(optim, c("nm", "hj"))
   verbose <- verbose[1]
   eliminate <- eliminate[1]
   cumulative <- cumulative[1]
+  na.rm <- na.rm[1]
   
   # Number of curves
   k <- dim(x)[2]
@@ -83,12 +86,12 @@ seqdiffusion <- function(x, cleanlead = c(TRUE, FALSE), prew = NULL, l = 2,
   names(fit) <- paste0("Gen", 1:k)
   
   # Fit iteratively across generations
-  for (i in 1:k){
+  for (i in 1:k) {
     
-    if (verbose == TRUE){
+    if (verbose == TRUE) {
       writeLines(paste0("Generation ", i))
     }
-    if (i > 1){
+    if (i > 1) {
       prew <- fit[[i-1]]$w
       elimin <- eliminate
     } else {
@@ -97,7 +100,7 @@ seqdiffusion <- function(x, cleanlead = c(TRUE, FALSE), prew = NULL, l = 2,
     
     fit[[i]] <- diffusion(x[, i], w = NULL, cleanlead, prew, l, cumulative, pvalreps, 
                           elimin, sig, verbose, type = type, optim = optim,
-                          maxiter, opttol)
+                          maxiter, opttol, na.rm)
     
   }
   
