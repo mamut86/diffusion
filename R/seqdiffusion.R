@@ -33,7 +33,6 @@
 #'   "hj" for Hooke-Jeeves. #' @param maxiter number of iterations the optimser
 #'   takes (default == \code{10000} for "nm" and \code{Inf} for "hj")
 #' @param opttol Tolerance for convergence (default == 1.e-06)
-#' @param na.rm Remove NA values
 #' 
 #' @return Returns an object of class \code{seqdiffusion}, which contains:
 #' \itemize{
@@ -69,16 +68,14 @@ seqdiffusion <- function(x, cleanlead = c(TRUE, FALSE), prew = NULL, l = 2,
                          pvalreps = 0, eliminate = c(FALSE, TRUE), sig = 0.05, 
                          verbose = c(FALSE, TRUE),
                          type = c("bass", "gompertz", "gsgompertz", "weibull"),
-                         optim = c("nm", "hj"), maxiter = Inf, opttol = 1.e-06,
-                         na.rm = c(FALSE, TRUE)) {
+                         optim = c("nm", "hj"), maxiter = Inf, opttol = 1.e-06) {
   
   type <- match.arg(type, c("bass", "gompertz", "gsgompertz", "weibull"))
   optim <- match.arg(optim, c("nm", "hj"))
   verbose <- verbose[1]
   eliminate <- eliminate[1]
   cumulative <- cumulative[1]
-  na.rm <- na.rm[1]
-  
+
   # Number of curves
   k <- dim(x)[2]
   
@@ -100,7 +97,7 @@ seqdiffusion <- function(x, cleanlead = c(TRUE, FALSE), prew = NULL, l = 2,
     
     fit[[i]] <- diffusion(x[, i], w = NULL, cleanlead, prew, l, cumulative, pvalreps, 
                           elimin, sig, verbose, type = type, optim = optim,
-                          maxiter, opttol, na.rm)
+                          maxiter, opttol)
     
   }
   
@@ -110,8 +107,8 @@ seqdiffusion <- function(x, cleanlead = c(TRUE, FALSE), prew = NULL, l = 2,
   
   typ <- paste("Sequential", fit[[1]]$type)
   
-  return(structure(list("type" = typ, "diffusion" = fit, "x" = x, "w" = allw,
-                        "mse" = allmse, "pval" = allpval), 
+  return(structure(list("type" = typ, "call" = sys.call(), "diffusion" = fit,
+                        "x" = x, "w" = allw, "mse" = allmse, "pval" = allpval), 
                    class = "seqdiffusion"))
 }
 
@@ -204,6 +201,12 @@ plot.seqdiffusion <- function(x, cumulative = c(FALSE, TRUE),...){
   # cumulative, if TRUE plot cumulative adoption
   
   cumulative <- cumulative[1]
+  if ("cleanlead" %in% names(x$call)) {
+    cleanlead <- any(x$call$cleanlead == c("T", "TRUE"))
+  } else {
+    cleanlead <- TRUE
+  }
+  
   
   cmp <- c("#B2182B", "#EF8A62", "#67A9CF", "#2166AC")
   k <- dim(x$x)[2]
@@ -218,7 +221,7 @@ plot.seqdiffusion <- function(x, cumulative = c(FALSE, TRUE),...){
     ll <- 1
   }
   
-  yy <- range(X)
+  yy <- range(X, na.rm = T)
   yy <- yy + c(-1, 1)*0.04*diff(yy)
   yy[1] <- max(0,yy[1])
   
@@ -226,9 +229,18 @@ plot.seqdiffusion <- function(x, cumulative = c(FALSE, TRUE),...){
        xlab = "Period", ylab = "Adoption", main = x$type)
   for (i in 1:k){
     x.temp <- X[, i]
-    x.temp <- cleanzero(x.temp)
+    
+    if (cleanlead == TRUE) {
+      x.temp <- cleanzero(x.temp)
+      l <- x.temp$loc
+      x.temp <- x.temp$x
+    } else {
+      l <- 1
+    }
+    
+    x.temp <- cleanna(x.temp, silent = T)
+    l <- x.temp$locLead+l-1
     n <- length(x.temp$x)
-    l <- x.temp$loc
     xx <- l:(l+n-1)
     graphics::points(xx, x.temp$x, col = "black", pch = 21, bg = cmp[i], cex = 0.7)
     graphics::lines(xx, x$diffusion[[i]]$fit[,ll], col = cmp[i], lwd = 2)

@@ -1,11 +1,12 @@
-#### v.0.3.1.908 ####
+#### v.0.3.1.909 ####
 
 changes
 - added documentation for tsMetal.RData
 - added internal sum squared error function for the optimiser
 - Passing optim setting int trough Gompertz and GSGompertz initialisation
 - cleaned documentation
-- added NA removal option
+- Automated removal of leading and trailing NAs. Error abort if NA within series
+- changed non-critical warnings to type message, to allow easy surpression
 
 bugfixes
 - issues with log errors - reverted error measure to v.0.2.7 for the time being
@@ -15,6 +16,8 @@ bugfixes
 - fixed fcst table to contain same number as horizons
 - fixed number of paramters that go into G/GS (only relevant if w.idx is active)
 - updated documentation for diffusion() - Thx Ivan!
+- fixed error when plot.seqdiffusion() was used with cleanlead = F
+- fixed error in gompertz when cleanlead = F
 
 #### v.0.3.0 (30/04/18) ####
 

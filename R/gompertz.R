@@ -30,6 +30,9 @@ gompertzInit <- function(x, l, optim){
   # get approximation of initial values using Jukic et al. 2004 approach adopted
   # m to allow for x to be adoption per period
   
+  # make sure leading 0s are removed
+  x <- cleanzero(x)$x
+  
   n <- length(x)
   X <- cumsum(x)
   

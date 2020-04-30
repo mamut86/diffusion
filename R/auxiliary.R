@@ -23,31 +23,82 @@ cleanzero <- function(x) {
 }
 
 
-removena <- function(x) {
-  # Internal function: remove NA values
-  # x, vector of values
-  # pos, position of removed values
+cleanna <- function(x, silent = c(FALSE, TRUE)) {
   
-  if (anyNA(x)) {
-    x <- x
-    r <- na.omit(x)
-    pos <- attributes(r)$na.action
-    
-    # # check if removed values is within time series
-    # if (length(pos) > 1 & pos[1] > 1 & pos[length(pos)]-pos[1] > length(pos) | pos[length(pos)] < length(x) & pos[length(pos)]-pos[1] > length(pos)) {
-    #   warning("NA value(s) within time-series removed. Consider using imputation methods to treat missing values.")
-    # } else if (length(pos) == 1 & pos[1] != 1 | length(pos) == 1 & pos[1] != length(pos)) {
-    #   warning("NA value(s) within time-series removed. Consider using imputation methods to treat missing values.")
-    # }
-    
-    # re-write x values with omitted NA values
-    x <- as.numeric(r)
-    
-    return(list("x" = x, "pos" = pos))  
-    
+  # internal function to remove NA values. Stops if NA is within time series.
+  # # x, vector of values
+  # verbose, when TRUE warnings when removing leading and trailing NAs
+  
+  silent <- silent[1]
+  
+  # state for error message
+  tl <- ld <- FALSE
+  locld <- 1  # location of lead trim
+  loctl <- length(x) # length trail trim
+  
+  # check if any NA
+  if (any(is.na(x))) {
+    loc <- which(is.na(x))
   } else {
-    return(list("x" = x))
+    loc <- NULL
   }
+  
+  # check i
+  if (any(loc > 0)) {
+    
+    # remove leading NA
+    if (loc[1] == 1) {
+      
+      idx <- diff(loc)
+      if (any(idx > 1)) {
+        rem <- which(idx > 1)[1]
+        x <- x[-(1:rem)]
+      } else {
+        rem <- length(idx) + 1
+        x <- x[-(1:rem)]
+      }
+      ld <- TRUE
+      locld <- length(rem)
+    }
+    
+    # remove trailing NA
+    if (loc[length(loc)] == length(x)) {
+      
+      idx <- diff(rev(loc))
+      if (any(idx < -1)) {
+        rem <- which(idx < -1)[1]
+        x <- head(x, -rem)
+      } else {
+        rem <- length(idx) + 1
+        x <- head(x, -rem)
+      }
+      tl <- TRUE
+      loctl <- length(rem)
+    }
+    
+    # abort  remove remaining NA
+    if (any(is.na(x))) {
+      stop("Cannot estimate model as NA values present within time series.")
+    }
+  }
+  
+  # Warning message if needed
+  if (silent == T) {
+    if (tl == T && ld == T) {
+      message("Removed leading and trailing NA values to fit model")
+    }
+    
+    if (tl == T && ld == F) {
+      message("Removed trailing NA values to fit model")
+    }
+    
+    if (tl == F && ld == T) {
+      message("Removed leading NA values to fit model")
+    }
+  }
+  
+  return(list("x" = x, "loc" = loc, "locLead" = locld, "locTrail" = loctl))
+  
 }
 
 
