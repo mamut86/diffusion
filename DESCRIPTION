@@ -17,5 +17,6 @@ LazyData: true
 Imports:
     dfoptim,
     nloptr,
-    systemfit
+    systemfit,
+    optimx
 RoxygenNote: 7.0.2

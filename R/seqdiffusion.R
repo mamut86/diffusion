@@ -19,7 +19,7 @@
 #' @param cleanlead removes leading zeros for fitting purposes (default == T)
 #' @param prew the \code{w} of the previous generation. This is used for
 #'   sequential fitting.
-#' @param l the l-norm (1 is absolute errors, 2 is squared errors)
+#' @param loss the l-norm (1 is absolute errors, 2 is squared errors)
 #' @param cumulative If TRUE optimisation is done on cumulative adoption.
 #' @param pvalreps bootstrap repetitions to estimate (marginal) p-values
 #' @param eliminate if TRUE eliminates insignificant parameters from the
@@ -63,7 +63,7 @@
 #' 
 #' @rdname seqdiffusion  
 #' @export seqdiffusion
-seqdiffusion <- function(x, cleanlead = c(TRUE, FALSE), prew = NULL, l = 2,
+seqdiffusion <- function(x, cleanlead = c(TRUE, FALSE), prew = NULL, loss = 2,
                          cumulative = c(TRUE, FALSE),
                          pvalreps = 0, eliminate = c(FALSE, TRUE), sig = 0.05, 
                          verbose = c(FALSE, TRUE),
@@ -95,7 +95,7 @@ seqdiffusion <- function(x, cleanlead = c(TRUE, FALSE), prew = NULL, l = 2,
       elimin <- FALSE
     }
     
-    fit[[i]] <- diffusion(x[, i], w = NULL, cleanlead, prew, l, cumulative, pvalreps, 
+    fit[[i]] <- diffusion(x[, i], w = NULL, cleanlead, prew, loss, cumulative, pvalreps, 
                           elimin, sig, verbose, type = type, optim = optim,
                           maxiter, opttol)
     

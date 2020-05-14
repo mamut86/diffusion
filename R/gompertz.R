@@ -14,8 +14,8 @@ gompertzCurve <- function(n, w){
   
   t <- 1:n
   # Cumulative
-  At <- w[3] * exp(-w[1] * exp(-w[2] * t))
-  # At <- w[3] * exp(-exp(-(w[1] + (w[2] *t))))
+  # At <- w[3] * exp(-w[1] * (exp(-w[2] * t)))
+  At <- w[1] * exp(-w[2] * (exp(-w[3] * t)))
   
   # Adoption
   at <- diff(c(0, At))
@@ -25,7 +25,7 @@ gompertzCurve <- function(n, w){
   return(Y)
 }
 
-gompertzInit <- function(x, l, optim){
+gompertzInit <- function(x, loss, optim){
   # Internal function: get initial values
   # get approximation of initial values using Jukic et al. 2004 approach adopted
   # m to allow for x to be adoption per period
@@ -48,7 +48,7 @@ gompertzInit <- function(x, l, optim){
   # m <- exp(log(x0[1]) - (((log(x0[2]) - log(x0[1]))^2) / (log(x0[3]) - (2*log(x0[2])) + log(x0[1]))))
   
   # calling bass estimates
-  what <- diffusionEstim(x, l, pvalreps = 0, type = "bass", optim = optim)$w
+  what <- diffusionEstim(x, loss, pvalreps = 0, type = "bass", optim = optim)$w
   m <- what[3]
 
   a <- ((-(log(x0[2]) - log(x0[1]))^2)/(log(x0[3]) - (2 * log(x0[2])) + 
@@ -68,11 +68,11 @@ gompertzInit <- function(x, l, optim){
   return(w)
 }
 
-gompertzCost <- function(w, x, l, w.idx = rep(TRUE, 3), prew = NULL, cumulative=c(TRUE,FALSE)){
+gompertzCost <- function(w, x, loss, w.idx = rep(TRUE, 3), prew = NULL, cumulative = c(TRUE,FALSE)){
   # Internal function: cost function for numerical optimisation
   # w, current parameters
   # x, adoption per period
-  # l, the l-norm (1 is absolute errors, 2 is squared errors)
+  # loss, the l-norm (1 is absolute errors, 2 is squared errors)
   # w.idx, logical vector with three elements. Use FALSE to not estimate
   # respective parameter
   # prew, the w of the previous generation - this is used for sequential fitting
@@ -93,8 +93,7 @@ gompertzCost <- function(w, x, l, w.idx = rep(TRUE, 3), prew = NULL, cumulative=
   }
   
   fit <- gompertzCurve(n, gompw)
-  
-  se <- getse(x, fit, l, cumulative) # auxiliary.R
+  se <- getse(x, fit, loss, cumulative) # auxiliary.R
   
   # Ensure positive coefficients
   if (any(gompw <= 0)){
