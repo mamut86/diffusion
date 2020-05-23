@@ -149,7 +149,7 @@ callOptim <- function(y, loss, optim, maxiter, type, init, wIdx = rep(TRUE, 3),
 
   # "L-BFGS-B" needs lower bounds
   if (optim == "L-BFGS-B") {
-    lbound <- rep(0, length(init))
+    lbound <- rep(1e-9, length(init))
     ibound <- FALSE
   } else {
     ibound <- TRUE
@@ -165,7 +165,10 @@ callOptim <- function(y, loss, optim, maxiter, type, init, wIdx = rep(TRUE, 3),
     prew[1] <- prew[1]/(10*sum(y))
   }
   
-  if (optsol == "multi" & wIdx[1]==TRUE) { # This makes sense only for m, not the other parameters
+  # initalisation warning catch
+  warScal <- FALSE
+  
+  if (optsol == "multi" & wIdx[1] == TRUE) { # This makes sense only for m, not the other parameters
     # The m parameter of growth curves is notoriously hard to optimise. 
     # We will try different initial values and check the resulting costs.
     # We also have to worry about sample randomness, so instead of picking the 
@@ -184,11 +187,10 @@ callOptim <- function(y, loss, optim, maxiter, type, init, wIdx = rep(TRUE, 3),
       }
       
       optSols[[s]] <-  optimx::optimx(w, difCost, method = optim,
-                                      lower = lbound, y = y,
-                                      loss = loss, type = type, prew = prew, cumulative = cumulative,
-                                      wIdx = wIdx, mscal = mscal, ibound = ibound,
-                                      control = list(trace = 0, dowarn = TRUE, maxit = maxiter)
-      )
+                                                lower = lbound, y = y,
+                                                loss = loss, type = type, prew = prew, cumulative = cumulative,
+                                                wIdx = wIdx, mscal = mscal, ibound = ibound,
+                                                control = list(trace = 0, dowarn = TRUE, maxit = maxiter))
     }
     # Get all the loss function results and find the lowest, this will indicate our more local search
     cf <- unlist(lapply(optSols, function(x) {x$value}))
@@ -213,12 +215,25 @@ callOptim <- function(y, loss, optim, maxiter, type, init, wIdx = rep(TRUE, 3),
   } else { # optsol == "single"
 
     init <- as.vector(init)
-    # single optimisation
-    opt <- optimx::optimx(init, difCost, method = optim,
-                          lower = lbound, y = y,
-                          loss = loss, type = type, prew = prew, cumulative = cumulative,
-                          wIdx = wIdx, mscal = mscal, ibound = ibound,
-                          control = list(trace = 0, dowarn = TRUE, maxit = maxiter))
+    # single optimisation 
+    # withCallingHandlers({
+      opt <- optimx::optimx(init, difCost, method = optim,
+                                               lower = lbound, y = y,
+                                               loss = loss, type = type, prew = prew, cumulative = cumulative,
+                                               wIdx = wIdx, mscal = mscal, ibound = ibound,
+                                               control = list(trace = 0, dowarn = TRUE, maxit = maxiter))
+    # }, warning = function(war) {
+    #   
+    #   msg <- conditionMessage(war)
+    #   
+    #   if (!is.na(pmatch("Parameters or bounds appear to have different scalings", msg))) {
+    #     warScal <<- TRUE
+    #     invokeRestart("muffleWarning")
+    #   } else {
+    #     warning(paste("warning in optimx:", msg))
+    #     invokeRestart("muffleWarning")
+    #   }
+    # })
   }
   
   w <- unlist(opt[1:length(init)])
@@ -275,4 +290,20 @@ difCost <- function(w, y, loss, type, wIdx, prew, cumulative, mscal, ibound){
   }
   
   return(se)
+}
+
+
+checkOptimError <- function(war) {
+  # helper for warning catching
+  # war, the warning input from tryCatch or withCallingHandlers
+  
+  msg <- conditionMessage(war)
+  
+  if (!is.na(pmatch("Parameters or bounds appear to have different scalings", msg))) {
+    warScal <<- TRUE
+    invokeRestart("muffleWarning")
+  } else {
+    warning(paste("warning in optimx:", msg))
+    invokeRestart("muffleWarning")
+  }
 }

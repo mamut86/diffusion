@@ -122,7 +122,7 @@ diffusion <- function(y, w = NULL, cleanlead = c(TRUE, FALSE),
   optim <- match.arg(optim[1], c("L-BFGS-B", "Nelder-Mead", "BFGS", "hjkb", "Rcgmin", "bobyqa", "nm", "hj"))
   optsol <- match.arg(optsol[1], c("single", "multi"))
   if (!is.numeric(initpar)){
-    initpar <- match.arg(initpar[1], c("static", "linearize"))
+    initpar <- match.arg(initpar[1], c("static", "linearize", "linearise"))
   }
   
   # Check arguments in ellipsis
@@ -181,6 +181,7 @@ diffusion <- function(y, w = NULL, cleanlead = c(TRUE, FALSE),
     w <- opt$w
     pval <- opt$pval
     init <- opt$init
+    warScal <- opt$warScal
   } else {
     pval <- rep(NA, length(w))
   }
@@ -196,6 +197,12 @@ diffusion <- function(y, w = NULL, cleanlead = c(TRUE, FALSE),
   
   mse <- mean((y - fit[, 2])^2)
   
+  if (warScal == TRUE & mscal == FALSE) {
+    warning("Initalisation parameters are of different scale. Consider argument \"mscal\" for better optimsation results")
+  } else if (warScal == TRUE & mscal == TRUE) {
+    warning("Initalisation parameters are of different scale. Optimisation might be impacted")
+  }
+  
   out <- structure(list("type" = type, "call" = sys.call(),
                         "w" = w, "y" = y, "fit" = fit, "frc" = NULL, 
                         "mse" = mse, "pval" = pval, "init" = init), class="diffusion")
@@ -210,7 +217,7 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
                            type = c("bass", "gompertz", "gsgompertz", "weibull"),
                            optim = c("L-BFGS-B", "Nelder-Mead", "BFGS", "hjkb", "Rcgmin", "bobyqa"), maxiter = 500, opttol = 1.e-06,
                            optsol = c("single", "multi"), initpar = c("static", "linearize"),
-                           mscal = c(FALSE, TRUE) ) {
+                           mscal = c(TRUE, FALSE) ) {
   # Internal function: estimate bass parameters 
   # y, adoption per period
   # loss, the l-norm (1 is absolute errors, 2 is squared errors)
@@ -233,7 +240,7 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
   optim <- match.arg(optim[1], c("L-BFGS-B", "Nelder-Mead", "BFGS", "hjkb", "Rcgmin", "bobyqa", "nm", "hj"))
   optsol <- match.arg(optsol[1], c("single", "multi"))
   if (!is.numeric(initpar)){
-    initpar <- match.arg(initpar[1], c("static", "linearize"))
+    initpar <- match.arg(initpar[1], c("static", "linearize", "linearise"))
   }
   
   # Defaults 
@@ -299,6 +306,9 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
     prew <- rep(0, noW)
   }
   
+  # set error handling
+  warScal <<- FALSE
+  
   # # Initialise --> see commented out part for the fixing parameter
   #   if (is.null(prew)) {
   #   # no values from previous generation
@@ -334,7 +344,7 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
     ## We need something to bring the initial values to the right scale
     # Add scale to first parameter
     if (mscal == TRUE){
-      init[1] <- init[1]*(4*max(cumsum(y)))
+      init[1] <- init[1]*(4*sum(y))
     }
     
   }
@@ -356,6 +366,8 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
   elim <- TRUE
   it <- 1
   
+  # warScal <- FALSE
+  
   while (elim == TRUE) {
     
     # Optimise
@@ -364,15 +376,17 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
     if (sum(wIdx) > 1) {
       # These optimisation algorithms are multidimensional, so revert to BFGS if needed
       
-      wNew <- callOptim(y, loss, optim, maxiter, type, init[wIdx],
+      wNew <- withCallingHandlers({ callOptim(y, loss, optim, maxiter, type, init[wIdx],
                          wIdx, prew, cumulative, optsol, mscal)
+        }, warning = checkOptimError)
 
     } else {
       # Revert to L-BFGS-B if only one parameter is required
       # Max iterations included in the BFGS
 
-      wNew <- callOptim(y, loss, optim = "L-BFGS-B", maxiter, type, init[wIdx],
+      wNew <-  withCallingHandlers({ callOptim(y, loss, optim = "L-BFGS-B", maxiter, type, init[wIdx],
                          wIdx, prew, cumulative, optsol, mscal)
+        }, warning = checkOptimError)
       
     }  
       
@@ -399,7 +413,7 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
       # Estimate model
       for (i in 1:pvalreps){
         
-        wboot[i,] <- diffusionEstim(y=yboot[,i], loss=loss, cumulative=cumulative, pvalreps=0, eliminate=FALSE, type=type,
+        wboot[i,] <-  diffusionEstim(y=yboot[,i], loss=loss, cumulative=cumulative, pvalreps=0, eliminate=FALSE, type=type,
                                     optim=optim, maxiter=maxiter, optsol=optsol, initpar=prew, mscal=mscal)$w - prew
       }
 
@@ -421,6 +435,10 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
       pvalTemp[!wIdx] <- 0
       loc <- which(pvalTemp == max(pvalTemp))[1]
       wIdx[loc] <- FALSE
+      
+      if (all(wIdx ==FALSE)) { # check if any variable is still left
+        elim <- FALSE
+        }
     } else {
       # Stop elimination iterations
       elim <- FALSE
@@ -458,12 +476,13 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
       writeLines("")
     }
   }
-
+  
+  
   w <- w + prew
   names(w) <- names(init)
   names(pval) <- names(w)
   
-  return(list("w" = w, "pval" = pval, "init" = init))
+  return(list("w" = w, "pval" = pval, "init" = init, "warScal" = warScal))
   
 }
 

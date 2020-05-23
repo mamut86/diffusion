@@ -12,6 +12,7 @@ changes
 - introudced initmeth option to chose between set of different initalisation ways
 - introduced scal option to scale market potential for better optimisation results
 - updated documentation for diffusion() - Thx Ivan!
+- added error handling for optimx function
 
 bugfixes
 - issues with log errors - reverted error measure to v.0.2.7 for the time being
@@ -24,6 +25,7 @@ bugfixes
 - fixed error in gompertz when cleanlead = F
 - fixed error when plotting ts-object with cumulative = F
 - fixed an error when elimante was TRUE with 0 pval reps to stop.
+- fixed the sequential diffusion pval elimination process
 
 #### v.0.3.0 (30/04/18) ####
 
