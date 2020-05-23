@@ -370,7 +370,7 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
     } else {
       # Revert to L-BFGS-B if only one parameter is required
       # Max iterations included in the BFGS
-      
+
       wNew <- callOptim(y, loss, optim = "L-BFGS-B", maxiter, type, init[wIdx],
                          wIdx, prew, cumulative, optsol, mscal)
       

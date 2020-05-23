@@ -149,7 +149,7 @@ callOptim <- function(y, loss, optim, maxiter, type, init, wIdx = rep(TRUE, 3),
 
   # "L-BFGS-B" needs lower bounds
   if (optim == "L-BFGS-B") {
-    lbound <- rep(0.00001, length(init))
+    lbound <- rep(0, length(init))
     ibound <- FALSE
   } else {
     ibound <- TRUE
@@ -159,13 +159,13 @@ callOptim <- function(y, loss, optim, maxiter, type, init, wIdx = rep(TRUE, 3),
   # make sure init is matching lbounds
   init[init < lbound] <- lbound[init < lbound]
   
-  if (mscal == TRUE) {
+  if (mscal == TRUE & wIdx[1]==TRUE) {
     # Fix scale of first parameter
     init[1] <- init[1]/(10*sum(y))  # The 10x should be data driven. Something that would bring w_1 closer to 1-10?
     prew[1] <- prew[1]/(10*sum(y))
   }
   
-  if (optsol == "multi") {
+  if (optsol == "multi" & wIdx[1]==TRUE) { # This makes sense only for m, not the other parameters
     # The m parameter of growth curves is notoriously hard to optimise. 
     # We will try different initial values and check the resulting costs.
     # We also have to worry about sample randomness, so instead of picking the 
@@ -177,8 +177,11 @@ callOptim <- function(y, loss, optim, maxiter, type, init, wIdx = rep(TRUE, 3),
     optSols <- list()
     for (s in 1:10) {
       
-      w <- as.vector(c(s*init[1], init[2:length(init)]))
-      # nmlk seems to work well but without bounds
+      if (length(init)>1){
+        w <- as.vector(c(s*init[1], init[2:length(init)]))
+      } else {
+        w <- as.vector(s*init[1])
+      }
       
       optSols[[s]] <-  optimx::optimx(w, difCost, method = optim,
                                       lower = lbound, y = y,
@@ -250,7 +253,7 @@ difCost <- function(w, y, loss, type, wIdx, prew, cumulative, mscal, ibound){
     wAll <- wAll + prew
   }
   
-  if (mscal == TRUE) {
+  if (mscal == TRUE & wIdx[1] == TRUE) {
     # Fix scale of first parameter, instead of being the maximum it is a multiplier on current value
     wAll[1] <- wAll[1]*(10*sum(y))  # The 10x should be data driven. Something that would bring w_1 closer to 1-10?
   }
