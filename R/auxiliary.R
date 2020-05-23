@@ -140,7 +140,7 @@ getse <- function(y, fit, loss, cumulative) {
   return(se)
 }
 
-callOptim <- function(y, loss, optim, maxiter, type, init, w.idx = rep(TRUE, 3),
+callOptim <- function(y, loss, optim, maxiter, type, init, wIdx = rep(TRUE, 3),
                       prew = NULL, cumulative = c(TRUE, FALSE),
                       optsol = c("multi", "single"), mscal = c(TRUE, FALSE)) {
   # function to call optimisation process
@@ -161,7 +161,8 @@ callOptim <- function(y, loss, optim, maxiter, type, init, w.idx = rep(TRUE, 3),
   
   if (mscal == TRUE) {
     # Fix scale of first parameter
-    init[1] <- init[1]/(10*max(cumsum(y)))  # The 10x should be data driven. Something that would bring w_1 closer to 1-10?
+    init[1] <- init[1]/(10*sum(y))  # The 10x should be data driven. Something that would bring w_1 closer to 1-10?
+    prew[1] <- prew[1]/(10*sum(y))
   }
   
   if (optsol == "multi") {
@@ -182,11 +183,10 @@ callOptim <- function(y, loss, optim, maxiter, type, init, w.idx = rep(TRUE, 3),
       optSols[[s]] <-  optimx::optimx(w, difCost, method = optim,
                                       lower = lbound, y = y,
                                       loss = loss, type = type, prew = prew, cumulative = cumulative,
-                                      w.idx = w.idx, mscal = mscal, ibound = ibound,
+                                      wIdx = wIdx, mscal = mscal, ibound = ibound,
                                       control = list(trace = 0, dowarn = TRUE, maxit = maxiter)
       )
     }
-    
     # Get all the loss function results and find the lowest, this will indicate our more local search
     cf <- unlist(lapply(optSols, function(x) {x$value}))
     idx <- which.min(cf)
@@ -195,21 +195,17 @@ callOptim <- function(y, loss, optim, maxiter, type, init, w.idx = rep(TRUE, 3),
     optSols <- list()
     for (s in 1:19){
       
-      w <- as.vector(c((idx + seq(-0.9, 0.9, 0.1))[s]*init[1], init[2:length(init)]))
+      w <- as.vector(c(((idx + seq(-0.9, 0.9, 0.1))[s])*init[1], init[2:length(init)]))
       optSols[[s]] <- optimx::optimx(w, difCost, method = optim,
                                      lower = lbound, y = y,
                                      loss = loss, type = type, prew = prew, cumulative = cumulative,
-                                     w.idx = w.idx, mscal = mscal, ibound = ibound,
+                                     wIdx = wIdx, mscal = mscal, ibound = ibound,
                                      control = list(trace = 0, dowarn = TRUE, maxit = maxiter)
       )
     }
     cf <- unlist(lapply(optSols, function(x) {x$value}))
+    # cbind(unlist(lapply(optSols, function(x) {x$value})), unlist(lapply(optSols, function(x) {x$p1})))
     opt <- optSols[[which.min(cf)]]
-    
-    w <- unlist(opt[1:length(init)])
-    if (mscal == TRUE) {
-      w[1] <- w[1]*10*max(cumsum(y))
-    }
     
   } else { # optsol == "single"
 
@@ -218,26 +214,25 @@ callOptim <- function(y, loss, optim, maxiter, type, init, w.idx = rep(TRUE, 3),
     opt <- optimx::optimx(init, difCost, method = optim,
                           lower = lbound, y = y,
                           loss = loss, type = type, prew = prew, cumulative = cumulative,
-                          w.idx = w.idx, mscal = mscal, ibound = ibound,
+                          wIdx = wIdx, mscal = mscal, ibound = ibound,
                           control = list(trace = 0, dowarn = TRUE, maxit = maxiter))
-    
-    w <- unlist(opt[1:length(init)])
-    if (mscal == TRUE) {
-      w[1] <- w[1]*10*max(cumsum(y))
-    }
-    
+  }
+  
+  w <- unlist(opt[1:length(init)])
+  if (mscal == TRUE & wIdx[1]==TRUE){
+    w[1] <- w[1]*10*sum(y)
   }
   
   return(w)
 }
 
-difCost <- function(w, y, loss, type, w.idx, prew, cumulative, mscal, ibound){
+difCost <- function(w, y, loss, type, wIdx, prew, cumulative, mscal, ibound){
   # Internal function: cost function for numerical optimisation
   # w, current parameters
   # , adoption per period
   # loss, the l-norm (1 is absolute errors, 2 is squared errors)
   # type, the model type
-  # w.idx, logical vector with three elements. Use FALSE to not estimate
+  # wIdx, logical vector with three elements. Use FALSE to not estimate
   # respective parameter
   # prew, the w of the previous generation - this is used for sequential fitting
   # cumulative, use cumulative adoption or not
@@ -247,31 +242,31 @@ difCost <- function(w, y, loss, type, w.idx, prew, cumulative, mscal, ibound){
   n <- length(y)
   
   # If some elements of w are not optimised, sort out vectors
-  w.all <- rep(0, length(w))
-  w.all[w.idx] <- w
+  wAll <- rep(0, length(wIdx))
+  wAll[wIdx] <- w
   
   # If sequential construct total parameters
   if (!is.null(prew)){
-    w.all <- w.all + prew
+    wAll <- wAll + prew
   }
   
   if (mscal == TRUE) {
     # Fix scale of first parameter, instead of being the maximum it is a multiplier on current value
-    w.all[1] <- w.all[1]*(10*max(cumsum(y)))  # The 10x should be data driven. Something that would bring w_1 closer to 1-10?
+    wAll[1] <- wAll[1]*(10*sum(y))  # The 10x should be data driven. Something that would bring w_1 closer to 1-10?
   }
   
   switch(type,
-         "bass" = fit <- bassCurve(n, w.all),
-         "gompertz" = fit <- gompertzCurve(n, w.all),
-         "gsgompertz" = fit <- gsgCurve(n, w.all),
-         "weibull" = fit <- weibullCurve(n, w.all)
+         "bass" = fit <- bassCurve(n, wAll),
+         "gompertz" = fit <- gompertzCurve(n, wAll),
+         "gsgompertz" = fit <- gsgCurve(n, wAll),
+         "weibull" = fit <- weibullCurve(n, wAll)
   )
   
   se <- getse(y, fit, loss, cumulative) # auxiliary.R
   
   # Ensure positive coefficients for optimisers without bounds
   if (ibound == TRUE) {
-    if (any(w.all <= 0)){
+    if (any(wAll <= 0)){
       se <- 10e200
     }
   }
