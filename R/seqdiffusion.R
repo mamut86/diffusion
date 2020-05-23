@@ -112,13 +112,13 @@ seqdiffusion <- function(y, cleanlead = c(TRUE, FALSE), loss = 2,
     } else {
       elimin <- FALSE
       pvalr <- 0
-      prew <- initpar
+      prew <- c(0,0,0)
     }
     
     fit[[i]] <- diffusion(y[, i], w = NULL, cleanlead, loss, cumulative,
                           verbose, type, optim, maxiter,
-                          opttol, optsol, initpar=prew, mscal, 
-                          pvalreps=pvalr, eliminate=elimin, sig=sig)
+                          opttol, optsol, initpar=initpar, mscal, 
+                          pvalreps=pvalr, eliminate=elimin, sig=sig, prew=prew)
   
   }
   

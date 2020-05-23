@@ -244,13 +244,13 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
   
   # determine how many paramters needed
   if (type == "bass" | type == "gompertz" | type == "weibull"){
-    no.w <- 3
+    noW <- 3
   } else if (type == "gsgompertz"){
-    no.w <- 4
+    noW <- 4
   }
   
-  if (is.numeric(initpar) & length(initpar) != no.w) {
-    stop(sprintf("%s requires vector of %i paramters for initpar ", type, no.w))
+  if (is.numeric(initpar) & length(initpar) != noW) {
+    stop(sprintf("%s requires vector of %i paramters for initpar ", type, noW))
   }
   
   # backward compability to old optimisation paramters
@@ -291,28 +291,26 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
   }
   
   # Initially all parameters are estimated
-  w.idx <- rep(TRUE, no.w)         # Which parameters to estimate 
+  wIdx <- rep(TRUE, noW)         # Which parameters to estimate 
 
   # For sequential generations
   if (is.null(prew)) {
     # no values from previous generation
-    prew <- rep(0, no.w)
+    prew <- rep(0, noW)
   }
   
   # # Initialise --> see commented out part for the fixing parameter
   #   if (is.null(prew)) {
   #   # no values from previous generation
-  #   prew <- rep(0, no.w)
+  #   prew <- rep(0, noW)
   # } # else if (anyNA(prew)) {
   #   # partially fixed parameters
-  #   w.idx[!is.na(prew)] <- FALSE # disable parameters
+  #   wIdx[!is.na(prew)] <- FALSE # disable parameters
   #   prew[is.na(prew)] <- 0 # set NA to 0 in order to estimated
   # }
   
   if (is.numeric(initpar)) { # use provided initalisation values
     init <- initpar
-    init <- initpar - prew
-    init[(initpar + prew) <= 0] <- 0.00001
     
   } else if (initpar == "linearize") { # find initial approximated parameters
     
@@ -322,8 +320,8 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
            "gsgompertz" = init <- gsgInit(y, loss, optim, optsol, initpar, mscal),
            "weibull" = init <- weibullInit(y)
            )
-    init <- init - prew
-    init[(init + prew) <= 0] <- 0.00001
+    # Check validity of initials
+    if (init[1] < max(y)){init[1] <- max(y)}
 
   } else if (initpar == "static") { # use fixed initialisation parameters
     
@@ -338,9 +336,11 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
     if (mscal == TRUE){
       init[1] <- init[1]*(4*max(cumsum(y)))
     }
-    init <- init - prew
-    init[(init + prew) <= 0] <- 0.00001
+    
   }
+  
+  init <- init - prew
+  init[(init + prew) <= 0] <- 0.00001
   
   switch(type,
          "bass" = names(init) <- c("m", "p", "q"),
@@ -359,24 +359,24 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
   while (elim == TRUE) {
     
     # Optimise
-    w <- rep(0, no.w)
+    w <- rep(0, noW)
     
-    if (sum(w.idx) > 1) {
+    if (sum(wIdx) > 1) {
       # These optimisation algorithms are multidimensional, so revert to BFGS if needed
       
-      wNew <- callOptim(y, loss, optim, maxiter, type, init[w.idx],
-                         w.idx, prew, cumulative, optsol, mscal)
+      wNew <- callOptim(y, loss, optim, maxiter, type, init[wIdx],
+                         wIdx, prew, cumulative, optsol, mscal)
 
     } else {
       # Revert to L-BFGS-B if only one parameter is required
       # Max iterations included in the BFGS
       
-      wNew <- callOptim(y, loss, optim = "L-BFGS-B", maxiter, type, init[w.idx],
-                         w.idx, prew, cumulative, optsol, mscal)
+      wNew <- callOptim(y, loss, optim = "L-BFGS-B", maxiter, type, init[wIdx],
+                         wIdx, prew, cumulative, optsol, mscal)
       
     }  
       
-    w[w.idx] <- wNew
+    w[wIdx] <- wNew
     
     # Bootstrap p-values
     if (pvalreps > 0){
@@ -390,7 +390,7 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
       sigma <- sqrt(mean((y - yhat)^2))
       
       # Construct bootstraps
-      wboot <- array(NA, c(pvalreps, no.w))
+      wboot <- array(NA, c(pvalreps, noW))
       yboot <- matrix(stats::rnorm(n*pvalreps, 0, sigma), nrow = n) + matrix(rep(yhat, pvalreps), ncol = pvalreps)
       
       # This needs to become multiplicative
@@ -399,27 +399,28 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
       # Estimate model
       for (i in 1:pvalreps){
         
-        wboot[i,] <- diffusionEstim(y=y, loss=loss, cumulative=cumulative, pvalreps=0, type=type,
+        wboot[i,] <- diffusionEstim(y=yboot[,i], loss=loss, cumulative=cumulative, pvalreps=0, eliminate=FALSE, type=type,
                                     optim=optim, maxiter=maxiter, optsol=optsol, initpar=prew, mscal=mscal)$w - prew
       }
 
       pval <- colMeans((abs(wboot - 
                               matrix(rep(colMeans(wboot), pvalreps),
-                                     ncol = no.w, byrow = T))) > 
-                         abs(matrix(rep(w, pvalreps), ncol = no.w, byrow = T)))
+                                     ncol = noW, byrow = T))) > 
+                         abs(matrix(rep(w, pvalreps), ncol = noW, byrow = T)))
+      
     } else {
-      pval <- rep(NA, no.w)
+      pval <- rep(NA, noW)
     }
     
     # Elimination process
-    if (eliminate == TRUE & any(pval[w.idx] > sig)){
+    if (eliminate == TRUE & any(pval[wIdx] > sig)){
       # Find most insignificant
-      pval.temp <- pval
-      pval.temp[pval.temp < sig] <- sig
-      pval.temp <- pval.temp - sig
-      pval.temp[!w.idx] <- 0
-      loc <- which(pval.temp == max(pval.temp))[1]
-      w.idx[loc] <- FALSE
+      pvalTemp <- pval
+      pvalTemp[pvalTemp < sig] <- sig
+      pvalTemp <- pvalTemp - sig
+      pvalTemp[!wIdx] <- 0
+      loc <- which(pvalTemp == max(pvalTemp))[1]
+      wIdx[loc] <- FALSE
     } else {
       # Stop elimination iterations
       elim <- FALSE
@@ -438,7 +439,7 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
         locv <- NULL
       }
       
-      temp <- cbind(round(cbind(w, pval), 4), locv)
+      temp <- cbind(round(cbind(w+prew, pval), 4), locv)
       
       switch(type,
              "bass" = rownames(temp) <- c("m", "p", "q"),
