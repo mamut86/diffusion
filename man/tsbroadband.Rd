@@ -4,13 +4,15 @@
 \name{tsBroadband}
 \alias{tsBroadband}
 \title{Time series: Broadcast subscribers}
-\format{A data frame with 51 observations and 4 variables
+\format{
+A data frame with 51 observations and 4 variables
 \describe{
 \item{Time}{Quarters}
 \item{DSL}{Adoption of DSL subscribers}
 \item{Cablemodem}{Adoption of CableModem users}
 \item{FTTPb}{Adoption of FTTPb sales}
-  }}
+  }
+}
 \description{
 A dataset containing the broadcast subscribers to UK market 4Q 2011 to 2Q 2016.
 }

@@ -5,31 +5,34 @@
 \title{Enables fitting various sequential diffusion curves.}
 \usage{
 seqdiffusion(
-  x,
+  y,
   cleanlead = c(TRUE, FALSE),
   prew = NULL,
-  l = 2,
+  loss = 2,
   cumulative = c(TRUE, FALSE),
   pvalreps = 0,
   eliminate = c(FALSE, TRUE),
   sig = 0.05,
   verbose = c(FALSE, TRUE),
   type = c("bass", "gompertz", "gsgompertz", "weibull"),
-  optim = c("nm", "hj"),
-  maxiter = Inf,
+  optim = c("L-BFGS-B", "Nelder-Mead", "BFGS", "hjkb", "Rcgmin", "bobyqa"),
+  maxiter = 500,
   opttol = 1e-06,
-  na.rm = c(FALSE, TRUE)
+  optsol = c("single", "multi"),
+  initpar = c("static", "linearize"),
+  mscal = c(FALSE, TRUE),
+  ...
 )
 }
 \arguments{
-\item{x}{matrix containing in each column the adoption per period for generation k}
+\item{y}{matrix containing in each column the adoption per period for generation k}
 
 \item{cleanlead}{removes leading zeros for fitting purposes (default == T)}
 
 \item{prew}{the \code{w} of the previous generation. This is used for
 sequential fitting.}
 
-\item{l}{the l-norm (1 is absolute errors, 2 is squared errors)}
+\item{loss}{the l-norm (1 is absolute errors, 2 is squared errors)}
 
 \item{cumulative}{If TRUE optimisation is done on cumulative adoption.}
 
@@ -52,8 +55,6 @@ takes (default == \code{10000} for "nm" and \code{Inf} for "hj")}
 
 \item{opttol}{Tolerance for convergence (default == 1.e-06)}
 
-\item{na.rm}{Remove NA values}
-
 \item{w}{vector of curve parameters (see note). If provided no estimation
 is done.}
 }
@@ -65,7 +66,7 @@ Returns an object of class \code{seqdiffusion}, which contains:
 \code{\link{diffusion}} for details)
 \item \code{call} calls function fitted
 \item \code{w} named matrix of fitted parameters for each generation
-\item \code{x} matrix of actuals
+\item \code{y} matrix of actuals
 \item \code{mse} insample Mean Squared Error for each generation
 \item \code{pval} all p-values for \code{w} at each generation
 }

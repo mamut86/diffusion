@@ -17,8 +17,6 @@
 #' @param w vector of curve parameters (see note). If provided no estimation
 #'   is done.
 #' @param cleanlead removes leading zeros for fitting purposes (default == T)
-#' @param prew the \code{w} of the previous generation. This is used for
-#'   sequential fitting.
 #' @param loss the l-norm (1 is absolute errors, 2 is squared errors)
 #' @param cumulative If TRUE optimisation is done on cumulative adoption.
 #' @param pvalreps bootstrap repetitions to estimate (marginal) p-values
@@ -46,7 +44,7 @@
 #' \item \code{pval} all p-values for \code{w} at each generation
 #' }
 #' 
-#' @inherit diffusion note
+# #' @inherit diffusion note
 #'   
 #' @examples 
 #'   fit <- seqdiffusion(tsIbm)
@@ -63,7 +61,7 @@
 #' 
 #' @rdname seqdiffusion  
 #' @export seqdiffusion
-seqdiffusion <- function(y, cleanlead = c(TRUE, FALSE), prew = NULL, loss = 2,
+seqdiffusion <- function(y, cleanlead = c(TRUE, FALSE), loss = 2,
                          cumulative = c(TRUE, FALSE),
                          pvalreps = 0, eliminate = c(FALSE, TRUE), sig = 0.05, 
                          verbose = c(FALSE, TRUE),
@@ -110,14 +108,18 @@ seqdiffusion <- function(y, cleanlead = c(TRUE, FALSE), prew = NULL, loss = 2,
     if (i > 1) {
       prew <- fit[[i-1]]$w
       elimin <- eliminate
+      pvalr <- pvalreps
     } else {
       elimin <- FALSE
+      pvalr <- 0
+      prew <- initpar
     }
     
-    fit[[i]] <- diffusion(y[, i], w = NULL, cleanlead, prew, loss, cumulative,
-                          pvalreps, elimin, sig, verbose, type, optim, maxiter,
-                          opttol, optsol, initpar, mscal)
-    
+    fit[[i]] <- diffusion(y[, i], w = NULL, cleanlead, loss, cumulative,
+                          verbose, type, optim, maxiter,
+                          opttol, optsol, initpar=prew, mscal, 
+                          pvalreps=pvalr, eliminate=elimin, sig=sig)
+  
   }
   
   allw <- do.call(rbind, lapply(fit, function(x) {x$w}))

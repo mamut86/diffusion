@@ -35,7 +35,7 @@ gsgInit <- function(y, loss, optim, optsol, initpar, mscal){
   
   # calling bass estimates
   what <- diffusionEstim(y, loss, pvalreps = 0, type = "bass", optim = optim,
-                        optsol = optsol, initopt = initpar, mscal = mscal)$w
+                        optsol = optsol, initpar = initpar, mscal = mscal)$w
 
   # Bemmaor shows that if a = 1, Beta = p/q and b = p + q
   a <- what[2] / what[3] # the shape parameter beta
