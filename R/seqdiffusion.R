@@ -74,7 +74,7 @@ seqdiffusion <- function(y, cleanlead = c(TRUE, FALSE), loss = 2,
   optim <- match.arg(optim[1], c("L-BFGS-B", "Nelder-Mead", "BFGS", "hjkb", "Rcgmin", "bobyqa", "nm", "hj"))
   optsol <- match.arg(optsol[1], c("single", "multi"))
   if (!is.numeric(initpar)){
-    initpar <- match.arg(initpar[1], c("static", "linearize"))
+    initpar <- match.arg(initpar[1], c("static", "linearize", "linearise"))
   }
   
   # check deprecated arguments doesn't work somehow

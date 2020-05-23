@@ -18,14 +18,14 @@ gln <- seqdiffusion(oil, type = "gompertz", optim = "nm", initpar = "linearize",
 plot(gln, cumulative = T)
 
 # when using static initalsiation scaling is needed and works with the first generation, but fails at the second 
-gstscal <- seqdiffusion(oil, type = "gompertz", optim = "nm", initpar = "static",  mscal = T)
+gstscal <- seqdiffusion(oil, type = "gompertz", optim = "nm", initpar = "static",  mscal = T, optsol = "multi")
 plot(gstscal, cumulative = T)
 
 # if both are individually calculated it is all fine
 gen1 <- diffusion(oil[,1], type = "bass", optim = "nm", mscal = T, initpar = "static")
 plot(gen1, cumulative = T)
 
-gen2 <- diffusion(oil[,2], type = "gompertz", optim = "nm", mscal = F, initpar = "static")
+gen2 <- diffusion(oil[,2], type = "gompertz", optim = "nm", mscal = T, initpar = "linearize", ooptsol = "multi")
 plot(gen2, cumulative = T)
 
 
@@ -40,18 +40,25 @@ tt <- seqdiffusion(tsIbm, type = "gompertz", optim = "nm", initpar = "linearize"
 plot(tt, cumulative = T)
 
 # when static first generation good, rest not working
-tt <- seqdiffusion(tsIbm, type = "gompertz", optim = "nm", initpar = "static",  mscal = T)
+tt <- seqdiffusion(tsIbm, type = "gompertz", optim = "nm", initpar = "static",  mscal = T, optsol = "multi")
 plot(tt, cumulative = T)
 
 # individual results works just fine
-gen2 <- diffusion(tsIbm[, 2], type = "gompertz", optim = "nm", initpar = "static",  mscal = T)
+gen2 <- diffusion(tsIbm[, 2], type = "gompertz", optim = "nm", initpar = "linearize",  mscal = F)
 plot(gen2, cumulative = T)
 
 # fails when using not using scaling for static
-gen2 <- diffusion(tsIbm[, 2], type = "gompertz", optim = "nm", initpar = "static",  mscal = F)
+gen2 <- diffusion(tsIbm[, 2], type = "gompertz", optim = "nm", initpar = "static",  mscal = T)
 plot(gen2, cumulative = T)
 
 # when using linearizatoin it works when not scaling and fails otherwise
 gen2 <- diffusion(tsIbm[, 2], type = "gompertz", optim = "nm", initpar = "linearize",  mscal = F)
 plot(gen2, cumulative = T)
 
+
+gln <- seqdiffusion(oil, type = "gompertz", optim = "nm", initpar = "linearize",
+                    mscal = T, eliminate= TRUE, verbose = F, pvalreps = 1000)
+
+
+gln <- seqdiffusion(tsIbm, type = "gompertz", optim = "nm", initpar = "linearize",
+                    mscal = T, eliminate= TRUE, verbose = T, pvalreps = 100)
