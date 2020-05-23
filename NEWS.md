@@ -1,4 +1,4 @@
-#### v.0.3.1.909 ####
+#### v.0.3.1.910 ####
 
 changes
 - new automated removal of leading and trailing NAs. Error abort if NA within series
@@ -22,6 +22,8 @@ bugfixes
 - fixed number of paramters that go into G/GS (only relevant if w.idx is active)
 - fixed error when plot.seqdiffusion() was used with cleanlead = F
 - fixed error in gompertz when cleanlead = F
+- fixed error when plotting ts-object with cumulative = F
+- fixed an error when elimante was TRUE with 0 pval reps to stop.
 
 #### v.0.3.0 (30/04/18) ####
 
