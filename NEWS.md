@@ -6,6 +6,7 @@ changes
 - added documentation for tsMetal.RData
 - added internal sum squared error function for the optimiser
 - added passing optim setting int trough Gompertz and GSGompertz initialisation
+- added error handling for optimx function
 - changed non-critical warnings to type message, to allow easy surpression
 - bass() function implementing Bass Model, together with plot(), print(), nobs(), logLik() and actuals() methods.
 - is.diffusion() and is.bass() functions
@@ -15,7 +16,7 @@ changes
 - introudced initmeth option to chose between set of different initalisation ways
 - introduced scal option to scale market potential for better optimisation results
 - updated documentation for diffusion() - Thx Ivan!
-- added error handling for optimx function
+
 
 bugfixes
 - issues with log errors - reverted error measure to v.0.2.7 for the time being
