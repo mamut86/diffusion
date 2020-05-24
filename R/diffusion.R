@@ -415,6 +415,11 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
         
         wboot[i,] <-  diffusionEstim(y=yboot[,i], loss=loss, cumulative=cumulative, pvalreps=0, eliminate=FALSE, type=type,
                                     optim=optim, maxiter=maxiter, optsol=optsol, initpar=prew, mscal=mscal)$w - prew
+        
+        # wboot[i,] <- withCallingHandlers({ callOptim(yboot[,i], loss=loss, optim=optim, maxiter=maxiter, type=type,
+        #                                              init = prew, wIdx = rep(TRUE, length(wIdx)), prew = NULL, cumulative, optsol, mscal) - prew
+        # }, warning = checkOptimError)
+    
       }
 
       pval <- colMeans((abs(wboot - 
