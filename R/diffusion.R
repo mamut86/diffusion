@@ -322,18 +322,31 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
   if (is.numeric(initpar)) { # use provided initalisation values
     init <- initpar
     
-  } else if (initpar == "linearize") { # find initial approximated parameters
+  }
+  
+  if (initpar == "linearize") { # find initial approximated parameters
     
-    switch(type,
-           "bass" = init <- bassInit(y),
-           "gompertz" = init <- gompertzInit(y, loss, optim, optsol, initpar, mscal),
-           "gsgompertz" = init <- gsgInit(y, loss, optim, optsol, initpar, mscal),
-           "weibull" = init <- weibullInit(y)
-           )
-    # Check validity of initials
-    if (init[1] < max(y)){init[1] <- max(y)}
-
-  } else if (initpar == "static") { # use fixed initialisation parameters
+    tryCatch( { # make sure linearization does not break down the process
+      
+      switch(type,
+             "bass" = init <- bassInit(y),
+             "gompertz" = init <- gompertzInit(y, loss, optim, optsol, initpar, mscal),
+             "gsgompertz" = init <- gsgInit(y, loss, optim, optsol, initpar, mscal),
+             "weibull" = init <- weibullInit(y)
+      )
+      # Check validity of initials
+      if (init[1] < max(y)){init[1] <- max(y)}
+      
+    }, error = function(err) {
+      warning("Not able to run linearization. Reverted to \"preset\" values.")
+      
+    }, finally = {
+      initpar <- "static"
+    } )
+    
+  }
+  
+  if (initpar == "static") { # use fixed initialisation parameters
     
     switch(type,
            "bass" = init <- c(0.5, 0.5, 0.5),
@@ -794,7 +807,7 @@ predict.diffusion <- function(object,h=10,...){
          "weibull" = {y <- weibullCurve(n, w)}
          )
   
-  y <- y[(n-h+1):n,]
+  y <- y[(n-h+1):n, , drop = FALSE]
   
   object$frc <- y
   
