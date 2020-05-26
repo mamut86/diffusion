@@ -16,7 +16,7 @@ diffusion(
   maxiter = 500,
   opttol = 1e-06,
   optsol = c("single", "multi"),
-  initpar = c("linearize", "static"),
+  initpar = c("linearize", "preset"),
   mscal = c(TRUE, FALSE),
   ...
 )
@@ -46,9 +46,9 @@ is done.}
 
 \item{optsol}{when \code{"multi"} multiple optmisation solutions from different initialisations of the market parameter are used (default == \code{"single"})}
 
-\item{initpar}{vector of initalisation parameters. If set to \code{static} a predfined set of internal initalisation parameters is used while \code{"linearize"} uses linearized initalisation methods (default == \code{"linearize"}.}
+\item{initpar}{vector of initalisation parameters. If set to \code{preset} a predfined set of internal initalisation parameters is used while \code{"linearize"} uses linearized initalisation methods (default == \code{"linearize"}.}
 
-\item{mscal, }{scales market potential at initalisation with the maximum of the observed market potential for better optimisation results (default == \code{TRUE})}
+\item{mscal}{scales market potential at initalisation with the maximum of the observed market potential for better optimisation results (default == \code{TRUE})}
 
 \item{...}{accepts \code{pvalreps}, bootstrap repetitions to estimate (marginal) p-values; \code{eliminate}, if TRUE eliminates insignificant parameters from the estimation (forces \code{pvalreps = 1000} if left to 0);\code{sig}, significance level used to eliminate parameters.}
 }
