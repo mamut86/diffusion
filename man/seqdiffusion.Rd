@@ -18,7 +18,7 @@ seqdiffusion(
   maxiter = 500,
   opttol = 1e-06,
   optsol = c("single", "multi"),
-  initpar = c("static", "linearize"),
+  initpar = c("linearize", "preset"),
   mscal = c(FALSE, TRUE),
   ...
 )
@@ -50,6 +50,12 @@ estimation. Forces \code{pvalreps = 1000} if left to 0.}
 takes (default == \code{10000} for "nm" and \code{Inf} for "hj")}
 
 \item{opttol}{Tolerance for convergence (default == 1.e-06)}
+
+\item{optsol}{when \code{"multi"} multiple optmisation solutions from different initialisations of the market parameter are used (default == \code{"single"})}
+
+\item{initpar}{vector of initalisation parameters. If set to \code{preset} a predfined set of internal initalisation parameters is used while \code{"linearize"} uses linearized initalisation methods (default == \code{"linearize"}.}
+
+\item{mscal}{scales market potential at initalisation with the maximum of the observed market potential for better optimisation results (default == \code{TRUE})}
 
 \item{w}{vector of curve parameters (see note). If provided no estimation
 is done.}
