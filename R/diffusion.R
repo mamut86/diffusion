@@ -36,8 +36,8 @@
 #' @param maxiter number of iterations the optimser takes (default == \code{5000})
 #' @param opttol Tolerance for convergence (default == 1.e-06)
 #' @param optsol when \code{"multi"} multiple optmisation solutions from different initialisations of the market parameter are used (default == \code{"single"})
-#' @param initpar vector of initalisation parameters. If set to \code{static} a predfined set of internal initalisation parameters is used while \code{"linearize"} uses linearized initalisation methods (default == \code{"linearize"}.
-#' @param mscal, scales market potential at initalisation with the maximum of the observed market potential for better optimisation results (default == \code{TRUE})
+#' @param initpar vector of initalisation parameters. If set to \code{preset} a predfined set of internal initalisation parameters is used while \code{"linearize"} uses linearized initalisation methods (default == \code{"linearize"}.
+#' @param mscal scales market potential at initalisation with the maximum of the observed market potential for better optimisation results (default == \code{TRUE})
 #' @param ... accepts \code{pvalreps}, bootstrap repetitions to estimate (marginal) p-values; \code{eliminate}, if TRUE eliminates insignificant parameters from the estimation (forces \code{pvalreps = 1000} if left to 0);\code{sig}, significance level used to eliminate parameters.
 #' 
 #' @return Returns an object of class \code{diffusion}, which contains:
@@ -116,13 +116,13 @@ diffusion <- function(y, w = NULL, cleanlead = c(TRUE, FALSE),
                       type = c("bass", "gompertz", "gsgompertz", "weibull"),
                       optim = c("L-BFGS-B", "Nelder-Mead", "BFGS", "hjkb", "Rcgmin", "bobyqa"),
                       maxiter = 500, opttol = 1.e-06, optsol = c("single", "multi"),
-                      initpar = c("linearize","static"), mscal = c(TRUE, FALSE), ...) {
+                      initpar = c("linearize","preset"), mscal = c(TRUE, FALSE), ...) {
 
   type <- match.arg(type[1], c("bass", "gompertz", "gsgompertz", "weibull"))
   optim <- match.arg(optim[1], c("L-BFGS-B", "Nelder-Mead", "BFGS", "hjkb", "Rcgmin", "bobyqa", "nm", "hj"))
   optsol <- match.arg(optsol[1], c("single", "multi"))
   if (!is.numeric(initpar)){
-    initpar <- match.arg(initpar[1], c("static", "linearize", "linearise"))
+    initpar <- match.arg(initpar[1], c("preset", "linearize", "linearise"))
   }
   
   # Check arguments in ellipsis
@@ -216,7 +216,7 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
                            verbose = c(FALSE, TRUE),
                            type = c("bass", "gompertz", "gsgompertz", "weibull"),
                            optim = c("L-BFGS-B", "Nelder-Mead", "BFGS", "hjkb", "Rcgmin", "bobyqa"), maxiter = 500, opttol = 1.e-06,
-                           optsol = c("single", "multi"), initpar = c("static", "linearize"),
+                           optsol = c("single", "multi"), initpar = c("preset", "linearize"),
                            mscal = c(TRUE, FALSE) ) {
   # Internal function: estimate bass parameters 
   # y, adoption per period
@@ -240,7 +240,7 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
   optim <- match.arg(optim[1], c("L-BFGS-B", "Nelder-Mead", "BFGS", "hjkb", "Rcgmin", "bobyqa", "nm", "hj"))
   optsol <- match.arg(optsol[1], c("single", "multi"))
   if (!is.numeric(initpar)){
-    initpar <- match.arg(initpar[1], c("static", "linearize", "linearise"))
+    initpar <- match.arg(initpar[1], c("preset", "linearize", "linearise"))
   }
   
   # Defaults 
@@ -340,11 +340,11 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
       warning("Not able to run linearization. Reverted to \"preset\" values.")
       
     }, finally = {
-      initpar <- "static"
+      initpar <- "preset"
     } )
   }
   
-  if (initpar == "static") { # use fixed initialisation parameters
+  if (initpar == "preset") { # use fixed initialisation parameters
     
     switch(type,
            "bass" = init <- c(0.5, 0.5, 0.5),

@@ -13,8 +13,8 @@ changes
 - Seasonality in the Bass model. Currently the fixed one is supported.
 - renamed option variable l to loss (for l-norm selection)
 - renamed option variable x to y (the response variable)
-- introudced initmeth option to chose between set of different initalisation ways
-- introduced scal option to scale market potential for better optimisation results
+- introudced initpar argument to allow manual initalisation, preset and automatic
+- introduced mscal argument to scale market potential for better optimisation results
 - updated documentation for diffusion() - Thx Ivan!
 
 
@@ -31,6 +31,7 @@ bugfixes
 - fixed error when plotting ts-object with cumulative = F
 - fixed an error when elimante was TRUE with 0 pval reps to stop.
 - fixed the sequential diffusion pval elimination process
+- included a revert to preset initials when linearization fails
 
 #### v.0.3.0 (30/04/18) ####
 
