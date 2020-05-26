@@ -151,3 +151,19 @@ NULL
 #'   
 #' @source \url{https://www.w3schools.com/browsers/browsers_os.asp}
 NULL
+
+#' Time series: COVID-19 confirmed cases US
+#' 
+#' A dataset containing the number of confirmed Covid-19 cases in the US.
+#' 
+#' @name tsCovid
+#' @docType data
+#' @format A ts object with 107 days of observations
+#' \describe{
+#' \item{tsCovid}{Daily confirmed COVDID-19 cases}
+#'   }
+#'   
+#' @references COVID-19 Data Repository by the Center for Systems Science and Engineering (CSSE) at Johns Hopkins University
+#' 
+#' @source \url{https://github.com/CSSEGISandData/COVID-19}
+NULL

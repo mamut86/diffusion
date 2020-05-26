@@ -2,11 +2,11 @@
 #' 
 #' This function fits diffusion curves of the type \code{"bass"},
 #' \code{"gompertz"}, \code{gsgompertz} or \code{weibull} across generations.
-#' Parameters are estimated for each generation individually by minimising the
-#' Mean Squared Error with the subplex algorithm from the nloptr package.
+#' Parameters are estimated for each generation individually by minimizing the
+#' Mean Squared Error with subplex algorithms from the optimx package.
 #' Optionally p-values of the coefficients can be determined via bootstraping.
-#' Furthermore, the bootstrapping allows to remove insignificant parameters from
-#' the optimisation process.
+#' Furthermore, the bootstrapping allows removing insignificant parameters from
+#' the optimization process.
 #' 
 #' @inheritSection diffusion Bass curve
 #' @inheritSection diffusion Gompertz curve
@@ -186,17 +186,6 @@ print.seqdiffusion <- function(x,...){
                                        "a coef.", "pval.",
                                        "b coef.", "pval.",
                                        "sigma"))
-  
-#   if (type == "bass"){
-#     colnames(temp) <- c("p coef.", "pval.", "q coef.", "pval.",
-#                         "M size", "pval.", "sigma")
-#   } else if (type == "gompertz"){
-#     colnames(temp) <- c("a coef.", "pval.", "b coef.",
-#                         "pval.", "M size", "pval.", "sigma")
-#   } else if (type == "gsgompertz"){
-#     colnames(temp) <- c("a coef.", "pval.", "b coef.",
-#                         "pval.", "c coef", "pval.", "M size", "pval.", "sigma")
-#   }
   print(temp)
   writeLines("")
   
