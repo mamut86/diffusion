@@ -31,6 +31,10 @@
 #'   "hj" for Hooke-Jeeves. #' @param maxiter number of iterations the optimser
 #'   takes (default == \code{10000} for "nm" and \code{Inf} for "hj")
 #' @param opttol Tolerance for convergence (default == 1.e-06)
+#' @param optsol when \code{"multi"} multiple optmisation solutions from different initialisations of the market parameter are used (default == \code{"single"})
+#' @param initpar vector of initalisation parameters. If set to \code{preset} a predfined set of internal initalisation parameters is used while \code{"linearize"} uses linearized initalisation methods (default == \code{"linearize"}.
+#' @param mscal scales market potential at initalisation with the maximum of the observed market potential for better optimisation results (default == \code{TRUE})
+#' 
 #' 
 #' @return Returns an object of class \code{seqdiffusion}, which contains:
 #' \itemize{
@@ -68,13 +72,13 @@ seqdiffusion <- function(y, cleanlead = c(TRUE, FALSE), loss = 2,
                          type = c("bass", "gompertz", "gsgompertz", "weibull"),
                          optim = c("L-BFGS-B", "Nelder-Mead", "BFGS", "hjkb", "Rcgmin", "bobyqa"),
                          maxiter = 500, opttol = 1.e-06, optsol = c("single", "multi"),
-                         initpar = c("static", "linearize"), mscal = c(FALSE, TRUE), ...) {
+                         initpar = c("linearize", "preset"), mscal = c(FALSE, TRUE), ...) {
   
   type <- match.arg(type[1], c("bass", "gompertz", "gsgompertz", "weibull"))
   optim <- match.arg(optim[1], c("L-BFGS-B", "Nelder-Mead", "BFGS", "hjkb", "Rcgmin", "bobyqa", "nm", "hj"))
   optsol <- match.arg(optsol[1], c("single", "multi"))
   if (!is.numeric(initpar)){
-    initpar <- match.arg(initpar[1], c("static", "linearize", "linearise"))
+    initpar <- match.arg(initpar[1], c("preset", "linearize", "linearise"))
   }
   
   # check deprecated arguments doesn't work somehow
