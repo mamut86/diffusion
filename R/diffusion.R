@@ -302,9 +302,6 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
     prew <- rep(0, noW)
   }
   
-  # set error handling
-  # warScal <<- FALSE
-  
   # # Initialise --> see commented out part for the fixing parameter
   #   if (is.null(prew)) {
   #   # no values from previous generation
@@ -319,16 +316,14 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
     init <- initpar
   }
   
-  if (initpar[1] == "linearize") { # find initial approximated parameters
-    
-    tryCatch( { # make sure linearization does not break down the process
-      
-      switch(type,
-             "bass" = init <- bassInit(y),
-             "gompertz" = init <- gompertzInit(y, loss, optim, optsol, initpar, mscal),
-             "gsgompertz" = init <- gsgInit(y, loss, optim, optsol, initpar, mscal),
-             "weibull" = init <- weibullInit(y)
-      )
+  if (initpar[1] == "linearize") {
+    # make sure linearization does not break down the process
+    tryCatch( {switch(type,
+                      "bass" = init <- bassInit(y),
+                      "gompertz" = init <- gompertzInit(y, loss, optim, optsol, initpar, mscal),
+                      "gsgompertz" = init <- gsgInit(y, loss, optim, optsol, initpar, mscal),
+                      "weibull" = init <- weibullInit(y)
+    )
       # Check validity of initials
       if (init[1] < max(y)){init[1] <- max(y)}
       
@@ -338,7 +333,7 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
     })
   }
   
-  if (initpar[1] == "preset") { # use fixed initialisation parameters
+  if (initpar[1] == "preset") {
     
     switch(type,
            "bass" = init <- c(0.5, 0.5, 0.5),
@@ -346,7 +341,7 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
            "gsgompertz" = init <- c(0.5, 0.5, 0.5, 0.5),
            "weibull" = init <- c(0.5, 0.5, 0.5)
            )
-    ## We need something to bring the initial values to the right scale
+    
     # Add scale to first parameter
     if (mscal == TRUE){
       init[1] <- init[1]*(10*sum(y))
@@ -394,7 +389,7 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
       # Max iterations included in the BFGS
 
       wNew <-  callOptim(y, loss, optim = "L-BFGS-B", maxiter, type, init[wIdx],
-                         wIdx, prew, cumulative, optsol, mscal, ibound, lbound)
+                         wIdx, prew, cumulative, optsol, mscal, ibound = F, lbound = 1e-9)
         
     }  
       
