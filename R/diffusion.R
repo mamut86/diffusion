@@ -319,7 +319,7 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
     init <- initpar
   }
   
-  if (initpar == "linearize") { # find initial approximated parameters
+  if (initpar[1] == "linearize") { # find initial approximated parameters
     
     tryCatch( { # make sure linearization does not break down the process
       
@@ -338,7 +338,7 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
     })
   }
   
-  if (initpar == "preset") { # use fixed initialisation parameters
+  if (initpar[1] == "preset") { # use fixed initialisation parameters
     
     switch(type,
            "bass" = init <- c(0.5, 0.5, 0.5),
@@ -351,7 +351,6 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
     if (mscal == TRUE){
       init[1] <- init[1]*(10*sum(y))
     }
-    
   }
   
   init <- init - prew
