@@ -149,14 +149,16 @@ callOptim <- function(y, loss, optim, maxiter, type, init, wIdx = rep(TRUE, 3),
   # ibound, whether intrabounds of cost functio should be used
   # lbound, what lower bound is needed
 
-  if (mscal == TRUE & wIdx[1]==TRUE) {
+  if (mscal == TRUE & wIdx[1] == TRUE) {
     # Fix scale of first parameter
     init[1] <- init[1]/(10*sum(y))  # The 10x should be data driven. Something that would bring w_1 closer to 1-10?
     prew[1] <- prew[1]/(10*sum(y))
   }
   
-  # initalisation warning catch
-  # warScal <- FALSE
+  # make sure lower bounds have the right length
+  if (length(lbound > 1)) {
+    lbound <- lbound[wIdx]  
+  }
   
   if (optsol == "multi" & wIdx[1] == TRUE) { # This makes sense only for m, not the other parameters
     # The m parameter of growth curves is notoriously hard to optimise. 
@@ -176,12 +178,11 @@ callOptim <- function(y, loss, optim, maxiter, type, init, wIdx = rep(TRUE, 3),
         w <- as.vector(s*init[1])
       }
       
-      optSols[[s]] <-  optimx::optimx(w, difCost, method = optim,
-                                                lower = lbound, y = y,
-                                                loss = loss, type = type, prew = prew, cumulative = cumulative,
-                                                wIdx = wIdx, mscal = mscal, ibound = ibound,
-                                                control = list(trace = 0, dowarn = TRUE,
-                                                               maxit = maxiter, starttests = FALSE))
+      optSols[[s]] <-  optimx::optimx(w, difCost, method = optim, lower = lbound, y = y,
+                                      loss = loss, type = type, prew = prew, cumulative = cumulative,
+                                      wIdx = wIdx, mscal = mscal, ibound = ibound,
+                                      control = list(trace = 0, dowarn = TRUE,
+                                                     maxit = maxiter, starttests = FALSE))
     }
     # Get all the loss function results and find the lowest, this will indicate our more local search
     cf <- unlist(lapply(optSols, function(x) {x$value}))
@@ -192,8 +193,7 @@ callOptim <- function(y, loss, optim, maxiter, type, init, wIdx = rep(TRUE, 3),
     for (s in 1:19){
       
       w <- as.vector(c(((idx + seq(-0.9, 0.9, 0.1))[s])*init[1], init[2:length(init)]))
-      optSols[[s]] <- optimx::optimx(w, difCost, method = optim,
-                                     lower = lbound, y = y,
+      optSols[[s]] <- optimx::optimx(w, difCost, method = optim, lower = lbound, y = y,
                                      loss = loss, type = type, prew = prew, cumulative = cumulative,
                                      wIdx = wIdx, mscal = mscal, ibound = ibound,
                                      control = list(trace = 0, dowarn = TRUE,
@@ -208,8 +208,7 @@ callOptim <- function(y, loss, optim, maxiter, type, init, wIdx = rep(TRUE, 3),
     init <- as.vector(init)
     # single optimisation 
     # withCallingHandlers({
-      opt <- optimx::optimx(init, difCost, method = optim,
-                                               lower = lbound, y = y,
+      opt <- optimx::optimx(init, difCost, method = optim, lower = lbound, y = y,
                                                loss = loss, type = type, prew = prew, cumulative = cumulative,
                                                wIdx = wIdx, mscal = mscal, ibound = ibound,
                                                control = list(trace = 0, dowarn = TRUE, maxit = maxiter, starttests = FALSE))
@@ -311,8 +310,8 @@ checkInit <- function(init, optim) {
     lbound <- rep(1e-9, length(init))
     ibound <- FALSE
   } else {
-    ibound <- TRUE
     lbound <- -Inf
+    ibound <- TRUE
   }
   
   hbound <- Inf
