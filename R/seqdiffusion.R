@@ -72,7 +72,7 @@ seqdiffusion <- function(y, cleanlead = c(TRUE, FALSE), loss = 2,
                          type = c("bass", "gompertz", "gsgompertz", "weibull"),
                          optim = c("L-BFGS-B", "Nelder-Mead", "BFGS", "hjkb", "Rcgmin", "bobyqa"),
                          maxiter = 500, opttol = 1.e-06, optsol = c("single", "multi"),
-                         initpar = c("linearize", "preset"), mscal = c(FALSE, TRUE), ...) {
+                         initpar = c("linearize", "preset"), mscal = c(TRUE, FALSE), ...) {
   
   type <- match.arg(type[1], c("bass", "gompertz", "gsgompertz", "weibull"))
   optim <- match.arg(optim[1], c("L-BFGS-B", "Nelder-Mead", "BFGS", "hjkb", "Rcgmin", "bobyqa", "nm", "hj"))

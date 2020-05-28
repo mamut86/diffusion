@@ -269,18 +269,14 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
     optim <- "hjkb"
   }
   
-  ## I don't think it is good to override user arguments. Someone may have
-  ## a reason. We can have a note in the help file
-  ## Also changed 1'000 to 1 000, as this is more universal
+  # Check maxiter argument
   if (optim == "Nelder-Mead" & maxiter < 500) {
-    maxiter <- 500
-    message("Set maxiter to 1 000 for better results with Nelder-Mead optimiser")
+    message("It is recommend to set \"maxiter\" to 500 or more for better results with Nelder-Mead optimiser")
   } else if (maxiter == Inf) {
     maxiter <- 100000
-    message("Set maxiter to 10 000")
+    message("Set \"maxiter\" to 100 000")
   } else if (optim == "hjkb" & maxiter < 1000) {
-    maxiter <- 1000
-    message("Set maxiter to 1 000 for better results with hjkb optimiser")
+    message("It is recommend to set \"maxiter\" to 1000 or more for better results with HJKB optimiser")
   }
   
   if (eliminate == TRUE & pvalreps == 0){
@@ -307,7 +303,7 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
   }
   
   # set error handling
-  warScal <<- FALSE
+  # warScal <<- FALSE
   
   # # Initialise --> see commented out part for the fixing parameter
   #   if (is.null(prew)) {
@@ -338,10 +334,8 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
       
     }, error = function(err) {
       warning("Not able to run linearization. Reverted to \"preset\" values.")
-      
-    }, finally = {
       initpar <- "preset"
-    } )
+    })
   }
   
   if (initpar == "preset") { # use fixed initialisation parameters
@@ -370,6 +364,13 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
          "weibull" = names(init) <- c("m", "a", "b")
   )
   
+  # check initalisation
+  initval <- checkInit(init, optim)
+  init <- initval$init
+  lbound <- initval$lbound
+  ibound <- initval$ibound
+  warScal <- initval$warScal
+  
   n <- length(y)
   
   # Iterate until all p-values are < sig
@@ -377,7 +378,6 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
   elim <- TRUE
   it <- 1
   
-  # warScal <- FALSE
   
   while (elim == TRUE) {
     
@@ -387,18 +387,16 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
     if (sum(wIdx) > 1) {
       # These optimisation algorithms are multidimensional, so revert to BFGS if needed
       
-      wNew <- withCallingHandlers({ callOptim(y, loss, optim, maxiter, type, init[wIdx],
-                         wIdx, prew, cumulative, optsol, mscal)
-        }, warning = checkOptimError)
+      wNew <- callOptim(y, loss, optim, maxiter, type, init[wIdx],
+                         wIdx, prew, cumulative, optsol, mscal, ibound, lbound)
 
     } else {
       # Revert to L-BFGS-B if only one parameter is required
       # Max iterations included in the BFGS
 
-      wNew <-  withCallingHandlers({ callOptim(y, loss, optim = "L-BFGS-B", maxiter, type, init[wIdx],
-                         wIdx, prew, cumulative, optsol, mscal)
-        }, warning = checkOptimError)
-      
+      wNew <-  callOptim(y, loss, optim = "L-BFGS-B", maxiter, type, init[wIdx],
+                         wIdx, prew, cumulative, optsol, mscal, ibound, lbound)
+        
     }  
       
     w[wIdx] <- wNew
@@ -428,7 +426,7 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
                                     optim=optim, maxiter=maxiter, optsol=optsol, initpar=prew, mscal=mscal)$w - prew
         
         # wboot[i,] <- withCallingHandlers({ callOptim(yboot[,i], loss=loss, optim=optim, maxiter=maxiter, type=type,
-        #                                              init = prew, wIdx = rep(TRUE, length(wIdx)), prew = NULL, cumulative, optsol, mscal) - prew
+        #                                              init = prew, wIdx = rep(TRUE, length(wIdx)), prew = NULL, cumulative, optsol, mscal, ibound, lbound) - prew
         # }, warning = checkOptimError)
     
       }
