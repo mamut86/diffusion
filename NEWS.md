@@ -1,8 +1,9 @@
-#### v.0.3.1.911 ####
+#### v.0.3.1.912 ####
 
 changes
 - new automated removal of leading and trailing NAs. Error abort if NA within series
 - new search optimisation option
+- new option to partially fix/optimise paramters w
 - added documentation for tsMetal.RData
 - added internal sum squared error function for the optimiser
 - added passing optim setting int trough Gompertz and GSGompertz initialisation
