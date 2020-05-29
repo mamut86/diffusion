@@ -50,6 +50,7 @@ gompertzInit <- function(y, loss, optim, optsol, initpar, mscal){
   # calling bass estimates
   what <- diffusionEstim(y, loss, pvalreps = 0, type = "bass", optim = optim,
                          optsol = optsol, initpar = initpar, mscal = mscal)$w
+  
   m <- what[1]
   
   a <- ((-(log(x0[2]) - log(x0[1]))^2)/(log(x0[3]) - (2 * log(x0[2])) + 
