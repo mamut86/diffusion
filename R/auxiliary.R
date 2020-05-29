@@ -140,25 +140,29 @@ getse <- function(y, fit, loss, cumulative) {
   return(se)
 }
 
-callOptim <- function(y, loss, optim, maxiter, type, init, wIdx = rep(TRUE, 3),
+callOptim <- function(y, loss, optim, maxiter, type, init, wIdx = rep(TRUE, length(init)),
                       prew = NULL, cumulative = c(TRUE, FALSE),
                       optsol = c("multi", "single"), mscal = c(TRUE, FALSE), ibound, lbound) {
   # function to call optimisation process
+  # The function will always output a vector equal to the number of model parameters
+  # Fixed parameters will be locked to initials. If prew is provided, then fixed parameters will be locked to 0.
+  
   # optsol, using mulitiple initial values to derive at more optimal solutions
   # mscal, decides whether m parameter is being rescaled
-  # ibound, whether intrabounds of cost functio should be used
+  # ibound, whether intrabounds of cost function should be used
   # lbound, what lower bound is needed
 
+  # Take care of scaling of m
   if (mscal == TRUE & wIdx[1] == TRUE) {
     # Fix scale of first parameter
     init[1] <- init[1]/(10*sum(y))  # The 10x should be data driven. Something that would bring w_1 closer to 1-10?
     prew[1] <- prew[1]/(10*sum(y))
   }
-  
-  # make sure lower bounds have the right length
-  if (length(lbound > 1)) {
-    lbound <- lbound[wIdx]  
-  }
+
+  # Limit number of parameters to estimate according to wIdx
+  lbound <- lbound[wIdx]
+  initF <- as.vector(init[wIdx])
+  wFix <- as.vector(init[!wIdx])
   
   if (optsol == "multi" & wIdx[1] == TRUE) { # This makes sense only for m, not the other parameters
     # The m parameter of growth curves is notoriously hard to optimise. 
@@ -172,15 +176,15 @@ callOptim <- function(y, loss, optim, maxiter, type, init, wIdx = rep(TRUE, 3),
     optSols <- list()
     for (s in 1:10) {
       
-      if (length(init)>1){
-        w <- as.vector(c(s*init[1], init[2:length(init)]))
+      if (length(initF)>1){
+        w <- as.vector(c(s*initF[1], initF[2:length(initF)]))
       } else {
-        w <- as.vector(s*init[1])
+        w <- as.vector(s*initF[1])
       }
       
       optSols[[s]] <-  optimx::optimx(w, difCost, method = optim, lower = lbound, y = y,
-                                      loss = loss, type = type, prew = prew, cumulative = cumulative,
-                                      wIdx = wIdx, mscal = mscal, ibound = ibound,
+                                      loss = loss, type = type, cumulative = cumulative,
+                                      wIdx = wIdx, wFix = wFix, prew = prew, mscal = mscal, ibound = ibound,
                                       control = list(trace = 0, dowarn = TRUE,
                                                      maxit = maxiter, starttests = FALSE))
     }
@@ -192,10 +196,14 @@ callOptim <- function(y, loss, optim, maxiter, type, init, wIdx = rep(TRUE, 3),
     optSols <- list()
     for (s in 1:19){
       
-      w <- as.vector(c(((idx + seq(-0.9, 0.9, 0.1))[s])*init[1], init[2:length(init)]))
+      if (length(initF)>1){
+        w <- as.vector(c(((idx + seq(-0.9, 0.9, 0.1))[s])*initF[1], initF[2:length(initF)]))
+      } else {
+        w <- as.vector((idx + seq(-0.9, 0.9, 0.1)[s])*initF[1])
+      }
       optSols[[s]] <- optimx::optimx(w, difCost, method = optim, lower = lbound, y = y,
-                                     loss = loss, type = type, prew = prew, cumulative = cumulative,
-                                     wIdx = wIdx, mscal = mscal, ibound = ibound,
+                                     loss = loss, type = type, cumulative = cumulative,
+                                     wIdx = wIdx, wFix = wFix, prew = prew, mscal = mscal, ibound = ibound,
                                      control = list(trace = 0, dowarn = TRUE,
                                                     maxit = maxiter, starttests = FALSE))
     }
@@ -205,28 +213,22 @@ callOptim <- function(y, loss, optim, maxiter, type, init, wIdx = rep(TRUE, 3),
     
   } else { # optsol == "single"
 
-    init <- as.vector(init)
     # single optimisation 
-    # withCallingHandlers({
-      opt <- optimx::optimx(init, difCost, method = optim, lower = lbound, y = y,
-                                               loss = loss, type = type, prew = prew, cumulative = cumulative,
-                                               wIdx = wIdx, mscal = mscal, ibound = ibound,
-                                               control = list(trace = 0, dowarn = TRUE, maxit = maxiter, starttests = FALSE))
-    # }, warning = function(war) {
-    #   
-    #   msg <- conditionMessage(war)
-    #   
-    #   if (!is.na(pmatch("Parameters or bounds appear to have different scalings", msg))) {
-    #     warScal <<- TRUE
-    #     invokeRestart("muffleWarning")
-    #   } else {
-    #     warning(paste("warning in optimx:", msg))
-    #     invokeRestart("muffleWarning")
-    #   }
-    # })
+    opt <- optimx::optimx(initF, difCost, method = optim, lower = lbound, y = y,
+                          loss = loss, type = type, cumulative = cumulative,
+                          wIdx = wIdx, wFix = wFix, prew = prew, mscal = mscal, ibound = ibound,
+                          control = list(trace = 0, dowarn = TRUE, maxit = maxiter, starttests = FALSE))
+    
   }
   
-  w <- unlist(opt[1:length(init)])
+  # Distribute optimal and fixed values
+  w <- rep(0,length(init))
+  w[wIdx] <- unlist(opt[1:sum(wIdx)])
+  if (is.null(prew)){
+    w[!wIdx] <- wFix
+  }
+  
+  # Revert scaling
   if (mscal == TRUE & wIdx[1]==TRUE){
     w[1] <- w[1]*10*sum(y)
   }
@@ -234,14 +236,14 @@ callOptim <- function(y, loss, optim, maxiter, type, init, wIdx = rep(TRUE, 3),
   return(w)
 }
 
-difCost <- function(w, y, loss, type, wIdx, prew, cumulative, mscal, ibound){
+difCost <- function(w, y, loss, type, wIdx, wFix, prew, cumulative, mscal, ibound){
   # Internal function: cost function for numerical optimisation
   # w, current parameters
   # , adoption per period
   # loss, the l-norm (1 is absolute errors, 2 is squared errors)
   # type, the model type
-  # wIdx, logical vector with three elements. Use FALSE to not estimate
-  # respective parameter
+  # wIdx, logical vector with three elements. Use FALSE to not estimate respective parameter
+  # wFix, contains parameters that will not be estimated
   # prew, the w of the previous generation - this is used for sequential fitting
   # cumulative, use cumulative adoption or not
   # mscal, should market parameter be scaled
@@ -252,11 +254,13 @@ difCost <- function(w, y, loss, type, wIdx, prew, cumulative, mscal, ibound){
   # If some elements of w are not optimised, sort out vectors
   wAll <- rep(0, length(wIdx))
   wAll[wIdx] <- w
+  wAll[!wIdx] <- wFix
   
   # If sequential construct total parameters
   if (!is.null(prew)){
-    wAll <- wAll + prew
-  }
+    wAll[wIdx] <- wAll[wIdx] + prew[wIdx]
+    wAll[!wIdx] <- prew[!wIdx]
+  } 
   
   if (mscal == TRUE & wIdx[1] == TRUE) {
     # Fix scale of first parameter, instead of being the maximum it is a multiplier on current value
@@ -299,10 +303,11 @@ difCost <- function(w, y, loss, type, wIdx, prew, cumulative, mscal, ibound){
 # }
 
 
-checkInit <- function(init, optim) {
+checkInit <- function(init, optim, prew) {
   # function to check the initalisation for scale and sets bounds
   # init, the initalisation parameters
   # optim, the optimisation algorithm selected
+  # prew, any previous generations, if available
   
   # "L-BFGS-B" needs lower bounds
   # ibounds uses internal bounds
@@ -312,6 +317,12 @@ checkInit <- function(init, optim) {
   } else {
     lbound <- -Inf
     ibound <- TRUE
+  }
+  
+  # Account for prew
+  # at this point prew is either a vector of 0's or values from a different diffusion generation
+  if (!is.null(prew)){
+    lbound <- lbound - prew
   }
   
   hbound <- Inf

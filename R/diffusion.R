@@ -170,13 +170,37 @@ diffusion <- function(y, w = NULL, cleanlead = c(TRUE, FALSE),
   }
   y <- cleanna(y)$x
   
+  # Check which parameters to estimate
+  
+  ## Put this in auxiliary
+  # determine how many paramters needed
+  if (type == "bass" | type == "gompertz" | type == "weibull"){
+    noW <- 3
+  } else if (type == "gsgompertz"){
+    noW <- 4
+  }
+  
+  if (is.null(w)){
+    # If no parameters given then everything is estimated
+    wFix <- NULL
+    optPar <- TRUE
+  } else {
+    # Otherwise only NA parameters are estimated
+    wFix <- is.na(w)
+    if (all(wFix == FALSE)){
+      optPar <- FALSE
+    } else {
+      optPar <- TRUE
+      wFix <- w
+    }
+  }
+  
   # Optimise parameters
-  if (is.null(w)) {
-
+  if (optPar) {
     opt <- diffusionEstim(y, loss, cumulative, prew, pvalreps, eliminate,
                           sig, verbose, type = type, optim  = optim,
                           maxiter = maxiter, optsol = optsol, initpar = initpar,
-                          mscal = mscal)
+                          mscal = mscal, wFix = wFix)
 
     w <- opt$w
     pval <- opt$pval
@@ -184,6 +208,8 @@ diffusion <- function(y, w = NULL, cleanlead = c(TRUE, FALSE),
     warScal <- opt$warScal
   } else {
     pval <- rep(NA, length(w))
+    warScal <- FALSE
+    init <- rep(NA, length(w))
   }
   
   n <- length(y)
@@ -198,7 +224,7 @@ diffusion <- function(y, w = NULL, cleanlead = c(TRUE, FALSE),
   mse <- mean((y - fit[, 2])^2)
   
   if (warScal == TRUE & mscal == FALSE) {
-    warning("Initalisation parameters are of different scale. Consider argument \"mscal\" for better optimsation results")
+    warning('Initalisation parameters are of different scale. Consider argument "mscal" for better optimsation results')
   } else if (warScal == TRUE & mscal == TRUE) {
     warning("Initalisation parameters are of different scale. Optimisation might be impacted")
   }
@@ -217,7 +243,7 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
                            type = c("bass", "gompertz", "gsgompertz", "weibull"),
                            optim = c("L-BFGS-B", "Nelder-Mead", "BFGS", "hjkb", "Rcgmin", "bobyqa"), maxiter = 500, opttol = 1.e-06,
                            optsol = c("single", "multi"), initpar = c("preset", "linearize"),
-                           mscal = c(TRUE, FALSE) ) {
+                           mscal = c(TRUE, FALSE), wFix = NULL) {
   # Internal function: estimate bass parameters 
   # y, adoption per period
   # loss, the l-norm (1 is absolute errors, 2 is squared errors)
@@ -235,6 +261,7 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
   # optsol, run multiple initialisation or just single
   # initpar, aprx uses linear approximation, fix has set initalisation parameters
   # mscal, TRUE scales market potential times the maximum
+  # wFix, used to control user fixed parameters
   
   type <- match.arg(type[1], c("bass", "gompertz", "gsgompertz", "weibull"))
   optim <- match.arg(optim[1], c("L-BFGS-B", "Nelder-Mead", "BFGS", "hjkb", "Rcgmin", "bobyqa", "nm", "hj"))
@@ -249,6 +276,7 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
   eliminate <- eliminate[1]
   verbose <- verbose[1]
   
+  ## Put this in auxiliary
   # determine how many paramters needed
   if (type == "bass" | type == "gompertz" | type == "weibull"){
     noW <- 3
@@ -289,18 +317,13 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
     stop("pvalreps must be positive number.")
   }
 
-  if (pvalreps > 0 & pvalreps < 500){
-    warning("Very few bootstraps, unreliable p-values.")
-  }
-  
-  # Initially all parameters are estimated
-  wIdx <- rep(TRUE, noW)         # Which parameters to estimate 
-
-  # For sequential generations
-  if (is.null(prew)) {
-    # no values from previous generation
-    prew <- rep(0, noW)
-  }
+  ## Let prew proceed as NULL, this is needed to distinguish between fixed parameters
+  ## and previous generations
+  # # For sequential generations
+  # if (is.null(prew)) {
+  #   # no values from previous generation
+  #   prew <- rep(0, noW)
+  # }
   
   # # Initialise --> see commented out part for the fixing parameter
   #   if (is.null(prew)) {
@@ -322,13 +345,13 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
                       "bass" = init <- bassInit(y),
                       "gompertz" = init <- gompertzInit(y, loss, optim, optsol, initpar, mscal),
                       "gsgompertz" = init <- gsgInit(y, loss, optim, optsol, initpar, mscal),
-                      "weibull" = init <- weibullInit(y)
-    )
+                      "weibull" = init <- weibullInit(y))
+      
       # Check validity of initials
       if (init[1] < max(y)){init[1] <- max(y)}
       
     }, error = function(err) {
-      warning("Not able to run linearization. Reverted to \"preset\" values.")
+      warning('Not able to run linearization. Reverted to "preset" values.')
       initpar <- "preset"
     })
   }
@@ -348,8 +371,23 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
     }
   }
   
-  init <- init - prew
-  init[(init + prew) <= 0] <- 0.00001
+  # Check which parameters are estimated
+  wIdx <- rep(TRUE, noW)         # Which parameters to estimate 
+  if (!is.null(wFix)){
+    if (any(!is.na(wFix))){
+      # And which to fix
+      fIdx <- !is.na(wFix)
+      wIdx[fIdx] <- FALSE
+      init[fIdx] <- wFix[fIdx]
+    }
+  }
+  
+  # If prew then adjust initials to be difference from it
+  # We are estimating how parameters change from prew
+  if (!is.null(prew)){
+    init <- init - prew
+    init[(init + prew) <= 0] <- 1e-9
+  }
   
   switch(type,
          "bass" = names(init) <- c("m", "p", "q"),
@@ -359,7 +397,7 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
   )
   
   # check initalisation
-  initval <- checkInit(init, optim)
+  initval <- checkInit(init, optim, prew)
   init <- initval$init
   lbound <- initval$lbound
   ibound <- initval$ibound
@@ -372,7 +410,6 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
   elim <- TRUE
   it <- 1
   
-  
   while (elim == TRUE) {
     
     # Optimise
@@ -380,21 +417,23 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
     
     if (sum(wIdx) > 1) {
       # These optimisation algorithms are multidimensional, so revert to BFGS if needed
-      
-      wNew <- callOptim(y, loss, optim, maxiter, type, init[wIdx],
+      wNew <- callOptim(y, loss, optim, maxiter, type, init,
                          wIdx, prew, cumulative, optsol, mscal, ibound, lbound)
 
     } else {
       # Revert to L-BFGS-B if only one parameter is required
       # Max iterations included in the BFGS
 
-      wNew <-  callOptim(y, loss, optim = "L-BFGS-B", maxiter, type, init[wIdx],
-                         wIdx, prew, cumulative, optsol, mscal, ibound = F, lbound = 1e-9)
+      wNew <-  callOptim(y, loss, optim = "L-BFGS-B", maxiter, type, init,
+                         wIdx, prew, cumulative, optsol, mscal, ibound = F, lbound=lbound)
         
     }  
       
-    w[wIdx] <- wNew
-    
+    ## When wNew has 1e-9 values, it means we have hit the lbound
+    ## Perhaps we should consider replacing those with zero in the sequential case.
+    # The resulting w contains the differences from prew. Final parameters are prew+w
+    w <- wNew
+    # browser()
     # Bootstrap p-values
     if (pvalreps > 0){
       
@@ -406,8 +445,9 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
       
       sigma <- sqrt(mean((y - yhat)^2))
       
+      ## This can be improved to be a non-parametric bootstrap. Now we impose a severe assumption
       # Construct bootstraps
-      wboot <- array(NA, c(pvalreps, noW))
+      wboot <- array(0, c(pvalreps, noW))
       yboot <- matrix(stats::rnorm(n*pvalreps, 0, sigma), nrow = n) + matrix(rep(yhat, pvalreps), ncol = pvalreps)
       
       # This needs to become multiplicative
@@ -416,19 +456,25 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
       # Estimate model
       for (i in 1:pvalreps){
         
-        wboot[i,] <-  diffusionEstim(y=yboot[,i], loss=loss, cumulative=cumulative, pvalreps=0, eliminate=FALSE, type=type,
-                                    optim=optim, maxiter=maxiter, optsol=optsol, initpar=prew, mscal=mscal)$w - prew
+        # Step 1: Estimate parameters on the bootstrapped curve, starting from prew
+        #         Note that prew=NULL so the optimiser will output the values including prew (i.e. w = new w + prew)
+        wboot[i,] <- callOptim(yboot[,i], loss, optim, maxiter, type, init=prew,
+                                   wIdx, prew=NULL, cumulative, optsol, mscal, ibound, lbound)
+        # Step 2: Find differences from prew, as we want to find significant deviations from 0 for the pvalues
+        wboot[i,] <- wboot[i,] - prew
         
-        # wboot[i,] <- withCallingHandlers({ callOptim(yboot[,i], loss=loss, optim=optim, maxiter=maxiter, type=type,
-        #                                              init = prew, wIdx = rep(TRUE, length(wIdx)), prew = NULL, cumulative, optsol, mscal, ibound, lbound) - prew
-        # }, warning = checkOptimError)
-    
+        ## Old code, replaced diffusionEstim with callOptim above as this is cleaner
+        # wboot[i,] <-  diffusionEstim(y=yboot[,i], loss=loss, cumulative=cumulative, pvalreps=0, eliminate=FALSE, type=type,
+        #                             optim=optim, maxiter=maxiter, optsol=optsol, initpar=prew, mscal=mscal)$w - prew
+  
       }
 
-      pval <- colMeans((abs(wboot - 
-                              matrix(rep(colMeans(wboot), pvalreps),
-                                     ncol = noW, byrow = T))) > 
-                         abs(matrix(rep(w, pvalreps), ncol = noW, byrow = T)))
+      # Calculation of the p-values
+      # wboot contains only the additional bit over prew
+      # http://www.inference.org.uk/mackay/itila/ pp. 457-466
+      # https://stats.stackexchange.com/questions/83012/how-to-obtain-p-values-of-coefficients-from-bootstrap-regression
+      wboot0m <- abs(wboot - matrix(rep(colMeans(wboot), pvalreps), ncol = noW, byrow = T))
+      pval <- colMeans(wboot0m > abs(matrix(rep(w, pvalreps), ncol = noW, byrow = T)))
       
     } else {
       pval <- rep(NA, noW)
@@ -444,9 +490,9 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
       loc <- which(pvalTemp == max(pvalTemp))[1]
       wIdx[loc] <- FALSE
       
-      if (all(wIdx ==FALSE)) { # check if any variable is still left
+      if (all(wIdx ==FALSE)){ # check if any variable is still left
         elim <- FALSE
-        }
+      }
     } else {
       # Stop elimination iterations
       elim <- FALSE
@@ -465,7 +511,11 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
         locv <- NULL
       }
       
-      temp <- cbind(round(cbind(w+prew, pval), 4), locv)
+      if (!is.null(prew)){
+        temp <- cbind(round(cbind(w+prew, pval), 4), locv)
+      } else {
+        temp <- cbind(round(cbind(w, pval), 4), locv)
+      }
       
       switch(type,
              "bass" = rownames(temp) <- c("m", "p", "q"),
@@ -485,8 +535,10 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
     }
   }
   
-  
-  w <- w + prew
+  # w so far is the difference over prew. We output the final parameters.
+  if (!is.null(prew)){
+    w <- w + prew  
+  }
   names(w) <- names(init)
   names(pval) <- names(w)
   
