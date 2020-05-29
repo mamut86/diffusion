@@ -19,7 +19,7 @@ seqdiffusion(
   opttol = 1e-06,
   optsol = c("single", "multi"),
   initpar = c("linearize", "preset"),
-  mscal = c(FALSE, TRUE),
+  mscal = c(TRUE, FALSE),
   ...
 )
 }
@@ -57,8 +57,8 @@ takes (default == \code{10000} for "nm" and \code{Inf} for "hj")}
 
 \item{mscal}{scales market potential at initalisation with the maximum of the observed market potential for better optimisation results (default == \code{TRUE})}
 
-\item{w}{vector of curve parameters (see note). If provided no estimation
-is done.}
+\item{w}{vector of curve parameters (see note). Parameters set to NA will be
+optimised. If \code{w = NULL} (default) all paramters are optimised.}
 }
 \value{
 Returns an object of class \code{seqdiffusion}, which contains:

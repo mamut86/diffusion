@@ -24,21 +24,34 @@
 #' median-ranked OLS described in Sharif and Islam 1980.
 #' 
 #' @param y vector with adoption per period
-#' @param w vector of curve parameters (see note). If provided no estimation
-#'   is done.
+#' @param w vector of curve parameters (see note). Parameters set to NA will be
+#'   optimised. If \code{w = NULL} (default) all paramters are optimised.
 #' @param cleanlead removes leading zeros for fitting purposes (default == TRUE)
 #' @param loss the l-norm (1 is absolute errors, 2 is squared errors).
 #' @param cumulative If TRUE optimisation is done on cumulative adoption.
-#' @param verbose if TRUE console output is provided during estimation (default
-#'   == FALSE)
+#' @param verbose if TRUE console output is provided during estimation (default == FALSE)
 #' @param type diffusion curve to use. This can be "bass", "gompertz" and "gsgompertz"
-#' @param optim optimization method to use. These can be \code{"Nelder-Meade"}, \code{"L-BFGS-B"}, \code{"BFGS"}, \code{"hjkb"}, \code{"Rcgmin"}, \code{"bobyqa"}. Typically, good performance is achieved with \code{"Nelder-Meade"} and \code{"L-BFGS-B"}. \code{"hjkb"} and \code{"Rcgmin"} might be an alternative for complex shapes but have substantially higher computational costs. For further details on optimisation algorithms we refer to the optimx package documentation
+#' @param optim optimization method to use. These can be \code{"Nelder-Meade"},
+#'   \code{"L-BFGS-B"}, \code{"BFGS"}, \code{"hjkb"}, \code{"Rcgmin"},
+#'   \code{"bobyqa"}. Typically, good performance is achieved with
+#'   \code{"Nelder-Meade"} and \code{"L-BFGS-B"}. \code{"hjkb"} and
+#'   \code{"Rcgmin"} might be an alternative for complex shapes but have
+#'   substantially higher computational costs. For further details on
+#'   optimisation algorithms we refer to the optimx package documentation
 #' @param maxiter number of iterations the optimser takes (default == \code{5000})
 #' @param opttol Tolerance for convergence (default == 1.e-06)
-#' @param optsol when \code{"multi"} multiple optmisation solutions from different initialisations of the market parameter are used (default == \code{"single"})
-#' @param initpar vector of initalisation parameters. If set to \code{preset} a predfined set of internal initalisation parameters is used while \code{"linearize"} uses linearized initalisation methods (default == \code{"linearize"}.
-#' @param mscal scales market potential at initalisation with the maximum of the observed market potential for better optimisation results (default == \code{TRUE})
-#' @param ... accepts \code{pvalreps}, bootstrap repetitions to estimate (marginal) p-values; \code{eliminate}, if TRUE eliminates insignificant parameters from the estimation (forces \code{pvalreps = 1000} if left to 0);\code{sig}, significance level used to eliminate parameters.
+#' @param optsol when \code{"multi"} multiple optmisation solutions from
+#'   different initialisations of the market parameter are used (default ==
+#'   \code{"single"})
+#' @param initpar vector of initalisation parameters. If set to \code{preset} a
+#'   predfined set of internal initalisation parameters is used while
+#'   \code{"linearize"} uses linearized initalisation methods (default == \code{"linearize"}.
+#' @param mscal scales market potential at initalisation with the maximum of the
+#'   observed market potential for better optimisation results (default == \code{TRUE})
+#' @param ... accepts \code{pvalreps}, bootstrap repetitions to estimate
+#'   (marginal) p-values; \code{eliminate}, if TRUE eliminates insignificant
+#'   parameters from the estimation (forces \code{pvalreps = 1000} if left to 0)
+#'   \code{sig}, significance level used to eliminate parameters.
 #' 
 #' @return Returns an object of class \code{diffusion}, which contains:
 #' \itemize{

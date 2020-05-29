@@ -14,8 +14,8 @@
 #' @inheritSection diffusion Weibull
 #' 
 #' @param y matrix containing in each column the adoption per period for generation k
-#' @param w vector of curve parameters (see note). If provided no estimation
-#'   is done.
+#' @param w vector of curve parameters (see note). Parameters set to NA will be
+#'   optimised. If \code{w = NULL} (default) all paramters are optimised.
 #' @param cleanlead removes leading zeros for fitting purposes (default == T)
 #' @param loss the l-norm (1 is absolute errors, 2 is squared errors)
 #' @param cumulative If TRUE optimisation is done on cumulative adoption.
