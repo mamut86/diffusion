@@ -560,6 +560,8 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
   }
   names(w) <- names(init)
   names(pval) <- names(w)
+  # round values for nice output
+  pval <- round(pval, 3)
   
   return(list("w" = w, "pval" = pval, "init" = init, "warScal" = warScal))
   
