@@ -25,7 +25,7 @@
 #' 
 #' @param y vector with adoption per period
 #' @param w vector of curve parameters (see note). Parameters set to NA will be
-#'   optimised. If \code{w = NULL} (default) all paramters are optimised.
+#'   optimized. If \code{w = NULL} (default) all paramters are optimized.
 #' @param cleanlead removes leading zeros for fitting purposes (default == TRUE)
 #' @param loss the l-norm (1 is absolute errors, 2 is squared errors).
 #' @param cumulative If TRUE optimisation is done on cumulative adoption.
@@ -476,6 +476,11 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
         # Step 2: Find differences from prew, as we want to find significant deviations from 0 for the pvalues
         wboot[i,] <- wboot[i,] - prew
         
+        # for debugging NA error
+        # if (any(is.na(wboot[i,]))) {
+        #   browser()
+        # }
+        
         ## Old code, replaced diffusionEstim with callOptim above as this is cleaner
         # wboot[i,] <-  diffusionEstim(y=yboot[,i], loss=loss, cumulative=cumulative, pvalreps=0, eliminate=FALSE, type=type,
         #                             optim=optim, maxiter=maxiter, optsol=optsol, initpar=prew, mscal=mscal)$w - prew
@@ -486,8 +491,9 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
       # wboot contains only the additional bit over prew
       # http://www.inference.org.uk/mackay/itila/ pp. 457-466
       # https://stats.stackexchange.com/questions/83012/how-to-obtain-p-values-of-coefficients-from-bootstrap-regression
-      wboot0m <- abs(wboot - matrix(rep(colMeans(wboot), pvalreps), ncol = noW, byrow = T))
-      pval <- colMeans(wboot0m > abs(matrix(rep(w, pvalreps), ncol = noW, byrow = T)))
+      # remove NA for failed estimations
+      wboot0m <- abs(wboot - matrix(rep(colMeans(wboot, na.rm = T), pvalreps), ncol = noW, byrow = T))
+      pval <- colMeans(wboot0m > abs(matrix(rep(w, pvalreps), ncol = noW, byrow = T)), na.rm = T)
       
     } else {
       pval <- rep(NA, noW)
@@ -503,7 +509,7 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
       loc <- which(pvalTemp == max(pvalTemp))[1]
       wIdx[loc] <- FALSE
       
-      if (all(wIdx ==FALSE)){ # check if any variable is still left
+      if (all(wIdx == FALSE)){ # check if any variable is still left
         elim <- FALSE
       }
     } else {
