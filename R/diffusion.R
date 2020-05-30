@@ -428,8 +428,8 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
     # Optimise
     w <- rep(0, noW)
     
-    if (sum(wIdx) > 1) {
-      # These optimisation algorithms are multidimensional, so revert to BFGS if needed
+    if (sum(wIdx) > 1 | optim == "Rcgmin") {
+      # These optimisation algorithms are multidimensional, so revert to BFGS if needed unless it is Rcgmin
       wNew <- callOptim(y, loss, optim, maxiter, type, init,
                          wIdx, prew, cumulative, optsol, mscal, ibound, lbound)
 
@@ -439,9 +439,9 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
 
       wNew <-  callOptim(y, loss, optim = "L-BFGS-B", maxiter, type, init,
                          wIdx, prew, cumulative, optsol, mscal, ibound = F, lbound=lbound)
-        
-    }  
-      
+
+    }
+
     ## When wNew has 1e-9 values, it means we have hit the lbound
     ## Perhaps we should consider replacing those with zero in the sequential case.
     # The resulting w contains the differences from prew. Final parameters are prew+w
