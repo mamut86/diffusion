@@ -192,24 +192,34 @@ callOptim <- function(y, loss, optim, maxiter, type, init, wIdx = rep(TRUE, leng
     cf <- unlist(lapply(optSols, function(x) {x$value}))
     idx <- which.min(cf)
     
-    # Step 2: detailed search - ideally most solutions should converge to the same!
-    optSols <- list()
-    for (s in 1:19){
+    # Go in the second step if the coarse search resulted in substantial differences
+    if (sd(cf)/mean(cf) <= 0.1){
+      # End optimisation
       
-      if (length(initF)>1){
-        w <- as.vector(c(((idx + seq(-0.9, 0.9, 0.1))[s])*initF[1], initF[2:length(initF)]))
-      } else {
-        w <- as.vector((idx + seq(-0.9, 0.9, 0.1)[s])*initF[1])
+    } else {
+      
+      # Step 2: detailed search - ideally most solutions should converge to the same!
+      optSols <- list()
+      for (s in 1:19){
+        
+        if (length(initF)>1){
+          w <- as.vector(c(((idx + seq(-0.9, 0.9, 0.1))[s])*initF[1], initF[2:length(initF)]))
+        } else {
+          w <- as.vector((idx + seq(-0.9, 0.9, 0.1)[s])*initF[1])
+        }
+        optSols[[s]] <- optimx::optimx(w, difCost, method = optim, lower = lbound, y = y,
+                                       loss = loss, type = type, cumulative = cumulative,
+                                       wIdx = wIdx, wFix = wFix, prew = prew, mscal = mscal, ibound = ibound,
+                                       control = list(trace = 0, dowarn = TRUE,
+                                                      maxit = maxiter, starttests = FALSE))
       }
-      optSols[[s]] <- optimx::optimx(w, difCost, method = optim, lower = lbound, y = y,
-                                     loss = loss, type = type, cumulative = cumulative,
-                                     wIdx = wIdx, wFix = wFix, prew = prew, mscal = mscal, ibound = ibound,
-                                     control = list(trace = 0, dowarn = TRUE,
-                                                    maxit = maxiter, starttests = FALSE))
+      cf <- unlist(lapply(optSols, function(x) {x$value}))
+      
     }
-    cf <- unlist(lapply(optSols, function(x) {x$value}))
-    # cbind(unlist(lapply(optSols, function(x) {x$value})), unlist(lapply(optSols, function(x) {x$p1})))
+    
+    # Extract parameters from bets performing run
     opt <- optSols[[which.min(cf)]]
+    # cbind(unlist(lapply(optSols, function(x) {x$value})), unlist(lapply(optSols, function(x) {x$p1})))
     
   } else { # optsol == "single"
 
@@ -307,7 +317,7 @@ checkInit <- function(init, optim, prew) {
   # function to check the initalisation for scale and sets bounds
   # init, the initalisation parameters
   # optim, the optimisation algorithm selected
-  # prew, any previous generations, if available
+  # prew, any previous generations, if available - is inputed scaled if mscal==TRUE
   
   # "L-BFGS-B" needs lower bounds
   # ibounds uses internal bounds
@@ -323,6 +333,7 @@ checkInit <- function(init, optim, prew) {
   # at this point prew is either a vector of 0's or values from a different diffusion generation
   if (!is.null(prew)){
     lbound <- lbound - prew
+    ibound <- TRUE
   }
   
   hbound <- Inf

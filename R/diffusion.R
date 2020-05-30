@@ -410,7 +410,12 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
   )
   
   # check initalisation
-  initval <- checkInit(init, optim, prew)
+  # We adjust lower bounds by prew - which can be scaled
+  ## Should we introduce an auxiliary to do the scaling? So that we collect all
+  ## the hardcoded scaling parameters in one place.
+  prewscal <- prew
+  if (!is.null(prew)){prewscal[1] <- prewscal[1]/(10*sum(y))}
+  initval <- checkInit(init, optim, prewscal)
   init <- initval$init
   lbound <- initval$lbound
   ibound <- initval$ibound
@@ -446,7 +451,7 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
     ## Perhaps we should consider replacing those with zero in the sequential case.
     # The resulting w contains the differences from prew. Final parameters are prew+w
     w <- wNew
-    # browser()
+
     # Bootstrap p-values
     if (pvalreps > 0){
       
@@ -455,13 +460,24 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
              "gompertz" = yhat <- gompertzCurve(n, prew+w)[, 2],
              "sgompertz" = yhat <- gsgCurve(n, prew+w)[, 2],
              "weibull" = yhat <- weibullCurve(n, prew+w)[, 2])
+
+      # Option 1, assuming normal errors      
+      # sigma <- sqrt(mean((y - yhat)^2))
+      # yboot <- matrix(stats::rnorm(n*pvalreps, 0, sigma), nrow = n) + matrix(rep(yhat, pvalreps), ncol = pvalreps)
+
+      # Option 2, use the empirical distribution of the errors
+      # err <- y-yhat
+      # yboot <- matrix(sample(err,n*pvalreps,replace=TRUE), nrow = n) + matrix(rep(yhat, pvalreps), ncol = pvalreps)
       
-      sigma <- sqrt(mean((y - yhat)^2))
+      # Option 3, construct a smooth empirical distribution and sample from that
+      err <- y-yhat
+      kde <- stats::density(err)
+      errKDE <- stats::approx(cumsum(kde$y)/sum(kde$y), kde$x, runif(n*pvalreps))$y
+      yboot <- matrix(errKDE, nrow = n) + matrix(rep(yhat, pvalreps), ncol = pvalreps)
       
       ## This can be improved to be a non-parametric bootstrap. Now we impose a severe assumption
       # Construct bootstraps
       wboot <- array(0, c(pvalreps, noW))
-      yboot <- matrix(stats::rnorm(n*pvalreps, 0, sigma), nrow = n) + matrix(rep(yhat, pvalreps), ncol = pvalreps)
       
       # This needs to become multiplicative
       yboot[yboot < 0] <- 0.001
@@ -469,31 +485,20 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
       # Estimate model
       for (i in 1:pvalreps){
         
-        # Step 1: Estimate parameters on the bootstrapped curve, starting from prew
-        #         Note that prew=NULL so the optimiser will output the values including prew (i.e. w = new w + prew)
-        wboot[i,] <- callOptim(yboot[,i], loss, optim, maxiter, type, init=prew,
-                                   wIdx, prew=NULL, cumulative, optsol, mscal, ibound, lbound)
-        # Step 2: Find differences from prew, as we want to find significant deviations from 0 for the pvalues
-        wboot[i,] <- wboot[i,] - prew
-        
-        # for debugging NA error
-        # if (any(is.na(wboot[i,]))) {
-        #   browser()
-        # }
-        
-        ## Old code, replaced diffusionEstim with callOptim above as this is cleaner
-        # wboot[i,] <-  diffusionEstim(y=yboot[,i], loss=loss, cumulative=cumulative, pvalreps=0, eliminate=FALSE, type=type,
-        #                             optim=optim, maxiter=maxiter, optsol=optsol, initpar=prew, mscal=mscal)$w - prew
-  
-      }
+        # Estimate parameters on the bootstrapped curve, starting from prew
+        # In wboot we store differences from prew, as we want to find which of these are significant
+        wboot[i,] <- callOptim(yboot[,i], loss, optim, maxiter, type, init=init,
+                                   wIdx, prew=prew, cumulative, optsol, mscal, ibound, lbound) 
+
+      } 
 
       # Calculation of the p-values
       # wboot contains only the additional bit over prew
       # http://www.inference.org.uk/mackay/itila/ pp. 457-466
       # https://stats.stackexchange.com/questions/83012/how-to-obtain-p-values-of-coefficients-from-bootstrap-regression
-      # remove NA for failed estimations
+      ## Removed! - remove NA for failed estimations
       wboot0m <- abs(wboot - matrix(rep(colMeans(wboot, na.rm = T), pvalreps), ncol = noW, byrow = T))
-      pval <- colMeans(wboot0m > abs(matrix(rep(w, pvalreps), ncol = noW, byrow = T)), na.rm = T)
+      pval <- colMeans(wboot0m > abs(matrix(rep(w, pvalreps), ncol = noW, byrow = T)))
       
     } else {
       pval <- rep(NA, noW)
@@ -531,9 +536,11 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
       }
       
       if (!is.null(prew)){
-        temp <- cbind(round(cbind(w+prew, pval), 4), locv)
+        temp <- cbind(round(cbind(w, pval), 4), round(prew+w,4), locv)
+        colnames(temp) <- c("Estimate", "p-value", "Total", "")[1:(3+!is.na(loc))]
       } else {
         temp <- cbind(round(cbind(w, pval), 4), locv)
+        colnames(temp) <- c("Estimate", "p-value", "")[1:(2+!is.na(loc))]
       }
       
       switch(type,
@@ -543,7 +550,6 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
              "weibull" = rownames(temp) <- c("m", "a", "b")
              )
       
-      colnames(temp) <- c("Estimate", "p-value", "")[1:(2+!is.na(loc))]
       print(temp, quote = FALSE)
       
       if (elim == FALSE){
