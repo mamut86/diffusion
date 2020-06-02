@@ -25,7 +25,7 @@ gompertzCurve <- function(n, w){
   return(x)
 }
 
-gompertzInit <- function(y, loss, optim, optsol, initpar, mscal){
+gompertzInit <- function(y, loss, optim, multisol, initpar, mscal){
   # Internal function: get initial values
   # get approximation of initial values using Jukic et al. 2004 approach adopted
   # m to allow for y to be adoption per period
@@ -49,7 +49,7 @@ gompertzInit <- function(y, loss, optim, optsol, initpar, mscal){
   
   # calling bass estimates
   what <- diffusionEstim(y, loss, pvalreps = 0, type = "bass", optim = optim,
-                         optsol = optsol, initpar = initpar, mscal = mscal)$w
+                         multisol = multisol, initpar = initpar, mscal = mscal)$w
   
   m <- what[1]
   

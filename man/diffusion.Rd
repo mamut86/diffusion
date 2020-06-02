@@ -15,7 +15,7 @@ diffusion(
   optim = c("L-BFGS-B", "Nelder-Mead", "BFGS", "hjkb", "Rcgmin", "bobyqa"),
   maxiter = 500,
   opttol = 1e-06,
-  optsol = c("single", "multi"),
+  multisol = c(FALSE, TRUE),
   initpar = c("linearize", "preset"),
   mscal = c(TRUE, FALSE),
   ...
@@ -25,7 +25,7 @@ diffusion(
 \item{y}{vector with adoption per period}
 
 \item{w}{vector of curve parameters (see note). Parameters set to NA will be
-optimised. If \code{w = NULL} (default) all paramters are optimised.}
+optimized. If \code{w = NULL} (default) all paramters are optimized.}
 
 \item{cleanlead}{removes leading zeros for fitting purposes (default == TRUE)}
 
@@ -49,9 +49,9 @@ optimisation algorithms we refer to the optimx package documentation}
 
 \item{opttol}{Tolerance for convergence (default == 1.e-06)}
 
-\item{optsol}{when \code{"multi"} multiple optmisation solutions from
+\item{multisol}{when \code{"TRUE"} multiple optmisation solutions from
 different initialisations of the market parameter are used (default ==
-\code{"single"})}
+\code{"FALSE"})}
 
 \item{initpar}{vector of initalisation parameters. If set to \code{preset} a
 predfined set of internal initalisation parameters is used while
