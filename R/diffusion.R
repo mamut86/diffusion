@@ -233,14 +233,7 @@ diffusion <- function(y, w = NULL, cleanlead = c(TRUE, FALSE),
   }
   
   n <- length(y)
-  switch(type,
-         "bass" = fit <- bassCurve(n, w),
-         "gompertz" = fit <- gompertzCurve(n, w),
-         "gsgompertz" = fit <- gsgCurve(n, w),
-         "weibull" = fit <- weibullCurve(n, w),
-         "gompertz2" = fit <- gompertzCurve(n, w),
-         "bass2" = fit <- bassCurve2(n, w))
-  
+  fit <- getCurve(n, w, type)
   mse <- mean((y - fit[, 2])^2)
   
   if (warScal == TRUE & mscal == FALSE) {
@@ -464,13 +457,8 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
     # Bootstrap p-values
     if (pvalreps > 0){
       
-      switch (type,
-             "bass" = yhat <- bassCurve(n, prew+w)[, 2],
-             "gompertz" = yhat <- gompertzCurve(n, prew+w)[, 2],
-             "sgompertz" = yhat <- gsgCurve(n, prew+w)[, 2],
-             "weibull" = yhat <- weibullCurve(n, prew+w)[, 2])
-      
-      
+      yhat <- getCurve(n, w = (prew+w), type)[, 2]
+
       switch (bootloss,
         "se" = {# Option 1, assuming normal errors      
           sigma <- sqrt(mean((y - yhat)^2))
@@ -552,12 +540,7 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
         colnames(temp) <- c("Estimate", "p-value", "")[1:(2+!is.na(loc))]
       }
       
-      switch(type,
-             "bass" = rownames(temp) <- c("m", "p", "q"),
-             "gompertz" = rownames(temp) <- c("m", "a", "b"),
-             "gsgompertz" = rownames(temp) <- c("m", "a", "b", "c"),
-             "weibull" = rownames(temp) <- c("m", "a", "b")
-             )
+      temp <- nameParameters(temp, type)
       
       print(temp, quote = FALSE)
       
@@ -733,21 +716,7 @@ diffusionPrint <- function(x, ...){
     colnames(temp) <- c("Estimate", "Marginal", " Marginal p-value")
   }
   
-  switch(type,
-         "bass" = rownames(temp) <- c("m - Market potential",
-                                      "p - Coefficient of innovation",
-                                      "q - Coefficient of imitation"),
-         "gompertz" = rownames(temp) <- c("m - Market potential",
-                                          "a - displacement",
-                                          "b - growth"),
-         "gsgompertz" = rownames(temp) <- c("m - Market potential",
-                                            "a - displacement",
-                                            "b - growth",
-                                            "c - shift"),
-         "weibull" = rownames(temp) <- c("m - Market potential",
-                                         "a - scale",
-                                         "b - shape")
-         )
+  temp <- nameParameters(temp, type)
   
   print(temp)
   writeLines("")
@@ -823,14 +792,9 @@ difcurve <- function(n, w = c(0.01, 0.1, 10),
     stop("At least 1 point must be generated!")
   }
   
-  switch(type,
-         "bass" = {y <- bassCurve(n, w)},
-         "gompertz" = {y <- gompertzCurve(n, w)},
-         "gsgompertz" = {y <- gsgCurve(n, w)},
-         "weibull" = {y <- weibullCurve(n, w)}
-         )
+  x <- getCurve(n, w, type)
   
-  return(y)
+  return(x)
   
 }
 
@@ -867,7 +831,7 @@ difcurve <- function(n, w = c(0.01, 0.1, 10),
 #'
 #' @export
 #' @method predict diffusion
-predict.diffusion <- function(object,h=10,...){
+predict.diffusion <- function(object, h=10,...){
   # Calculate forecasts for fitted diffusion curves
   
   if (h < 1){
@@ -878,16 +842,9 @@ predict.diffusion <- function(object,h=10,...){
   w <- object$w
   n <- length(object$y) + h
   
-  switch(type,
-         "bass" = {y <- bassCurve(n, w)},
-         "gompertz" = {y <- gompertzCurve(n, w)},
-         "gsgompertz" = {y <- gsgCurve(n, w)},
-         "weibull" = {y <- weibullCurve(n, w)}
-         )
-  
-  y <- y[(n-h+1):n, , drop = FALSE]
-  
-  object$frc <- y
+  x <- getCurve(n, w, type)
+  x <- x[(n-h+1):n, , drop = FALSE]
+  object$frc <- x
   
   return(object)
 }

@@ -277,13 +277,7 @@ difCost <- function(w, y, loss, type, wIdx, wFix, prew, cumulative, mscal, iboun
     wAll[1] <- wAll[1]*(10*sum(y))  # The 10x should be data driven. Something that would bring w_1 closer to 1-10?
   }
   
-  switch(type,
-         "bass" = fit <- bassCurve(n, wAll),
-         "gompertz" = fit <- gompertzCurve(n, wAll),
-         "gsgompertz" = fit <- gsgCurve(n, wAll),
-         "weibull" = fit <- weibullCurve(n, wAll)
-  )
-  
+  fit <- getCurve(n, wAll, type)
   se <- getse(y, fit, loss, cumulative) # auxiliary.R
   
   # Ensure positive coefficients for optimisers without bounds
@@ -355,3 +349,44 @@ checkInit <- function(init, optim, prew) {
   return(list("init" = init, "lbound" = lbound, "ibound" = ibound, "warScal" = warScal))
   
 }
+
+nameParameters <- function(x, type) {
+  # function that names paramters according to curve type
+  # x, the paramter vector
+  # type, the diffusion curve type
+  
+  # Alternative more descriptive naming
+  # Gs/Gompertz: c(a - displacement", "b - growth", "c - shift")
+  # Gompertz: c(a - displacement", "b - growth")
+  # Weibull: c("m - Market potential", "a - scale", "b - shape")
+  # Bass: c("m - Market potential", "p - innovation", "q - imitation")
+  
+  switch(type,
+         "bass" = rownames(x) <- c("m", "p", "q"),
+         "gompertz" = rownames(x) <- c("m", "a", "b"),
+         "gsgompertz" = rownames(x) <- c("m", "a", "b", "c"),
+         "weibull" = rownames(x) <- c("m", "a", "b")
+  )
+  
+  return(x)
+}
+
+
+getCurve <- function(n, w, type) {
+  # function that returns the curve values
+  # n, number of observations
+  # w, curve paramteres
+  # type, curve type selected
+  
+  switch(type,
+         "bass" = {x <- bassCurve(n, w)},
+         "gompertz" = {x <- gompertzCurve(n, w)},
+         "gsgompertz" = {x <- gsgCurve(n, w)},
+         "weibull" = {x <- weibullCurve(n, w)}
+  )
+  
+  return(x)
+}
+
+
+
