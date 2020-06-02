@@ -17,9 +17,10 @@ seqdiffusion(
   optim = c("L-BFGS-B", "Nelder-Mead", "BFGS", "hjkb", "Rcgmin", "bobyqa"),
   maxiter = 500,
   opttol = 1e-06,
-  optsol = c("single", "multi"),
+  multisol = c(FALSE, TRUE),
   initpar = c("linearize", "preset"),
   mscal = c(TRUE, FALSE),
+  bootloss = c("smthempir", "empir", "se"),
   ...
 )
 }
@@ -42,8 +43,8 @@ estimation. Forces \code{pvalreps = 1000} if left to 0.}
 \item{verbose}{if TRUE console output is provided during estimation (default
 == F)}
 
-\item{type}{of diffusion curve to use. This can be "bass", "gompertz" and
-"gsgompertz"}
+\item{type}{of diffusion curve to use. This can be "bass", "gompertz",
+"gsgompertz" and "weibull"}
 
 \item{optim}{optimization method to use. This can be "nm" for Nelder-Meade or
 "hj" for Hooke-Jeeves. #' @param maxiter number of iterations the optimser
@@ -51,14 +52,14 @@ takes (default == \code{10000} for "nm" and \code{Inf} for "hj")}
 
 \item{opttol}{Tolerance for convergence (default == 1.e-06)}
 
-\item{optsol}{when \code{"multi"} multiple optmisation solutions from different initialisations of the market parameter are used (default == \code{"single"})}
+\item{multisol}{when \code{"TRUE"} multiple optmisation solutions from different initialisations of the market parameter are used (default == \code{"FALSE"})}
 
 \item{initpar}{vector of initalisation parameters. If set to \code{preset} a predfined set of internal initalisation parameters is used while \code{"linearize"} uses linearized initalisation methods (default == \code{"linearize"}.}
 
 \item{mscal}{scales market potential at initalisation with the maximum of the observed market potential for better optimisation results (default == \code{TRUE})}
 
 \item{w}{vector of curve parameters (see note). Parameters set to NA will be
-optimised. If \code{w = NULL} (default) all paramters are optimised.}
+optimized. If \code{w = NULL} (default) all paramters are optimized.}
 }
 \value{
 Returns an object of class \code{seqdiffusion}, which contains:

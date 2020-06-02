@@ -142,12 +142,12 @@ getse <- function(y, fit, loss, cumulative) {
 
 callOptim <- function(y, loss, optim, maxiter, type, init, wIdx = rep(TRUE, length(init)),
                       prew = NULL, cumulative = c(TRUE, FALSE),
-                      optsol = c("multi", "single"), mscal = c(TRUE, FALSE), ibound, lbound) {
+                      multisol = c(FALSE, TRUE), mscal = c(TRUE, FALSE), ibound, lbound) {
   # function to call optimisation process
   # The function will always output a vector equal to the number of model parameters
   # Fixed parameters will be locked to initials. If prew is provided, then fixed parameters will be locked to 0.
   
-  # optsol, using mulitiple initial values to derive at more optimal solutions
+  # multisol, using mulitiple initial values to derive at more optimal solutions
   # mscal, decides whether m parameter is being rescaled
   # ibound, whether intrabounds of cost function should be used
   # lbound, what lower bound is needed
@@ -164,7 +164,7 @@ callOptim <- function(y, loss, optim, maxiter, type, init, wIdx = rep(TRUE, leng
   initF <- as.vector(init[wIdx])
   wFix <- as.vector(init[!wIdx])
   
-  if (optsol == "multi" & wIdx[1] == TRUE) { # This makes sense only for m, not the other parameters
+  if (multisol == TRUE & wIdx[1] == TRUE) { # This makes sense only for m, not the other parameters
     # The m parameter of growth curves is notoriously hard to optimise. 
     # We will try different initial values and check the resulting costs.
     # We also have to worry about sample randomness, so instead of picking the 
@@ -221,7 +221,7 @@ callOptim <- function(y, loss, optim, maxiter, type, init, wIdx = rep(TRUE, leng
     opt <- optSols[[which.min(cf)]]
     # cbind(unlist(lapply(optSols, function(x) {x$value})), unlist(lapply(optSols, function(x) {x$p1})))
     
-  } else { # optsol == "single"
+  } else { # multisol == FALSE
 
     # single optimisation 
     opt <- optimx::optimx(initF, difCost, method = optim, lower = lbound, y = y,

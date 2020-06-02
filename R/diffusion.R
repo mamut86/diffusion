@@ -40,9 +40,9 @@
 #'   optimisation algorithms we refer to the optimx package documentation
 #' @param maxiter number of iterations the optimser takes (default == \code{5000})
 #' @param opttol Tolerance for convergence (default == 1.e-06)
-#' @param optsol when \code{"multi"} multiple optmisation solutions from
+#' @param multisol when \code{"TRUE"} multiple optmisation solutions from
 #'   different initialisations of the market parameter are used (default ==
-#'   \code{"single"})
+#'   \code{"FALSE"})
 #' @param initpar vector of initalisation parameters. If set to \code{preset} a
 #'   predfined set of internal initalisation parameters is used while
 #'   \code{"linearize"} uses linearized initalisation methods (default == \code{"linearize"}.
@@ -128,12 +128,11 @@ diffusion <- function(y, w = NULL, cleanlead = c(TRUE, FALSE),
                       loss = 2, cumulative = c(TRUE, FALSE), verbose = c(FALSE, TRUE),
                       type = c("bass", "gompertz", "gsgompertz", "weibull"),
                       optim = c("L-BFGS-B", "Nelder-Mead", "BFGS", "hjkb", "Rcgmin", "bobyqa"),
-                      maxiter = 500, opttol = 1.e-06, optsol = c("single", "multi"),
+                      maxiter = 500, opttol = 1.e-06, multisol = c(FALSE, TRUE),
                       initpar = c("linearize","preset"), mscal = c(TRUE, FALSE), ...) {
 
   type <- match.arg(type[1], c("bass", "gompertz", "gsgompertz", "weibull"))
   optim <- match.arg(optim[1], c("L-BFGS-B", "Nelder-Mead", "BFGS", "hjkb", "Rcgmin", "bobyqa", "nm", "hj"))
-  optsol <- match.arg(optsol[1], c("single", "multi"))
   if (!is.numeric(initpar)){
     initpar <- match.arg(initpar[1], c("preset", "linearize", "linearise"))
   }
@@ -162,6 +161,13 @@ diffusion <- function(y, w = NULL, cleanlead = c(TRUE, FALSE),
   } else {
     prew <- NULL
   }
+  
+  if ("bootloss" %in% nel){
+    bootloss <- el$bootloss
+  } else {
+    bootloss <- "smthempir"
+  }
+  
   # Then check for deprecated arguments
   if ("l" %in% nel) {
     warning("Argument \"l\" has been deprecated and replaced by \"loss\"")
@@ -172,6 +178,7 @@ diffusion <- function(y, w = NULL, cleanlead = c(TRUE, FALSE),
     y <- el$x
   }
   
+  multisol <- multisol[1]
   cumulative <- cumulative[1]
   eliminate <- eliminate[1]
   verbose <- verbose[1]
@@ -212,8 +219,8 @@ diffusion <- function(y, w = NULL, cleanlead = c(TRUE, FALSE),
   if (optPar) {
     opt <- diffusionEstim(y, loss, cumulative, prew, pvalreps, eliminate,
                           sig, verbose, type = type, optim  = optim,
-                          maxiter = maxiter, optsol = optsol, initpar = initpar,
-                          mscal = mscal, wFix = wFix)
+                          maxiter = maxiter, multisol = multisol, initpar = initpar,
+                          mscal = mscal, wFix = wFix, bootloss = bootloss)
 
     w <- opt$w
     pval <- opt$pval
@@ -255,8 +262,8 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
                            verbose = c(FALSE, TRUE),
                            type = c("bass", "gompertz", "gsgompertz", "weibull"),
                            optim = c("L-BFGS-B", "Nelder-Mead", "BFGS", "hjkb", "Rcgmin", "bobyqa"), maxiter = 500, opttol = 1.e-06,
-                           optsol = c("single", "multi"), initpar = c("preset", "linearize"),
-                           mscal = c(TRUE, FALSE), wFix = NULL) {
+                           multisol = c(FALSE, TRUE), initpar = c("preset", "linearize"),
+                           mscal = c(TRUE, FALSE), wFix = NULL, bootloss = c("smthempir", "empir", "se")) {
   # Internal function: estimate bass parameters 
   # y, adoption per period
   # loss, the l-norm (1 is absolute errors, 2 is squared errors)
@@ -271,19 +278,21 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
   # optim, optimisation algorithm, "nm" is nelder-mead, "hj" is hooke-jeeves
   # maxiter, numbers of iterations the optimsation algorithm is allowed to take
   # opttol, convergence tolerance for nm and hj algorithm
-  # optsol, run multiple initialisation or just single
+  # multisol, run multiple initialisation or just single
   # initpar, aprx uses linear approximation, fix has set initalisation parameters
   # mscal, TRUE scales market potential times the maximum
   # wFix, used to control user fixed parameters
   
   type <- match.arg(type[1], c("bass", "gompertz", "gsgompertz", "weibull"))
   optim <- match.arg(optim[1], c("L-BFGS-B", "Nelder-Mead", "BFGS", "hjkb", "Rcgmin", "bobyqa", "nm", "hj"))
-  optsol <- match.arg(optsol[1], c("single", "multi"))
+  
   if (!is.numeric(initpar)){
     initpar <- match.arg(initpar[1], c("preset", "linearize", "linearise"))
   }
+  bootloss <- match.arg(bootloss[1], c( "smthempir", "empir", "se"))
   
-  # Defaults 
+  # Defaults
+  multisol <- multisol[1]
   mscal <- mscal[1]
   cumulative <- cumulative[1]
   eliminate <- eliminate[1]
@@ -356,8 +365,8 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
     # make sure linearization does not break down the process
     tryCatch( {switch(type,
                       "bass" = init <- bassInit(y),
-                      "gompertz" = init <- gompertzInit(y, loss, optim, optsol, initpar, mscal),
-                      "gsgompertz" = init <- gsgInit(y, loss, optim, optsol, initpar, mscal),
+                      "gompertz" = init <- gompertzInit(y, loss, optim, multisol, initpar, mscal),
+                      "gsgompertz" = init <- gsgInit(y, loss, optim, multisol, initpar, mscal),
                       "weibull" = init <- weibullInit(y))
       
       # Check validity of initials
@@ -397,7 +406,7 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
   
   # If prew then adjust initials to be difference from it
   # We are estimating how parameters change from prew
-  if (!is.null(prew)){
+  if (!is.null(prew)) {
     init <- init - prew
     init[(init + prew) <= 0] <- 1e-9
   }
@@ -436,14 +445,14 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
     if (sum(wIdx) > 1 | optim == "Rcgmin") {
       # These optimisation algorithms are multidimensional, so revert to BFGS if needed unless it is Rcgmin
       wNew <- callOptim(y, loss, optim, maxiter, type, init,
-                         wIdx, prew, cumulative, optsol, mscal, ibound, lbound)
+                         wIdx, prew, cumulative, multisol, mscal, ibound, lbound)
 
     } else {
       # Revert to L-BFGS-B if only one parameter is required
       # Max iterations included in the BFGS
 
       wNew <-  callOptim(y, loss, optim = "L-BFGS-B", maxiter, type, init,
-                         wIdx, prew, cumulative, optsol, mscal, ibound = F, lbound=lbound)
+                         wIdx, prew, cumulative, multisol, mscal, ibound = F, lbound=lbound)
 
     }
 
@@ -455,25 +464,25 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
     # Bootstrap p-values
     if (pvalreps > 0){
       
-      switch(type,
+      switch (type,
              "bass" = yhat <- bassCurve(n, prew+w)[, 2],
              "gompertz" = yhat <- gompertzCurve(n, prew+w)[, 2],
              "sgompertz" = yhat <- gsgCurve(n, prew+w)[, 2],
              "weibull" = yhat <- weibullCurve(n, prew+w)[, 2])
-
-      # Option 1, assuming normal errors      
-      # sigma <- sqrt(mean((y - yhat)^2))
-      # yboot <- matrix(stats::rnorm(n*pvalreps, 0, sigma), nrow = n) + matrix(rep(yhat, pvalreps), ncol = pvalreps)
-
-      # Option 2, use the empirical distribution of the errors
-      # err <- y-yhat
-      # yboot <- matrix(sample(err,n*pvalreps,replace=TRUE), nrow = n) + matrix(rep(yhat, pvalreps), ncol = pvalreps)
       
-      # Option 3, construct a smooth empirical distribution and sample from that
-      err <- y-yhat
-      kde <- stats::density(err)
-      errKDE <- stats::approx(cumsum(kde$y)/sum(kde$y), kde$x, runif(n*pvalreps))$y
-      yboot <- matrix(errKDE, nrow = n) + matrix(rep(yhat, pvalreps), ncol = pvalreps)
+      
+      switch (bootloss,
+        "se" = {# Option 1, assuming normal errors      
+          sigma <- sqrt(mean((y - yhat)^2))
+          yboot <- matrix(stats::rnorm(n*pvalreps, 0, sigma), nrow = n) + matrix(rep(yhat, pvalreps), ncol = pvalreps)},
+        "empir" = { # Option 2, use the empirical distribution of the errors
+          err <- y-yhat
+          yboot <- matrix(sample(err,n*pvalreps,replace=TRUE), nrow = n) + matrix(rep(yhat, pvalreps), ncol = pvalreps)},
+        "smthempir" = {# Option 3, construct a smooth empirical distribution and sample from that
+          err <- y-yhat
+          kde <- stats::density(err)
+          errKDE <- stats::approx(cumsum(kde$y)/sum(kde$y), kde$x, runif(n*pvalreps))$y
+          yboot <- matrix(errKDE, nrow = n) + matrix(rep(yhat, pvalreps), ncol = pvalreps)})
       
       ## This can be improved to be a non-parametric bootstrap. Now we impose a severe assumption
       # Construct bootstraps
@@ -488,7 +497,7 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
         # Estimate parameters on the bootstrapped curve, starting from prew
         # In wboot we store differences from prew, as we want to find which of these are significant
         wboot[i,] <- callOptim(yboot[,i], loss, optim, maxiter, type, init=init,
-                                   wIdx, prew=prew, cumulative, optsol, mscal, ibound, lbound) 
+                                   wIdx, prew=prew, cumulative, multisol, mscal, ibound, lbound) 
 
       } 
 

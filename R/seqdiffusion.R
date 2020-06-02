@@ -25,13 +25,13 @@
 #' @param sig significance level used to eliminate parameters
 #' @param verbose if TRUE console output is provided during estimation (default
 #'   == F)
-#' @param type of diffusion curve to use. This can be "bass", "gompertz" and
-#'   "gsgompertz"
+#' @param type of diffusion curve to use. This can be "bass", "gompertz",
+#'   "gsgompertz" and "weibull"
 #' @param optim optimization method to use. This can be "nm" for Nelder-Meade or
 #'   "hj" for Hooke-Jeeves. #' @param maxiter number of iterations the optimser
 #'   takes (default == \code{10000} for "nm" and \code{Inf} for "hj")
 #' @param opttol Tolerance for convergence (default == 1.e-06)
-#' @param optsol when \code{"multi"} multiple optmisation solutions from different initialisations of the market parameter are used (default == \code{"single"})
+#' @param multisol when \code{"TRUE"} multiple optmisation solutions from different initialisations of the market parameter are used (default == \code{"FALSE"})
 #' @param initpar vector of initalisation parameters. If set to \code{preset} a predfined set of internal initalisation parameters is used while \code{"linearize"} uses linearized initalisation methods (default == \code{"linearize"}.
 #' @param mscal scales market potential at initalisation with the maximum of the observed market potential for better optimisation results (default == \code{TRUE})
 #' 
@@ -71,15 +71,16 @@ seqdiffusion <- function(y, cleanlead = c(TRUE, FALSE), loss = 2,
                          verbose = c(FALSE, TRUE),
                          type = c("bass", "gompertz", "gsgompertz", "weibull"),
                          optim = c("L-BFGS-B", "Nelder-Mead", "BFGS", "hjkb", "Rcgmin", "bobyqa"),
-                         maxiter = 500, opttol = 1.e-06, optsol = c("single", "multi"),
-                         initpar = c("linearize", "preset"), mscal = c(TRUE, FALSE), ...) {
+                         maxiter = 500, opttol = 1.e-06, multisol = c(FALSE, TRUE),
+                         initpar = c("linearize", "preset"), mscal = c(TRUE, FALSE),
+                         bootloss = c("smthempir", "empir", "se"), ...) {
   
   type <- match.arg(type[1], c("bass", "gompertz", "gsgompertz", "weibull"))
   optim <- match.arg(optim[1], c("L-BFGS-B", "Nelder-Mead", "BFGS", "hjkb", "Rcgmin", "bobyqa", "nm", "hj"))
-  optsol <- match.arg(optsol[1], c("single", "multi"))
   if (!is.numeric(initpar)){
     initpar <- match.arg(initpar[1], c("preset", "linearize", "linearise"))
   }
+  bootloss <- match.arg(bootloss[1], c("smthempir", "empir", "se"))
   
   # check deprecated arguments doesn't work somehow
   el <- list(...)
@@ -91,6 +92,7 @@ seqdiffusion <- function(y, cleanlead = c(TRUE, FALSE), loss = 2,
     y <- x
   }
   
+  multisol <- multisol[1]
   cumulative <- cumulative[1]
   eliminate <- eliminate[1]
   verbose <- verbose[1]
@@ -121,8 +123,9 @@ seqdiffusion <- function(y, cleanlead = c(TRUE, FALSE), loss = 2,
     
     fit[[i]] <- diffusion(y[, i], w = NULL, cleanlead, loss, cumulative,
                           verbose, type, optim, maxiter,
-                          opttol, optsol, initpar=initpar, mscal, 
-                          pvalreps=pvalr, eliminate=elimin, sig=sig, prew=prew)
+                          opttol, multisol, initpar, mscal, 
+                          pvalreps = pvalr, eliminate = elimin, sig = sig,
+                          prew = prew, bootloss = bootloss)
   
   }
   
