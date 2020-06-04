@@ -18,7 +18,7 @@
 #'   optimized. If \code{w = NULL} (default) all paramters are optimized.
 #' @param cleanlead removes leading zeros for fitting purposes (default == T)
 #' @param loss the l-norm (1 is absolute errors, 2 is squared errors)
-#' @param cumulative If TRUE optimisation is done on cumulative adoption.
+#' @param cumulative If TRUE optimization is done on cumulative adoption.
 #' @param pvalreps bootstrap repetitions to estimate (marginal) p-values
 #' @param eliminate if TRUE eliminates insignificant parameters from the
 #'   estimation. Forces \code{pvalreps = 1000} if left to 0.
@@ -27,13 +27,13 @@
 #'   == F)
 #' @param type of diffusion curve to use. This can be "bass", "gompertz",
 #'   "gsgompertz" and "weibull"
-#' @param optim optimization method to use. This can be "nm" for Nelder-Meade or
-#'   "hj" for Hooke-Jeeves. #' @param maxiter number of iterations the optimser
+#' @param method optimization method to use. This can be "nm" for Nelder-Meade or
+#'   "hj" for Hooke-Jeeves. #' @param maxiter number of iterations the optimzer
 #'   takes (default == \code{10000} for "nm" and \code{Inf} for "hj")
 #' @param opttol Tolerance for convergence (default == 1.e-06)
 #' @param multisol when \code{"TRUE"} multiple optmisation solutions from different initialisations of the market parameter are used (default == \code{"FALSE"})
 #' @param initpar vector of initalisation parameters. If set to \code{preset} a predfined set of internal initalisation parameters is used while \code{"linearize"} uses linearized initalisation methods (default == \code{"linearize"}.
-#' @param mscal scales market potential at initalisation with the maximum of the observed market potential for better optimisation results (default == \code{TRUE})
+#' @param mscal scales market potential at initalisation with the maximum of the observed market potential for better optimization results (default == \code{TRUE})
 #' 
 #' 
 #' @return Returns an object of class \code{seqdiffusion}, which contains:
@@ -70,13 +70,13 @@ seqdiffusion <- function(y, cleanlead = c(TRUE, FALSE), loss = 2,
                          pvalreps = 0, eliminate = c(FALSE, TRUE), sig = 0.05, 
                          verbose = c(FALSE, TRUE),
                          type = c("bass", "gompertz", "gsgompertz", "weibull"),
-                         optim = c("L-BFGS-B", "Nelder-Mead", "BFGS", "hjkb", "Rcgmin", "bobyqa"),
+                         method = c("L-BFGS-B", "Nelder-Mead", "BFGS", "hjkb", "Rcgmin", "bobyqa"),
                          maxiter = 500, opttol = 1.e-06, multisol = c(FALSE, TRUE),
                          initpar = c("linearize", "preset"), mscal = c(TRUE, FALSE),
                          bootloss = c("smthempir", "empir", "se"), ...) {
   
   type <- match.arg(type[1], c("bass", "gompertz", "gsgompertz", "weibull"))
-  optim <- match.arg(optim[1], c("L-BFGS-B", "Nelder-Mead", "BFGS", "hjkb", "Rcgmin", "bobyqa", "nm", "hj"))
+  method <- match.arg(method[1], c("L-BFGS-B", "Nelder-Mead", "BFGS", "hjkb", "Rcgmin", "bobyqa", "nm", "hj"))
   if (!is.numeric(initpar)){
     initpar <- match.arg(initpar[1], c("preset", "linearize", "linearise"))
   }
@@ -122,7 +122,7 @@ seqdiffusion <- function(y, cleanlead = c(TRUE, FALSE), loss = 2,
     }
     
     fit[[i]] <- diffusion(y[, i], w = NULL, cleanlead, loss, cumulative,
-                          verbose, type, optim, maxiter,
+                          verbose, type, method, maxiter,
                           opttol, multisol, initpar, mscal, 
                           pvalreps = pvalr, eliminate = elimin, sig = sig,
                           prew = prew, bootloss = bootloss)

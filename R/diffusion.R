@@ -31,14 +31,14 @@
 #' @param cumulative If TRUE optimisation is done on cumulative adoption.
 #' @param verbose if TRUE console output is provided during estimation (default == FALSE)
 #' @param type diffusion curve to use. This can be "bass", "gompertz" and "gsgompertz"
-#' @param optim optimization method to use. These can be \code{"Nelder-Meade"},
+#' @param method optimization method to use. These can be \code{"Nelder-Meade"},
 #'   \code{"L-BFGS-B"}, \code{"BFGS"}, \code{"hjkb"}, \code{"Rcgmin"},
 #'   \code{"bobyqa"}. Typically, good performance is achieved with
 #'   \code{"Nelder-Meade"} and \code{"L-BFGS-B"}. \code{"hjkb"} and
 #'   \code{"Rcgmin"} might be an alternative for complex shapes but have
 #'   substantially higher computational costs. For further details on
-#'   optimisation algorithms we refer to the optimx package documentation
-#' @param maxiter number of iterations the optimser takes (default == \code{5000})
+#'   optimization algorithms we refer to the optimx package documentation
+#' @param maxiter number of iterations the optimzer takes (default == \code{5000})
 #' @param opttol Tolerance for convergence (default == 1.e-06)
 #' @param multisol when \code{"TRUE"} multiple optmisation solutions from
 #'   different initialisations of the market parameter are used (default ==
@@ -47,7 +47,7 @@
 #'   predfined set of internal initalisation parameters is used while
 #'   \code{"linearize"} uses linearized initalisation methods (default == \code{"linearize"}.
 #' @param mscal scales market potential at initalisation with the maximum of the
-#'   observed market potential for better optimisation results (default == \code{TRUE})
+#'   observed market potential for better optimization results (default == \code{TRUE})
 #' @param ... accepts \code{pvalreps}, bootstrap repetitions to estimate
 #'   (marginal) p-values; \code{eliminate}, if TRUE eliminates insignificant
 #'   parameters from the estimation (forces \code{pvalreps = 1000} if left to 0)
@@ -127,12 +127,12 @@
 diffusion <- function(y, w = NULL, cleanlead = c(TRUE, FALSE),
                       loss = 2, cumulative = c(TRUE, FALSE), verbose = c(FALSE, TRUE),
                       type = c("bass", "gompertz", "gsgompertz", "weibull"),
-                      optim = c("L-BFGS-B", "Nelder-Mead", "BFGS", "hjkb", "Rcgmin", "bobyqa"),
+                      method = c("L-BFGS-B", "Nelder-Mead", "BFGS", "hjkb", "Rcgmin", "bobyqa"),
                       maxiter = 500, opttol = 1.e-06, multisol = c(FALSE, TRUE),
                       initpar = c("linearize","preset"), mscal = c(TRUE, FALSE), ...) {
 
   type <- match.arg(type[1], c("bass", "gompertz", "gsgompertz", "weibull"))
-  optim <- match.arg(optim[1], c("L-BFGS-B", "Nelder-Mead", "BFGS", "hjkb", "Rcgmin", "bobyqa", "nm", "hj"))
+  method <- match.arg(method[1], c("L-BFGS-B", "Nelder-Mead", "BFGS", "hjkb", "Rcgmin", "bobyqa", "nm", "hj"))
   if (!is.numeric(initpar)){
     initpar <- match.arg(initpar[1], c("preset", "linearize", "linearise"))
   }
@@ -218,7 +218,7 @@ diffusion <- function(y, w = NULL, cleanlead = c(TRUE, FALSE),
   # Optimise parameters
   if (optPar) {
     opt <- diffusionEstim(y, loss, cumulative, prew, pvalreps, eliminate,
-                          sig, verbose, type = type, optim  = optim,
+                          sig, verbose, type = type, method  = method,
                           maxiter = maxiter, multisol = multisol, initpar = initpar,
                           mscal = mscal, wFix = wFix, bootloss = bootloss)
 
@@ -237,9 +237,9 @@ diffusion <- function(y, w = NULL, cleanlead = c(TRUE, FALSE),
   mse <- mean((y - fit[, 2])^2)
   
   if (warScal == TRUE & mscal == FALSE) {
-    warning('Initalisation parameters are of different scale. Consider argument "mscal" for better optimsation results')
+    warning('Initalisation parameters are of different scale. Consider argument "mscal" for better optimzation results')
   } else if (warScal == TRUE & mscal == TRUE) {
-    warning("Initalisation parameters are of different scale. Optimisation might be impacted")
+    warning("Initalisation parameters are of different scale. Optimization might be impacted")
   }
   
   out <- structure(list("type" = type, "call" = sys.call(),
@@ -254,7 +254,7 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
                            eliminate = c(FALSE, TRUE), sig = 0.05,
                            verbose = c(FALSE, TRUE),
                            type = c("bass", "gompertz", "gsgompertz", "weibull"),
-                           optim = c("L-BFGS-B", "Nelder-Mead", "BFGS", "hjkb", "Rcgmin", "bobyqa"), maxiter = 500, opttol = 1.e-06,
+                           method = c("L-BFGS-B", "Nelder-Mead", "BFGS", "hjkb", "Rcgmin", "bobyqa"), maxiter = 500, opttol = 1.e-06,
                            multisol = c(FALSE, TRUE), initpar = c("preset", "linearize"),
                            mscal = c(TRUE, FALSE), wFix = NULL, bootloss = c("smthempir", "empir", "se")) {
   # Internal function: estimate bass parameters 
@@ -277,7 +277,7 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
   # wFix, used to control user fixed parameters
   
   type <- match.arg(type[1], c("bass", "gompertz", "gsgompertz", "weibull"))
-  optim <- match.arg(optim[1], c("L-BFGS-B", "Nelder-Mead", "BFGS", "hjkb", "Rcgmin", "bobyqa", "nm", "hj"))
+  method <- match.arg(method[1], c("L-BFGS-B", "Nelder-Mead", "BFGS", "hjkb", "Rcgmin", "bobyqa", "nm", "hj"))
   
   if (!is.numeric(initpar)){
     initpar <- match.arg(initpar[1], c("preset", "linearize", "linearise"))
@@ -304,16 +304,16 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
   }
   
   # backward compability to old optimisation paramters
-  if (optim == "nm") {
-    optim <- "Nelder-Mead"
+  if (method == "nm") {
+    method <- "Nelder-Mead"
   }
   
-  if (optim == "hj") {
-    optim <- "hjkb"
+  if (method == "hj") {
+    method <- "hjkb"
   }
   
   # Check maxiter argument
-  if (optim == "Nelder-Mead" & maxiter < 500) {
+  if (method == "Nelder-Mead" & maxiter < 500) {
     message("It is recommend to set \"maxiter\" to 500 or more for better results with Nelder-Mead optimiser")
   } else if (maxiter == Inf) {
     maxiter <- 100000
@@ -358,8 +358,8 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
     # make sure linearization does not break down the process
     tryCatch( {switch(type,
                       "bass" = init <- bassInit(y),
-                      "gompertz" = init <- gompertzInit(y, loss, optim, multisol, initpar, mscal),
-                      "gsgompertz" = init <- gsgInit(y, loss, optim, multisol, initpar, mscal),
+                      "gompertz" = init <- gompertzInit(y, loss, method, multisol, initpar, mscal),
+                      "gsgompertz" = init <- gsgInit(y, loss, method, multisol, initpar, mscal),
                       "weibull" = init <- weibullInit(y))
       
       # Check validity of initials
@@ -417,7 +417,7 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
   ## the hardcoded scaling parameters in one place.
   prewscal <- prew
   if (!is.null(prew)){prewscal[1] <- prewscal[1]/(10*sum(y))}
-  initval <- checkInit(init, optim, prewscal)
+  initval <- checkInit(init, method, prewscal)
   init <- initval$init
   lbound <- initval$lbound
   ibound <- initval$ibound
@@ -435,16 +435,16 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
     # Optimise
     w <- rep(0, noW)
     
-    if (sum(wIdx) > 1 | optim == "Rcgmin") {
+    if (sum(wIdx) > 1 | method == "Rcgmin") {
       # These optimisation algorithms are multidimensional, so revert to BFGS if needed unless it is Rcgmin
-      wNew <- callOptim(y, loss, optim, maxiter, type, init,
+      wNew <- callOptim(y, loss, method, maxiter, type, init,
                          wIdx, prew, cumulative, multisol, mscal, ibound, lbound)
 
     } else {
       # Revert to L-BFGS-B if only one parameter is required
       # Max iterations included in the BFGS
 
-      wNew <-  callOptim(y, loss, optim = "L-BFGS-B", maxiter, type, init,
+      wNew <-  callOptim(y, loss, method = "L-BFGS-B", maxiter, type, init,
                          wIdx, prew, cumulative, multisol, mscal, ibound = F, lbound=lbound)
 
     }
@@ -484,7 +484,7 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
         
         # Estimate parameters on the bootstrapped curve, starting from prew
         # In wboot we store differences from prew, as we want to find which of these are significant
-        wboot[i,] <- callOptim(yboot[,i], loss, optim, maxiter, type, init=init,
+        wboot[i,] <- callOptim(yboot[,i], loss, method, maxiter, type, init=init,
                                    wIdx, prew=prew, cumulative, multisol, mscal, ibound, lbound) 
 
       } 
