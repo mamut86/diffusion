@@ -84,12 +84,18 @@ seqdiffusion <- function(y, cleanlead = c(TRUE, FALSE), loss = 2,
   
   # check deprecated arguments doesn't work somehow
   el <- list(...)
-  if (!is.null(el$l)) {
+  nel <- names(el)
+  if ("l" %in% nel) {
     warning("Argument \"l\" has been deprecated and replaced by \"loss\"")
-    loss <- l
-  } else if(!is.null(el$x)) {
+    loss <- el$l
+  }
+  if("x" %in% nel) {
     warning("Argument \"x\" has been deprecated and replaced by \"y\"")
-    y <- x
+    y <- el$x
+  }
+  if("optim" %in% nel) {
+    warning("Argument \"optim\" has been deprecated and replaced by \"method\"")
+    method <- el$optim
   }
   
   multisol <- multisol[1]

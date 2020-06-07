@@ -15,3 +15,7 @@ plot(tt2)
 tt3 <- diffusion(adat[[1]][,2], w = NULL, optim = "bobyqa")
 
 
+tt <- diffusion(adat[[7]][1:38,1], type = "gsgompertz", method = "nm", cumulative = F, initpar = "linearize")
+
+plot(adat[[7]][1:38,1], type = "l")
+plot(tt)
