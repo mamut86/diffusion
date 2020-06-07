@@ -178,6 +178,11 @@ diffusion <- function(y, w = NULL, cleanlead = c(TRUE, FALSE),
     y <- el$x
   }
   
+  if("optim" %in% nel) {
+    warning("Argument \"optim\" has been deprecated and replaced by \"method\"")
+    method <- el$optim
+  }
+  
   multisol <- multisol[1]
   cumulative <- cumulative[1]
   eliminate <- eliminate[1]
@@ -318,7 +323,7 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
   } else if (maxiter == Inf) {
     maxiter <- 100000
     message("Set \"maxiter\" to 100 000")
-  } else if (optim == "hjkb" & maxiter < 1000) {
+  } else if (method == "hjkb" & maxiter < 1000) {
     message("It is recommend to set \"maxiter\" to 1000 or more for better results with HJKB optimiser")
   }
   
