@@ -140,6 +140,7 @@ getse <- function(y, fit, loss, cumulative) {
   return(se)
 }
 
+
 callOptim <- function(y, loss, method, maxiter, type, init, wIdx = rep(TRUE, length(init)),
                       prew = NULL, cumulative = c(TRUE, FALSE),
                       multisol = c(FALSE, TRUE), mscal = c(TRUE, FALSE), ibound, lbound) {
@@ -155,8 +156,8 @@ callOptim <- function(y, loss, method, maxiter, type, init, wIdx = rep(TRUE, len
   # Take care of scaling of m
   if (mscal == TRUE & wIdx[1] == TRUE) {
     # Fix scale of first parameter
-    init[1] <- init[1]/(10*sum(y))  # The 10x should be data driven. Something that would bring w_1 closer to 1-10?
-    prew[1] <- prew[1]/(10*sum(y))
+    init[1] <- scaleM(y, init[1], scaledir = "down")
+    prew[1] <- scaleM(y, prew[1], scaledir = "down")
   }
 
   # Limit number of parameters to estimate according to wIdx
@@ -239,12 +240,13 @@ callOptim <- function(y, loss, method, maxiter, type, init, wIdx = rep(TRUE, len
   }
   
   # Revert scaling
-  if (mscal == TRUE & wIdx[1]==TRUE){
-    w[1] <- w[1]*10*sum(y)
+  if (mscal == TRUE & wIdx[1] == TRUE){
+    w[1] <- scaleM(y, w[1], scaledir = "up")
   }
   
   return(w)
 }
+
 
 difCost <- function(w, y, loss, type, wIdx, wFix, prew, cumulative, mscal, ibound){
   # Internal function: cost function for numerical optimisation
@@ -274,7 +276,9 @@ difCost <- function(w, y, loss, type, wIdx, wFix, prew, cumulative, mscal, iboun
   
   if (mscal == TRUE & wIdx[1] == TRUE) {
     # Fix scale of first parameter, instead of being the maximum it is a multiplier on current value
-    wAll[1] <- wAll[1]*(10*sum(y))  # The 10x should be data driven. Something that would bring w_1 closer to 1-10?
+    wAll[1] <- scaleM(y, wAll[1], scaledir = "up")
+    
+    # wAll[1] <- wAll[1]*(10*sum(y))  
   }
   
   fit <- getCurve(n, wAll, type)
@@ -291,27 +295,13 @@ difCost <- function(w, y, loss, type, wIdx, wFix, prew, cumulative, mscal, iboun
 }
 
 
-# checkOptimError <- function(war) {
-#   # helper for warning catching
-#   # war, the warning input from tryCatch or withCallingHandlers
-#   
-#   msg <- conditionMessage(war)
-#   
-#   if (!is.na(pmatch("Parameters or bounds appear to have different scalings", msg))) {
-#     warnScal <<- TRUE
-#     invokeRestart("muffleWarning")
-#   } else {
-#     warning(paste("warning in optimx:", msg))
-#     invokeRestart("muffleWarning")
-#   }
-# }
-
-
-checkInit <- function(init, method, prew) {
+checkInit <- function(init, method, prew, y, mscal) {
   # function to check the initalisation for scale and sets bounds
   # init, the initalisation parameters
   # method, the optimisation algorithm selected
-  # prew, any previous generations, if available - is inputed scaled if mscal==TRUE
+  # prew, any previous generations, if available - is inputed scaled if mscal == TRUE
+  # y, actuals for the scaling
+  # mscal, should scaling be done
   
   # "L-BFGS-B" needs lower bounds
   # ibounds uses internal bounds
@@ -323,21 +313,35 @@ checkInit <- function(init, method, prew) {
     ibound <- TRUE
   }
   
-  # Account for prew
+  # We adjust lower bounds by prew - which can be scaled
   # at this point prew is either a vector of 0's or values from a different diffusion generation
   if (!is.null(prew)){
+    
+    if (mscal == T) {
+      prew[1] <- scaleM(y, prew[1], scaledir = "down")
+      # prewscal[1] <- prewscal[1]/(10*sum(y))
+    }
+    
     lbound <- lbound - prew
     ibound <- TRUE
   }
   
   hbound <- Inf
   
-  # make sure init is matching lbounds
+  # make sure init is scaled and matching lbounds
+  if (mscal == T) {
+    init[1] <- scaleM(y, init[1], scaledir = "down")
+  }
   init[init < lbound] <- lbound[init < lbound]
   
   # run a scalecheck
   check <- optimx::scalechk(init, lbound, hbound, dowarn = FALSE)
   checkRes <- c(check$lpratio, check$lbratio)
+  
+  # revert to normal scale
+  if (mscal == T) {
+    init[1] <- scaleM(y, init[1], scaledir = "up")
+  }
   
   # use same heuristic as suggested in OptimX
   if (max(checkRes, na.rm = TRUE) > 3) {
@@ -349,6 +353,7 @@ checkInit <- function(init, method, prew) {
   return(list("init" = init, "lbound" = lbound, "ibound" = ibound, "warnScal" = warnScal))
   
 }
+
 
 nameParameters <- function(x, type) {
   # function that names paramters according to curve type
@@ -389,4 +394,17 @@ getCurve <- function(n, w, type) {
 }
 
 
-
+scaleM <- function(y, m, scaledir = c("up", "down")) {
+  # function that up- or down-scales the market potential
+  # y, the actuals needed for fixing it to the scales
+  # m, the market potential paramter to be scaled
+  # scaledir, the scaling direction
+  
+  # The 10x should be data driven. Something that would bring w_1 closer to 1-10?
+  switch (scaledir,
+    "up" = mNew <- m*(10*sum(y)),
+    "down" = mNew <- m/(10*sum(y))
+  )
+  
+  return(mNew)
+}
