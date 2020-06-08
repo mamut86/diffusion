@@ -230,10 +230,10 @@ diffusion <- function(y, w = NULL, cleanlead = c(TRUE, FALSE),
     w <- opt$w
     pval <- opt$pval
     init <- opt$init
-    warScal <- opt$warScal
+    warnScal <- opt$warnScal
   } else {
     pval <- rep(NA, length(w))
-    warScal <- FALSE
+    warnScal <- FALSE
     init <- rep(NA, length(w))
   }
   
@@ -241,9 +241,9 @@ diffusion <- function(y, w = NULL, cleanlead = c(TRUE, FALSE),
   fit <- getCurve(n, w, type)
   mse <- mean((y - fit[, 2])^2)
   
-  if (warScal == TRUE & mscal == FALSE) {
+  if (warnScal == TRUE & mscal == FALSE) {
     warning('Initalisation parameters are of different scale. Consider argument "mscal" for better optimzation results')
-  } else if (warScal == TRUE & mscal == TRUE) {
+  } else if (warnScal == TRUE & mscal == TRUE) {
     warning("Initalisation parameters are of different scale. Optimization might be impacted")
   }
   
@@ -319,12 +319,12 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
   
   # Check maxiter argument
   if (method == "Nelder-Mead" & maxiter < 500) {
-    message("It is recommend to set \"maxiter\" to 500 or more for better results with Nelder-Mead optimiser")
+    message("It is recommend to set \"maxiter\" to 500 or more for better results with Nelder-Mead optimizer")
   } else if (maxiter == Inf) {
     maxiter <- 100000
     message("Set \"maxiter\" to 100 000")
   } else if (method == "hjkb" & maxiter < 1000) {
-    message("It is recommend to set \"maxiter\" to 1000 or more for better results with HJKB optimiser")
+    message("It is recommend to set \"maxiter\" to 1000 or more for better results with HJKB optimizer")
   }
   
   if (eliminate == TRUE & pvalreps == 0){
@@ -426,7 +426,7 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
   init <- initval$init
   lbound <- initval$lbound
   ibound <- initval$ibound
-  warScal <- initval$warScal
+  warnScal <- initval$warnScal
   
   n <- length(y)
   
@@ -566,7 +566,7 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
   # round values for nice output
   pval <- round(pval, 3)
   
-  return(list("w" = w, "pval" = pval, "init" = init, "warScal" = warScal))
+  return(list("w" = w, "pval" = pval, "init" = init, "warnScal" = warnScal))
   
 }
 

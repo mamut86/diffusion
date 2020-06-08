@@ -298,7 +298,7 @@ difCost <- function(w, y, loss, type, wIdx, wFix, prew, cumulative, mscal, iboun
 #   msg <- conditionMessage(war)
 #   
 #   if (!is.na(pmatch("Parameters or bounds appear to have different scalings", msg))) {
-#     warScal <<- TRUE
+#     warnScal <<- TRUE
 #     invokeRestart("muffleWarning")
 #   } else {
 #     warning(paste("warning in optimx:", msg))
@@ -341,12 +341,12 @@ checkInit <- function(init, method, prew) {
   
   # use same heuristic as suggested in OptimX
   if (max(checkRes, na.rm = TRUE) > 3) {
-    warScal <- TRUE
+    warnScal <- TRUE
   } else {
-    warScal <- FALSE
+    warnScal <- FALSE
   }
   
-  return(list("init" = init, "lbound" = lbound, "ibound" = ibound, "warScal" = warScal))
+  return(list("init" = init, "lbound" = lbound, "ibound" = ibound, "warnScal" = warnScal))
   
 }
 
