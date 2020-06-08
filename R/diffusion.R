@@ -387,7 +387,7 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
     
     # Add scale to first parameter
     if (mscal == TRUE){
-      init[1] <- init[1]*(10*sum(y))
+      init[1] <- scaleM(y, init[1], scaledir = "up")
     }
   }
   
@@ -417,12 +417,12 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
   )
   
   # check initalisation
-  # We adjust lower bounds by prew - which can be scaled
-  ## Should we introduce an auxiliary to do the scaling? So that we collect all
-  ## the hardcoded scaling parameters in one place.
-  prewscal <- prew
-  if (!is.null(prew)){prewscal[1] <- prewscal[1]/(10*sum(y))}
-  initval <- checkInit(init, method, prewscal)
+  # prewscal <- prew
+  # if (!is.null(prew)) {
+  #   prewscal[1] <- prewscal[1]/(10*sum(y))
+  # }
+  # initval <- checkInit(init, method, prewscal)
+  initval <- checkInit(init, method, prew, y, mscal)
   init <- initval$init
   lbound <- initval$lbound
   ibound <- initval$ibound
@@ -489,8 +489,8 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
         
         # Estimate parameters on the bootstrapped curve, starting from prew
         # In wboot we store differences from prew, as we want to find which of these are significant
-        wboot[i,] <- callOptim(yboot[,i], loss, method, maxiter, type, init=init,
-                                   wIdx, prew=prew, cumulative, multisol, mscal, ibound, lbound) 
+        wboot[i,] <- callOptim(yboot[,i], loss, method, maxiter, type, init = init,
+                                   wIdx, prew = prew, cumulative, multisol, mscal, ibound, lbound) 
 
       } 
 
