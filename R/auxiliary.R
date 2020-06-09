@@ -224,12 +224,22 @@ callOptim <- function(y, loss, method, maxiter, type, init, wIdx = rep(TRUE, len
     # cbind(unlist(lapply(optSols, function(x) {x$value})), unlist(lapply(optSols, function(x) {x$p1})))
     
   } else { # multisol == FALSE
-
+    
+    # print(paste(lbound))
     # single optimisation 
     opt <- optimx::optimx(initF, difCost, method = method, lower = lbound, y = y,
                           loss = loss, type = type, cumulative = cumulative,
                           wIdx = wIdx, wFix = wFix, prew = prew, mscal = mscal, ibound = ibound,
                           control = list(trace = 0, dowarn = TRUE, maxit = maxiter, starttests = FALSE))
+    
+    # revert to Rcgmin when error optimiser - this will 
+    if (opt$convcode == 9999) {
+      opt <- optimx::optimx(initF, difCost, method = "Rcgmin", lower = -Inf, y = y,
+                            loss = loss, type = type, cumulative = cumulative,
+                            wIdx = wIdx, wFix = wFix, prew = prew, mscal = mscal, ibound = T,
+                            control = list(trace = 0, dowarn = TRUE, maxit = maxiter, starttests = FALSE))
+    }
+
   }
   
   # Distribute optimal and fixed values
@@ -243,7 +253,7 @@ callOptim <- function(y, loss, method, maxiter, type, init, wIdx = rep(TRUE, len
   if (mscal == TRUE & wIdx[1] == TRUE){
     w[1] <- scaleM(y, w[1], scaledir = "up")
   }
-
+  # if(any(is.na(w))){browser()}
   return(w)
 }
 
@@ -277,8 +287,6 @@ difCost <- function(w, y, loss, type, wIdx, wFix, prew, cumulative, mscal, iboun
   if (mscal == TRUE & wIdx[1] == TRUE) {
     # Fix scale of first parameter, instead of being the maximum it is a multiplier on current value
     wAll[1] <- scaleM(y, wAll[1], scaledir = "up")
-    
-    # wAll[1] <- wAll[1]*(10*sum(y))  
   }
   
   fit <- getCurve(n, wAll, type)
@@ -307,6 +315,7 @@ checkInit <- function(init, method, prew, y, mscal) {
   # ibounds uses internal bounds
   if (method == "L-BFGS-B") {
     lbound <- rep(1e-9, length(init))
+    # lbound <- -Inf
     ibound <- FALSE
   } else {
     lbound <- -Inf
@@ -316,12 +325,13 @@ checkInit <- function(init, method, prew, y, mscal) {
   # We adjust lower bounds by prew - which can be scaled
   # at this point prew is either a vector of 0's or values from a different diffusion generation
   if (!is.null(prew)){
-    
+
     if (mscal == T) {
       prew[1] <- scaleM(y, prew[1], scaledir = "down")
-      # prewscal[1] <- prewscal[1]/(10*sum(y))
+      lbound[1] <- scaleM(y, lbound[1], scaledir = "down")
     }
-    
+
+    # browser()
     lbound <- lbound - prew
     ibound <- TRUE
   }

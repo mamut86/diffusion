@@ -487,10 +487,10 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
           uDscl <- min(kdeY)+(uDist - min(uDist))*(max(kdeY)-min(kdeY)) / (max(uDist)-min(uDist))
           
           # approximate from distribution
-          errKDE <- stats::approx(kdeY, kde$x, uDscl)$y
+          errKDE <- stats::approx(kdeY, kde$x, uDscl, ties = "ordered")$y
           yboot <- matrix(errKDE, nrow = n) + matrix(rep(yhat, pvalreps), ncol = pvalreps)})
       
-      
+ 
       ## This can be improved to be a non-parametric bootstrap. Now we impose a severe assumption
       # Construct bootstraps
       wboot <- array(0, c(pvalreps, noW))
@@ -500,8 +500,6 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
       
       # Estimate model
       for (i in 1:pvalreps){
-        
-        if (any(is.na(yboot[,i ]))){browser()}
         
         # Estimate parameters on the bootstrapped curve, starting from prew
         # In wboot we store differences from prew, as we want to find which of these are significant
