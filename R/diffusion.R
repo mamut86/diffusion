@@ -480,8 +480,16 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
         "smthempir" = {# Option 3, construct a smooth empirical distribution and sample from that
           err <- y-yhat
           kde <- stats::density(err)
-          errKDE <- stats::approx(cumsum(kde$y)/sum(kde$y), kde$x, runif(n*pvalreps))$y
+          kdeY <- cumsum(kde$y)/sum(kde$y)
+          
+          # get uniform distribution and scale it with kdeY to make sure min values are within limits
+          uDist <- runif(n*pvalreps)
+          uDscl <- min(kdeY)+(uDist - min(uDist))*(max(kdeY)-min(kdeY)) / (max(uDist)-min(uDist))
+          
+          # approximate from distribution
+          errKDE <- stats::approx(kdeY, kde$x, uDscl)$y
           yboot <- matrix(errKDE, nrow = n) + matrix(rep(yhat, pvalreps), ncol = pvalreps)})
+      
       
       ## This can be improved to be a non-parametric bootstrap. Now we impose a severe assumption
       # Construct bootstraps
@@ -492,6 +500,8 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
       
       # Estimate model
       for (i in 1:pvalreps){
+        
+        if (any(is.na(yboot[,i ]))){browser()}
         
         # Estimate parameters on the bootstrapped curve, starting from prew
         # In wboot we store differences from prew, as we want to find which of these are significant
@@ -508,6 +518,7 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
       wboot0m <- abs(wboot - matrix(rep(colMeans(wboot, na.rm = T), pvalreps), ncol = noW, byrow = T))
       pval <- colMeans(wboot0m > abs(matrix(rep(w, pvalreps), ncol = noW, byrow = T)))
       
+
     } else {
       pval <- rep(NA, noW)
     }

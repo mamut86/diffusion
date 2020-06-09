@@ -1,4 +1,4 @@
-#### v.0.3.1.914 ####
+#### v.0.3.1.915 ####
 
 changes
 - new automated removal of leading and trailing NAs. Error abort if NA within series

@@ -152,7 +152,7 @@ callOptim <- function(y, loss, method, maxiter, type, init, wIdx = rep(TRUE, len
   # mscal, decides whether m parameter is being rescaled
   # ibound, whether intrabounds of cost function should be used
   # lbound, what lower bound is needed
-
+  
   # Take care of scaling of m
   if (mscal == TRUE & wIdx[1] == TRUE) {
     # Fix scale of first parameter
@@ -160,6 +160,7 @@ callOptim <- function(y, loss, method, maxiter, type, init, wIdx = rep(TRUE, len
     prew[1] <- scaleM(y, prew[1], scaledir = "down")
   }
 
+  
   # Limit number of parameters to estimate according to wIdx
   lbound <- lbound[wIdx]
   initF <- as.vector(init[wIdx])
@@ -229,7 +230,6 @@ callOptim <- function(y, loss, method, maxiter, type, init, wIdx = rep(TRUE, len
                           loss = loss, type = type, cumulative = cumulative,
                           wIdx = wIdx, wFix = wFix, prew = prew, mscal = mscal, ibound = ibound,
                           control = list(trace = 0, dowarn = TRUE, maxit = maxiter, starttests = FALSE))
-    
   }
   
   # Distribute optimal and fixed values
@@ -243,7 +243,7 @@ callOptim <- function(y, loss, method, maxiter, type, init, wIdx = rep(TRUE, len
   if (mscal == TRUE & wIdx[1] == TRUE){
     w[1] <- scaleM(y, w[1], scaledir = "up")
   }
-  
+
   return(w)
 }
 
@@ -332,6 +332,7 @@ checkInit <- function(init, method, prew, y, mscal) {
   if (mscal == T) {
     init[1] <- scaleM(y, init[1], scaledir = "down")
   }
+  
   init[init < lbound] <- lbound[init < lbound]
   
   # run a scalecheck
