@@ -3,8 +3,11 @@ devtools::load_all()
 
 load("test/adoptionData.RData")
 
-# there is a commented in the bootstrap loop which enters browser when NA is produced to investigate NA
-tt1 <- seqdiffusion(adat[[11]], type = "gompertz", mscal = T, eliminate = T, pvalreps = 500)
+# Issue with L-BFGS-B optimiser
+# this gives errors
+tt1 <- seqdiffusion(adat[[5]], type = "gsgompertz", mscal = T, eliminate = T, pvalreps = 100, cumulative = F, method = "L-BFGS-B", verbose = T)
+
+
 
 # case when the second generation does not fit well at all
 tt2 <-  seqdiffusion(adat[[4]], type = "gompertz", mscal = T, eliminate = T, pvalreps = 500)
@@ -15,7 +18,11 @@ plot(tt2)
 tt3 <- diffusion(adat[[1]][,2], w = NULL, optim = "bobyqa")
 
 
-tt <- diffusion(adat[[7]][1:38,1], type = "gsgompertz", method = "nm", cumulative = F, initpar = "linearize")
+# Problem produces a flat curve
+tt4 <- diffusion(adat[[7]][1:33, 1], type = "gsgompertz", method = "nm", cumulative = T, initpar = "linearize", mscal = T, multisol = F)
+plot(tt4)
 
-plot(adat[[7]][1:38,1], type = "l")
-plot(tt)
+# need to investigate weibull
+plot(diffusion(tsCovid, type = "weibull", method = "nm"))
+
+
