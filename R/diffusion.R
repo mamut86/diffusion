@@ -231,6 +231,7 @@ diffusion <- function(y, w = NULL, cleanlead = c(TRUE, FALSE),
     pval <- opt$pval
     init <- opt$init
     warnScal <- opt$warnScal
+    vOut <- opt$vOut
   } else {
     pval <- rep(NA, length(w))
     warnScal <- FALSE
@@ -249,7 +250,7 @@ diffusion <- function(y, w = NULL, cleanlead = c(TRUE, FALSE),
   
   out <- structure(list("type" = type, "call" = sys.call(),
                         "w" = w, "y" = y, "fit" = fit, "frc" = NULL, 
-                        "mse" = mse, "pval" = pval, "init" = init), class="diffusion")
+                        "mse" = mse, "pval" = pval, "init" = init, "vOut" = vOut), class="diffusion")
   return(out)
 }
 
@@ -434,6 +435,11 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
   # If eliminate is not requested it will only iterate once
   elim <- TRUE
   it <- 1
+  if (verbose == TRUE) {
+    vOut <- list()
+  } else {
+    vOut <- NULL
+  }
   
   while (elim == TRUE) {
     
@@ -528,25 +534,28 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
     # Provide console output
     if (verbose == TRUE){
       writeLines(paste0("Estimation iteration: ", it))
-      it <- it + 1
       
       if (!is.na(loc)){
-        locv <- rep("", 3)
+        locv <- rep("", noW)
         locv[loc] <- "X"
+        locv2 <- rep(FALSE, noW)
+        locv2[loc] <- TRUE 
       } else {
         locv <- NULL
+        locv2 <- NULL
       }
       
       if (!is.null(prew)){
         temp <- cbind(round(cbind(w, pval), 4), round(prew+w,4), locv)
-        colnames(temp) <- c("Estimate", "p-value", "Total", "")[1:(3+!is.na(loc))]
+        vOut[[it]] <- cbind(cbind(w, pval), (prew+w), locv2)
+        colnames(temp) <- colnames(vOut[[it]]) <- c("Estimate", "p-value", "Total", "")[1:(3+!is.na(loc))]
       } else {
         temp <- cbind(round(cbind(w, pval), 4), locv)
         colnames(temp) <- c("Estimate", "p-value", "")[1:(2+!is.na(loc))]
+        vOut[[it]] <- temp
       }
       
-      temp <- nameParameters(temp, type)
-      
+      # temp <- nameParameters(temp, type)
       print(temp, quote = FALSE)
       
       if (elim == FALSE){
@@ -554,6 +563,7 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
       }
       
       writeLines("")
+      it <- it + 1
     }
   }
   
@@ -566,7 +576,7 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
   # round values for nice output
   pval <- round(pval, 3)
   
-  return(list("w" = w, "pval" = pval, "init" = init, "warnScal" = warnScal))
+  return(list("w" = w, "pval" = pval, "init" = init, "warnScal" = warnScal, "vOut" = vOut))
   
 }
 
