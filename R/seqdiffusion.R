@@ -89,13 +89,18 @@ seqdiffusion <- function(y, cleanlead = c(TRUE, FALSE), loss = 2,
     warning("Argument \"l\" has been deprecated and replaced by \"loss\"")
     loss <- el$l
   }
-  if("x" %in% nel) {
+  if ("x" %in% nel) {
     warning("Argument \"x\" has been deprecated and replaced by \"y\"")
     y <- el$x
   }
-  if("optim" %in% nel) {
+  if ("optim" %in% nel) {
     warning("Argument \"optim\" has been deprecated and replaced by \"method\"")
     method <- el$optim
+  }
+  
+  # Check bootstrap repetitions (pvalreps)
+  if (pvalreps < 0 | !is.numeric(pvalreps)) {
+    stop('Argument "pvalreps" must be a positive number.')
   }
   
   multisol <- multisol[1]

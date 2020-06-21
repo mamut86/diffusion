@@ -131,6 +131,10 @@ diffusion <- function(y, w = NULL, cleanlead = c(TRUE, FALSE),
                       maxiter = 500, opttol = 1.e-06, multisol = c(FALSE, TRUE),
                       initpar = c("linearize","preset"), mscal = c(TRUE, FALSE), ...) {
 
+  if (!is.vector(y) & !is.ts(y) ) {
+    stop('Argument "y" needs to be a vector or ts-object')
+  }
+  
   type <- match.arg(type[1], c("bass", "gompertz", "gsgompertz", "weibull"))
   method <- match.arg(method[1], c("L-BFGS-B", "Nelder-Mead", "BFGS", "hjkb", "Rcgmin", "bobyqa", "nm", "hj"))
   if (!is.numeric(initpar)){
@@ -197,14 +201,9 @@ diffusion <- function(y, w = NULL, cleanlead = c(TRUE, FALSE),
   
   # Check which parameters to estimate
   
-  ## Put this in auxiliary
   # determine how many paramters needed
-  if (type == "bass" | type == "gompertz" | type == "weibull"){
-    noW <- 3
-  } else if (type == "gsgompertz"){
-    noW <- 4
-  }
-  
+  noW <- numberParameters(type)
+
   if (is.null(w)){
     # If no parameters given then everything is estimated
     wFix <- NULL
@@ -297,13 +296,8 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
   eliminate <- eliminate[1]
   verbose <- verbose[1]
   
-  ## Put this in auxiliary
-  # determine how many paramters needed
-  if (type == "bass" | type == "gompertz" | type == "weibull"){
-    noW <- 3
-  } else if (type == "gsgompertz"){
-    noW <- 4
-  }
+  # Number of paramters needed
+  noW <- numberParameters(type)
   
   if (is.numeric(initpar) & length(initpar) != noW) {
     stop(sprintf("%s requires vector of %i paramters for initpar ", type, noW))
@@ -328,14 +322,14 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
     message("It is recommend to set \"maxiter\" to 1000 or more for better results with HJKB optimizer")
   }
   
+  # Check bootstrap repetitions (pvalreps)
+  if (pvalreps < 0 | !is.numeric(pvalreps)) {
+    stop('Argument "pvalreps" must be a positive number.')
+  }
+  
   if (eliminate == TRUE & pvalreps == 0){
     pvalreps <- 1000
     warning("To eliminate parameters p-values must be estimated. Setting pvalreps = 1000.")
-  }
-  
-  # Check bootstrap repetitions (pvalreps)
-  if (pvalreps < 0 | !is.numeric(pvalreps)) {
-    stop("pvalreps must be positive number.")
   }
 
   ## Let prew proceed as NULL, this is needed to distinguish between fixed parameters
@@ -410,13 +404,9 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
     init[(init + prew) <= 0] <- 1e-9
   }
   
-  switch(type,
-         "bass" = names(init) <- c("m", "p", "q"),
-         "gompertz" = names(init) <- c("m", "a", "b"),
-         "gsgompertz" = names(init) <- c("m", "a", "b", "c"),
-         "weibull" = names(init) <- c("m", "a", "b")
-  )
+ init <- nameParameters(as.matrix(init), type)[,1]
   
+
   # check initalisation
   # prewscal <- prew
   # if (!is.null(prew)) {
