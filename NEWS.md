@@ -1,4 +1,4 @@
-#### v.0.3.1.915 ####
+#### v.0.3.1.916 ####
 
 changes
 - new automated removal of leading and trailing NAs. Error abort if NA within series
@@ -37,6 +37,8 @@ bugfixes
 - fixed an error when elimante was TRUE with 0 pval reps to stop.
 - fixed the sequential diffusion pval elimination process
 - fixed error when linearization fails and reverting now to preset
+- included error check for pvalreps in seqdiffusion
+- included error check for y to be either vector or ts-object
 
 #### v.0.3.0 (30/04/18) ####
 

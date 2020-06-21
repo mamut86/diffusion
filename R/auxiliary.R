@@ -378,11 +378,11 @@ nameParameters <- function(x, type) {
   # Bass: c("m - Market potential", "p - innovation", "q - imitation")
   
   switch(type,
-         "bass" = rownames(x) <- c("m", "p", "q"),
-         "gompertz" = rownames(x) <- c("m", "a", "b"),
-         "gsgompertz" = rownames(x) <- c("m", "a", "b", "c"),
-         "weibull" = rownames(x) <- c("m", "a", "b")
-  )
+           "bass" = rownames(x) <- c("m", "p", "q"),
+           "gompertz" = rownames(x) <- c("m", "a", "b"),
+           "gsgompertz" = rownames(x) <- c("m", "a", "b", "c"),
+           "weibull" = rownames(x) <- c("m", "a", "b")
+    )
   
   return(x)
 }
@@ -419,3 +419,19 @@ scaleM <- function(y, m, scaledir = c("up", "down")) {
   
   return(mNew)
 }
+
+numberParameters <- function(type) {
+  # function that returns the number of parameters required for each diffusion model
+  # type, the type of model to be estimated
+  
+  if (type == "bass" | type == "gompertz" | type == "weibull"){
+    noW <- 3
+  } else if (type == "gsgompertz"){
+    noW <- 4
+  }
+  
+  return(noW)
+  
+}
+
+
