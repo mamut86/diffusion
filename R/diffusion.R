@@ -434,27 +434,31 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
   while (elim == TRUE) {
     
     # Optimise
-    w <- rep(0, noW)
-    
     if (sum(wIdx) > 1 | method == "Rcgmin") {
       # These optimisation algorithms are multidimensional, so revert to BFGS if needed unless it is Rcgmin
-      wNew <- callOptim(y, loss, method, maxiter, type, init,
-                         wIdx, prew, cumulative, multisol, mscal, ibound, lbound)
-
+      w <- callOptim(y, loss, method, maxiter, type, init,
+                     wIdx, prew, cumulative, multisol, mscal, ibound, lbound)
+      
     } else {
       # Revert to L-BFGS-B if only one parameter is required
       # Max iterations included in the BFGS
-
-      wNew <-  callOptim(y, loss, method = "L-BFGS-B", maxiter, type, init,
-                         wIdx, prew, cumulative, multisol, mscal, ibound = F, lbound=lbound)
+      
+      w <- callOptim(y, loss, method = "L-BFGS-B", maxiter, type, init,
+                     wIdx, prew, cumulative, multisol, mscal, ibound = F, lbound)
 
     }
 
-    ## When wNew has 1e-9 values, it means we have hit the lbound
+    ## When w has 1e-9 values, it means we have hit the lbound
     ## Perhaps we should consider replacing those with zero in the sequential case.
     # The resulting w contains the differences from prew. Final parameters are prew+w
-    w <- wNew
-
+    if (any(!is.na(wFix))) {
+      if (is.null(prew)) {
+        w[fIdx] <- wFix[fIdx]
+      } else {
+        w[fIdx] <- wFix[fIdx] - prew[fIdx]
+      }
+    }
+    
     # Bootstrap p-values
     if (pvalreps > 0){
       
@@ -570,7 +574,6 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
   if (!is.null(prew)){
     w <- w + prew  
   }
-  names(w) <- names(init)
   names(pval) <- names(w)
   # round values for nice output
   pval <- round(pval, 3)

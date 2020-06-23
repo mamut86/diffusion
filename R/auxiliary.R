@@ -232,7 +232,7 @@ callOptim <- function(y, loss, method, maxiter, type, init, wIdx = rep(TRUE, len
                           wIdx = wIdx, wFix = wFix, prew = prew, mscal = mscal, ibound = ibound,
                           control = list(trace = 0, dowarn = TRUE, maxit = maxiter, starttests = FALSE))
     
-    # revert to Rcgmin when error optimiser - this will 
+    # revert to Rcgmin when error optimiser - this will fix an error we observed with L-BFGS-B
     if (opt$convcode == 9999) {
       opt <- optimx::optimx(initF, difCost, method = "Rcgmin", lower = -Inf, y = y,
                             loss = loss, type = type, cumulative = cumulative,
@@ -245,14 +245,14 @@ callOptim <- function(y, loss, method, maxiter, type, init, wIdx = rep(TRUE, len
   # Distribute optimal and fixed values
   w <- rep(0,length(init))
   w[wIdx] <- unlist(opt[1:sum(wIdx)])
-  if (is.null(prew)){
-    w[!wIdx] <- wFix
-  }
-  
+
   # Revert scaling
   if (mscal == TRUE & wIdx[1] == TRUE){
     w[1] <- scaleM(y, w[1], scaledir = "up")
   }
+  
+  # name parameter output
+  w <- nameParameters(as.matrix(w), type)[, 1]
   # if(any(is.na(w))){browser()}
   return(w)
 }
