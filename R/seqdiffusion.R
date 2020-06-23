@@ -14,7 +14,7 @@
 #' @inheritSection diffusion Weibull
 #' 
 #' @param y matrix containing in each column the adoption per period for generation k
-#' @param w vector of curve parameters (see note). Parameters set to NA will be
+#' @param w matrix containing in each column the curve parameters for generation k (see note). Parameters set to NA will be
 #'   optimized. If \code{w = NULL} (default) all paramters are optimized.
 #' @param cleanlead removes leading zeros for fitting purposes (default == T)
 #' @param loss the l-norm (1 is absolute errors, 2 is squared errors)
@@ -65,7 +65,7 @@
 #' 
 #' @rdname seqdiffusion  
 #' @export seqdiffusion
-seqdiffusion <- function(y, cleanlead = c(TRUE, FALSE), loss = 2,
+seqdiffusion <- function(y, w = NULL, cleanlead = c(TRUE, FALSE), loss = 2,
                          cumulative = c(TRUE, FALSE),
                          pvalreps = 0, eliminate = c(FALSE, TRUE), sig = 0.05, 
                          verbose = c(FALSE, TRUE),
@@ -103,6 +103,11 @@ seqdiffusion <- function(y, cleanlead = c(TRUE, FALSE), loss = 2,
     stop('Argument "pvalreps" must be a positive number.')
   }
   
+  # check the healthiness of y
+  if (!is.matrix(y) & !is.mts(y)) {
+    stop('Argument "y" needs to be a matrix or mts-object')
+  }
+  
   multisol <- multisol[1]
   cumulative <- cumulative[1]
   eliminate <- eliminate[1]
@@ -112,6 +117,13 @@ seqdiffusion <- function(y, cleanlead = c(TRUE, FALSE), loss = 2,
 
   # Number of curves
   k <- dim(y)[2]
+  
+  # handle fixed parameters
+  if (!is.null(w)) {
+    if (ncol(w) != k) {
+      stop('No of columns in argument "w" do not match numbers of generations')  
+    }
+  }
   
   fit <- vector("list", k)
   names(fit) <- paste0("Gen", 1:k)
@@ -132,7 +144,13 @@ seqdiffusion <- function(y, cleanlead = c(TRUE, FALSE), loss = 2,
       prew <- NULL
     }
     
-    fit[[i]] <- diffusion(y[, i], w = NULL, cleanlead, loss, cumulative,
+    if (is.null(w)) {
+      wGen <- NULL
+    } else {
+      wGen <- w[, i, drop = T]
+    }
+    
+    fit[[i]] <- diffusion(y[, i], w = wGen, cleanlead, loss, cumulative,
                           verbose, type, method, maxiter,
                           opttol, multisol, initpar, mscal, 
                           pvalreps = pvalr, eliminate = elimin, sig = sig,
@@ -176,10 +194,10 @@ print.seqdiffusion <- function(x,...){
   type <- tolower(x$diffusion[[1]]$type)
   
   # create selector of paramters and p-values
-  no.w <- ncol(x$w)
+  noW <- numberParameters(type)
   sel <- NULL
-  for (i in 1:no.w){
-    sel <- c(sel, c(i, (i+no.w)))
+  for (i in 1:noW){
+    sel <- c(sel, c(i, (i+noW)))
   }
   
   writeLines(paste(x$type, "model"))
@@ -189,18 +207,18 @@ print.seqdiffusion <- function(x,...){
                       sqrt(x$mse)), 4)
   
   switch(type,
-         bass = colnames(temp) <- c("m coef.", "pval.",
+         "bass" = colnames(temp) <- c("m coef.", "pval.",
                                     "p coef.", "pval.",
                                     "q coef.", "pval.",  "sigma"),
-         gompertz = colnames(temp) <- c("m coef.", "pval.",
+         "gompertz" = colnames(temp) <- c("m coef.", "pval.",
                                         "p coef.", "pval.",
                                         "q coef.", "pval.",
                                         "sigma"),
-         gsgompertz = colnames(temp) <- c("m coef", "pval.",
+         "gsgompertz" = colnames(temp) <- c("m coef", "pval.",
                                           "a coef.", "pval.",
                                           "b coef.", "pval.",
                                           "c coef", "pval.", "sigma"),
-         weibull = colnames(temp) <- c("m coef.", "pval.",
+         "weibull" = colnames(temp) <- c("m coef.", "pval.",
                                        "a coef.", "pval.",
                                        "b coef.", "pval.",
                                        "sigma"))

@@ -26,3 +26,22 @@ plot(tt4)
 plot(diffusion(tsCovid, type = "weibull", method = "nm"))
 
 
+# testing fixed parameters
+wFix <- rbind(c(7139.775, 15384.65, 15632.38 ), rep(NA, 3), rep(NA, 3))
+fitinit <- seqdiffusion(adat[[11]], w = NULL,  type = "bass",  mscal = T, eliminate = F,
+                        pvalreps = 0, cumulative = F, loss = 2, maxiter = 5000,
+                        method = "hj", verbose = T, initpar = "preset")
+
+
+
+p <- c(fitinit$diffusion[[1]]$w[2], fitinit$diffusion[[2]]$w[2], fitinit$diffusion[[3]]$w[2])
+
+wFix <- rbind(c(7139.775, 15384.65, 15632.38 ), p, rep(NA, 3))
+
+fitinit <- seqdiffusion(adat[[11]], w = NULL,  type = "bass",  mscal = T, eliminate = F,
+                        pvalreps = 100, cumulative = F, loss = 2, maxiter = 5000,
+                        method = "hj", verbose = T, initpar = "preset")
+
+plot(fitinit)
+
+diffusion(adat[[11]][,2], w = c(15196.3987, NA, NA), verbose = T)

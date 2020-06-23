@@ -1,9 +1,9 @@
-#### v.0.3.1.916 ####
+#### v.0.3.1.917 ####
 
 changes
 - new automated removal of leading and trailing NAs. Error abort if NA within series
 - new search optimisation argument (multisol)
-- new option to partially fix/optimise paramters w
+- new option to partially fix/optimise paramters w in both diffusion and seqdiffusion
 - new bootloss argument to control for different loss function of the bootstrapping
 - added documentation for tsMetal.RData
 - added internal sum squared error function for the optimiser
@@ -33,7 +33,7 @@ bugfixes
 - fixed the sequential diffusion pval elimination process
 - fixed error when linearization fails and reverting now to preset
 - included error check for pvalreps in seqdiffusion
-- included error check for y to be either vector or ts-object
+- included error check for y to be vector or ts-object / matrix or mts for seqdiffusion
 
 #### v.0.3.0 (30/04/18) ####
 

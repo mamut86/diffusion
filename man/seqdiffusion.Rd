@@ -6,6 +6,7 @@
 \usage{
 seqdiffusion(
   y,
+  w = NULL,
   cleanlead = c(TRUE, FALSE),
   loss = 2,
   cumulative = c(TRUE, FALSE),
@@ -14,7 +15,7 @@ seqdiffusion(
   sig = 0.05,
   verbose = c(FALSE, TRUE),
   type = c("bass", "gompertz", "gsgompertz", "weibull"),
-  optim = c("L-BFGS-B", "Nelder-Mead", "BFGS", "hjkb", "Rcgmin", "bobyqa"),
+  method = c("L-BFGS-B", "Nelder-Mead", "BFGS", "hjkb", "Rcgmin", "bobyqa"),
   maxiter = 500,
   opttol = 1e-06,
   multisol = c(FALSE, TRUE),
@@ -27,11 +28,14 @@ seqdiffusion(
 \arguments{
 \item{y}{matrix containing in each column the adoption per period for generation k}
 
+\item{w}{matrix containing in each column the curve parameters for generation k (see note). Parameters set to NA will be
+optimized. If \code{w = NULL} (default) all paramters are optimized.}
+
 \item{cleanlead}{removes leading zeros for fitting purposes (default == T)}
 
 \item{loss}{the l-norm (1 is absolute errors, 2 is squared errors)}
 
-\item{cumulative}{If TRUE optimisation is done on cumulative adoption.}
+\item{cumulative}{If TRUE optimization is done on cumulative adoption.}
 
 \item{pvalreps}{bootstrap repetitions to estimate (marginal) p-values}
 
@@ -46,8 +50,8 @@ estimation. Forces \code{pvalreps = 1000} if left to 0.}
 \item{type}{of diffusion curve to use. This can be "bass", "gompertz",
 "gsgompertz" and "weibull"}
 
-\item{optim}{optimization method to use. This can be "nm" for Nelder-Meade or
-"hj" for Hooke-Jeeves. #' @param maxiter number of iterations the optimser
+\item{method}{optimization method to use. This can be "nm" for Nelder-Meade or
+"hj" for Hooke-Jeeves. #' @param maxiter number of iterations the optimzer
 takes (default == \code{10000} for "nm" and \code{Inf} for "hj")}
 
 \item{opttol}{Tolerance for convergence (default == 1.e-06)}
@@ -56,10 +60,7 @@ takes (default == \code{10000} for "nm" and \code{Inf} for "hj")}
 
 \item{initpar}{vector of initalisation parameters. If set to \code{preset} a predfined set of internal initalisation parameters is used while \code{"linearize"} uses linearized initalisation methods (default == \code{"linearize"}.}
 
-\item{mscal}{scales market potential at initalisation with the maximum of the observed market potential for better optimisation results (default == \code{TRUE})}
-
-\item{w}{vector of curve parameters (see note). Parameters set to NA will be
-optimized. If \code{w = NULL} (default) all paramters are optimized.}
+\item{mscal}{scales market potential at initalisation with the maximum of the observed market potential for better optimization results (default == \code{TRUE})}
 }
 \value{
 Returns an object of class \code{seqdiffusion}, which contains:

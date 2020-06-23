@@ -12,7 +12,7 @@ diffusion(
   cumulative = c(TRUE, FALSE),
   verbose = c(FALSE, TRUE),
   type = c("bass", "gompertz", "gsgompertz", "weibull"),
-  optim = c("L-BFGS-B", "Nelder-Mead", "BFGS", "hjkb", "Rcgmin", "bobyqa"),
+  method = c("L-BFGS-B", "Nelder-Mead", "BFGS", "hjkb", "Rcgmin", "bobyqa"),
   maxiter = 500,
   opttol = 1e-06,
   multisol = c(FALSE, TRUE),
@@ -37,15 +37,15 @@ optimized. If \code{w = NULL} (default) all paramters are optimized.}
 
 \item{type}{diffusion curve to use. This can be "bass", "gompertz" and "gsgompertz"}
 
-\item{optim}{optimization method to use. These can be \code{"Nelder-Meade"},
+\item{method}{optimization method to use. These can be \code{"Nelder-Meade"},
 \code{"L-BFGS-B"}, \code{"BFGS"}, \code{"hjkb"}, \code{"Rcgmin"},
 \code{"bobyqa"}. Typically, good performance is achieved with
 \code{"Nelder-Meade"} and \code{"L-BFGS-B"}. \code{"hjkb"} and
 \code{"Rcgmin"} might be an alternative for complex shapes but have
 substantially higher computational costs. For further details on
-optimisation algorithms we refer to the optimx package documentation}
+optimization algorithms we refer to the optimx package documentation}
 
-\item{maxiter}{number of iterations the optimser takes (default == \code{5000})}
+\item{maxiter}{number of iterations the optimzer takes (default == \code{5000})}
 
 \item{opttol}{Tolerance for convergence (default == 1.e-06)}
 
@@ -58,7 +58,7 @@ predfined set of internal initalisation parameters is used while
 \code{"linearize"} uses linearized initalisation methods (default == \code{"linearize"}.}
 
 \item{mscal}{scales market potential at initalisation with the maximum of the
-observed market potential for better optimisation results (default == \code{TRUE})}
+observed market potential for better optimization results (default == \code{TRUE})}
 
 \item{...}{accepts \code{pvalreps}, bootstrap repetitions to estimate
 (marginal) p-values; \code{eliminate}, if TRUE eliminates insignificant
