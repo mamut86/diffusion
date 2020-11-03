@@ -4,11 +4,13 @@
 \name{tsMetal}
 \alias{tsMetal}
 \title{Time series: U.S. Merchant Marine conversion to metal}
-\format{A data frame with 17 observations and 2 variables
+\format{
+A data frame with 17 observations and 2 variables
 \describe{
 \item{year}{Year}
 \item{substitution}{Conversion to metal}
-  }}
+  }
+}
 \description{
 A dataset with conversion of U.S. Merchant Marine from wood to metal.
 }

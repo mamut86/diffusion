@@ -4,12 +4,14 @@
 \name{tsWindows}
 \alias{tsWindows}
 \title{Time series: Windows OS Platform Statistics}
-\format{A data frame with 168 observations and 9 variables \describe{ 
+\format{
+A data frame with 168 observations and 9 variables \describe{ 
   \item{Date}{Log file date} \item{Win10}{Usage of Windows 10} 
   \item{Win8}{Usage of Windows 8} \item{Win7}{Usage of Windows 7} 
   \item{Vista}{Usage of Windows Vista} \item{WinXP}{Usage of Windows XP} 
   \item{Win2000}{Usage of Windows 2000} \item{Win98}{Usage of Windows 98} 
-  \item{Win95}{Usage of Windows 95}}}
+  \item{Win95}{Usage of Windows 95}}
+}
 \source{
 \url{https://www.w3schools.com/browsers/browsers_os.asp}
 }

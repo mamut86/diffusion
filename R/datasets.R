@@ -19,23 +19,6 @@
 #' @references VGChartz
 NULL
 
-#' Time series: Broadcast subscribers
-#' 
-#' A dataset containing the broadcast subscribers to UK market 4Q 2011 to 2Q 2016.
-#' 
-#' @name tsBroadband
-#' @docType data
-#' @format A data frame with 51 observations and 4 variables
-#' \describe{
-#' \item{Time}{Quarters}
-#' \item{DSL}{Adoption of DSL subscribers}
-#' \item{Cablemodem}{Adoption of CableModem users}
-#' \item{FTTPb}{Adoption of FTTPb sales}
-#'   }
-#'   
-#' @references Telecoms Market Matrix
-NULL
-
 #' Time series: Stock of cars
 #' 
 #' A dataset containing the yearly stock of cars in the Netherlands (1965-1989).
@@ -150,4 +133,20 @@ NULL
 #'   interpolated
 #'   
 #' @source \url{https://www.w3schools.com/browsers/browsers_os.asp}
+NULL
+
+#' Time series: COVID-19 confirmed cases US
+#' 
+#' A dataset containing the number of confirmed Covid-19 cases in the US.
+#' 
+#' @name tsCovid
+#' @docType data
+#' @format A ts object with 107 days of observations
+#' \describe{
+#' \item{tsCovid}{Daily confirmed COVDID-19 cases}
+#'   }
+#'   
+#' @references COVID-19 Data Repository by the Center for Systems Science and Engineering (CSSE) at Johns Hopkins University
+#' 
+#' @source \url{https://github.com/CSSEGISandData/COVID-19}
 NULL

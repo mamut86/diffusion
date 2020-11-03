@@ -4,11 +4,13 @@
 \name{tsChicken}
 \alias{tsChicken}
 \title{Time series: Chicken weight}
-\format{A data frame with 13 observations and 2 variables
+\format{
+A data frame with 13 observations and 2 variables
 \describe{
 \item{time}{Weeks since birth}
 \item{weight}{Weight of the female chicken in Kg}
-  }}
+  }
+}
 \description{
 A dataset containing the average weekly female chicken weight.
 }

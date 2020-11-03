@@ -29,22 +29,22 @@ This function calculates the values of diffusion curves that can be of \code{"ba
 }
 \note{
 \code{w} needs to be provided for the Bass curve in the order of
-  \code{"p", "q", "m"}, where "p" is the coefficient of innovation, "q" is the
+  \code{("m", "p", "q")}, where "p" is the coefficient of innovation, "q" is the
   coefficient of imitation and "m" is the market size coefficient.
   
   For the Gompertz curve, vector \code{w} needs to be in the form of
-  \code{("a", "b", "m")}. Where "a" is the x-axis displacement coefficient, "b"
+  \code{("m", "a", "b")}. Where "a" is the x-axis displacement coefficient, "b"
   determines the growth rate and "m" sets, similarly to Bass model, the
   market potential (saturation point).
   
   For the Shifted-Gompertz curve, vector \code{w} needs to be in the form of 
-  \code{("a", "b", "c", "m")}. Where "a" is the x-axis displacement
+  \code{("m", "a", "b", "c")}. Where "a" is the x-axis displacement
   coefficient, "b" determines the growth rate, "c" is the shifting parameter
   and "m" sets, similarly to Bass model, the market potential (saturation
   point).
   
   For the Weibull curve, vector \code{w} needs to be in the form of
-  \code{("a", "b", "m")}. Where "a" is the scale parameter, "b" determines the
+  \code{("m", "a", "b")}. Where "a" is the scale parameter, "b" determines the
   shape. Together, "a" and "b" determine the stepness of the curve. The "m"
   parameter sets the market potential (saturation point).
 }
