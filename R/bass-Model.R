@@ -82,7 +82,7 @@ bass <- function(y, lags=frequency(y), seasonality=FALSE,
   
   maxevalUsed <- maxeval;
   if(is.null(maxeval)){
-    maxevalUsed <- length(B) * 40;
+    maxevalUsed <- 1000;
   }
   
   
@@ -91,6 +91,10 @@ bass <- function(y, lags=frequency(y), seasonality=FALSE,
                           ftol_rel=ftol_rel, ftol_abs=ftol_abs,
                           maxeval=maxevalUsed, maxtime=maxtime, print_level=print_level))
   
+  if(print_level_hidden>0){
+    print(res);
+  }
+  
   B[] <- res$solution;
   CFValue <- res$objective;
   logLikBass <- -CFValue;
@@ -98,7 +102,8 @@ bass <- function(y, lags=frequency(y), seasonality=FALSE,
   bassValues <- bassCurve(obsInsample, B);
   yFitted <- bassValues[,"Adoption"];
 
-  modelReturned <- list(data=y, fitted=yFitted, B=B, loss="likelihood", lossValue=CFValue, logLik=logLikBass);
+  modelReturned <- list(data=y, fitted=yFitted, B=B, curves=bassValues,
+                        loss="likelihood", lossValue=CFValue, logLik=logLikBass);
   
   return(modelReturned);
 }
