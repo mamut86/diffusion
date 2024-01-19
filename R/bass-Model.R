@@ -60,6 +60,12 @@ bass <- function(y, lags=frequency(y), seasonality=FALSE,
     else{
         print_level <- ellipsis$print_level;
     }
+    if(is.null(ellipsis$B)){
+      B <- bassInit(y);
+    }
+    else{
+        B <- ellipsis$B;
+    }
   
   # Loss/cost function
   CF <- function(B){
@@ -70,9 +76,8 @@ bass <- function(y, lags=frequency(y), seasonality=FALSE,
     return(CFValue);
   }
   
-  B <- bassInit(y);
   lb <- rep(0, length(B));
-  ub <- rep(Inf, length(B));
+  ub <- c(1, 1, Inf);
   
   print_level_hidden <- print_level;
   if(print_level==41){
