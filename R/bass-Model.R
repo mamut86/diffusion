@@ -1,10 +1,15 @@
+#' @importFrom nloptr nloptr
+#' @importFrom statmod dinvgauss qinvgauss
+#' @importFrom stats dlnorm dgamma qlnorm qgamma
+#' @export
 bass <- function(y, lags=frequency(y), seasonality=FALSE,
-                 distribution=c("dlnorm"), xreg=NULL, ...){
+                 distribution=c("dlnorm","dgamma","dinvgauss"), xreg=NULL, ...){
   # Function implements a statistical Bass model
+  distribution <- match.arg(distribution);
+  
+  # Technical parameters
   obsInsample <- length(y);
-  
-  yIndex <- try(time(y),silent=TRUE);
-  
+  yIndex <- try(time(y), silent=TRUE);
   yFrequency <- frequency(y);
   yStart <- yIndex[1];
   
@@ -71,8 +76,15 @@ bass <- function(y, lags=frequency(y), seasonality=FALSE,
   # Loss/cost function
   CF <- function(B){
     yFitted <- bassCurve(obsInsample, B)[,"Adoption"];
-    scale <- sqrt(mean((log(y) - log(yFitted))^2));
-    CFValue <- -sum(dlnorm(y, log(yFitted), scale, log=TRUE));
+    scale <- switch(distribution,
+                    "dlnorm"=sqrt(mean((log(y) - log(yFitted))^2)),
+                    "dgamma"=mean((y - yFitted)^2),
+                    "dinvgauss"=mean((y - yFitted)^2),
+                    mean((y - yFitted)^2/(1 + y - yFitted)));
+    CFValue <- -sum(switch(distribution,
+                           "dlnorm"=dlnorm(y, log(yFitted), scale, log=TRUE),
+                           "dgamma"=dgamma(y, shape=1/scale, scale=scale*yFitted, log=TRUE),
+                           "dinvgauss"=dinvgauss(y, mean=yFitted, dispersion=scale/yFitted, log=TRUE)));
     
     return(CFValue);
   }
@@ -115,19 +127,37 @@ bass <- function(y, lags=frequency(y), seasonality=FALSE,
   return(structure(modelReturned, class="bass"));
 }
 
+#' @export
+nobs.bass <- function(object, ...){
+  return(length(fitted(test)));
+}
+
+#' @export
 plot.bass <- function(x, level=0.95, ...){
-  plot(x$data, ylim=range(c(x$data, fitted(x)),
-                          qlnorm((1+level)/2, log(x$fitted), x$scale)),
+  obsInsample <- nobs(x);
+  yFitted <- fitted(x);
+  
+  quantileValues <- matrix(switch(x$distribution,
+                                  "dlnorm"=qlnorm(rep(c((1-level)/2,(1+level)/2),each=obsInsample),
+                                                  log(yFitted), x$scale),
+                                  "dgamma"=qgamma(rep(c((1-level)/2,(1+level)/2),each=obsInsample),
+                                                  shape=1/x$scale, scale=x$scale*yFitted),
+                                  "dlnorm"=qlnorm(rep(c((1-level)/2,(1+level)/2),each=obsInsample),
+                                                  mean=yFitted, dispersion=x$scale/yFitted)),
+                           obsInsample, 2);
+  
+  plot(x$data, ylim=range(c(x$data, fitted(x)), quantileValues),
        ylab="Adoption", xlab="Time");
   lines(fitted(x), col="darkred");
   lines(x$curves[,3], col="darkgreen");
   lines(x$curves[,4], col="darkblue");
-  lines(qlnorm((1-level)/2, log(x$fitted), x$scale), col="darkgrey", lty=2);
-  lines(qlnorm((1+level)/2, log(x$fitted), x$scale), col="darkgrey", lty=2);
+  lines(quantileValues[,1], col="darkgrey", lty=2);
+  lines(quantileValues[,2], col="darkgrey", lty=2);
   legend("topright", legend=c("Adoption","Innovators","Imitators",paste0(round(level*100,0),"% Prediction level")),
          col=c("darkred","darkgreen","darkblue","darkgrey"), lwd=1, lty=c(1,1,1,2))
 }
 
+#' @export
 print.bass <- function(x, ...){
   distribution <- switch(x$distribution,
                          "dlnorm"="Log-Normal",
