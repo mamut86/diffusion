@@ -224,3 +224,11 @@ print.bass <- function(x, digits=4, ...){
   cat("\nInformation criteria:\n");
   print(round(ICs,digits));
 }
+
+
+# coef.bass
+# vcov.bass
+# confint.bass
+# summary.bass
+# predict.bass
+# forecast.bass
