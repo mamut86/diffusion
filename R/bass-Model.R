@@ -3,7 +3,7 @@
 #' @importFrom stats dlnorm dgamma qlnorm qgamma
 #' @export
 bass <- function(y, lags=frequency(y), seasonality=FALSE,
-                 distribution=c("dlnorm","dgamma","dinvgauss"), xreg=NULL, ...){
+                 distribution=c("dlnorm","dgamma","dinvgauss"), formula=NULL, ...){
   # Function implements a statistical Bass model
   distribution <- match.arg(distribution);
   
@@ -115,7 +115,7 @@ bass <- function(y, lags=frequency(y), seasonality=FALSE,
   
   B[] <- res$solution;
   CFValue <- res$objective;
-  logLikBass <- -CFValue;
+  logLikBass <- structure(-CFValue,nobs=obsInsample,df=length(B)+1,class="logLik");
   
   bassValues <- bassCurve(obsInsample, B);
   yFitted <- bassValues[,"Adoption"];
@@ -127,13 +127,27 @@ bass <- function(y, lags=frequency(y), seasonality=FALSE,
   return(structure(modelReturned, class="bass"));
 }
 
+#' @importFrom stats nobs
 #' @export
 nobs.bass <- function(object, ...){
-  return(length(fitted(test)));
+  return(length(fitted(object)));
+}
+
+#' @importFrom stats logLik
+#' @export
+logLik.bass <- function(object, ...){
+  return(object$logLik);
+}
+
+#' @importFrom greybox actuals
+#' @export
+actuals.bass <- function(object, ...){
+  return(object$data);
 }
 
 #' @export
 plot.bass <- function(x, level=0.95, ...){
+  ellipsis <- list(...);
   obsInsample <- nobs(x);
   yFitted <- fitted(x);
   
@@ -142,12 +156,37 @@ plot.bass <- function(x, level=0.95, ...){
                                                   log(yFitted), x$scale),
                                   "dgamma"=qgamma(rep(c((1-level)/2,(1+level)/2),each=obsInsample),
                                                   shape=1/x$scale, scale=x$scale*yFitted),
-                                  "dlnorm"=qlnorm(rep(c((1-level)/2,(1+level)/2),each=obsInsample),
-                                                  mean=yFitted, dispersion=x$scale/yFitted)),
+                                  "dinvgauss"=qinvgauss(rep(c((1-level)/2,(1+level)/2),each=obsInsample),
+                                                        mean=yFitted, dispersion=x$scale/yFitted)),
                            obsInsample, 2);
   
-  plot(x$data, ylim=range(c(x$data, fitted(x)), quantileValues),
-       ylab="Adoption", xlab="Time");
+  # Set default plot parameters
+  if(!any(names(ellipsis)=="main")){
+    ellipsis$main <- paste0("Statistical Bass model with ",
+                        switch(x$distribution,
+                               "dlnorm"="Log-Normal",
+                               "dgamma"="Gamma",
+                               "dinvgauss"="Inverse Gaussian",
+                               "Normal"),
+                        " distribution");
+  }
+  
+  if(!any(names(ellipsis)=="ylim")){
+    ellipsis$ylim <- range(c(x$data, fitted(x)), quantileValues);
+  }
+
+  if(!any(names(ellipsis)=="ylab")){
+    ellipsis$ylab <- "Adoption";
+  }
+
+  if(!any(names(ellipsis)=="xlab")){
+    ellipsis$xlab <- "Time";
+  }
+
+  # The actuals
+  ellipsis$x <- actuals(x);
+  
+  do.call("plot", ellipsis);
   lines(fitted(x), col="darkred");
   lines(x$curves[,3], col="darkgreen");
   lines(x$curves[,4], col="darkblue");
@@ -158,11 +197,17 @@ plot.bass <- function(x, level=0.95, ...){
 }
 
 #' @export
-print.bass <- function(x, ...){
+print.bass <- function(x, digits=4, ...){
   distribution <- switch(x$distribution,
                          "dlnorm"="Log-Normal",
+                         "dgamma"="Gamma",
+                         "dinvgauss"="Inverse Gaussian",
                          "Normal");
-  cat("Statistical bass model with", distribution, "distribution.\n");
+  cat("Statistical Bass model with", distribution, "distribution.\n");
   cat("Parameters:\n");
-  print(x$B);
+  print(round(x$B,digits));
+  ICs <- c(AIC(x),AICc(x),BIC(x),BICc(x));
+  names(ICs) <- c("AIC","AICc","BIC","BICc");
+  cat("\nInformation criteria:\n");
+  print(round(ICs,digits));
 }
