@@ -2,10 +2,23 @@
 #' @importFrom statmod dinvgauss qinvgauss
 #' @importFrom stats dlnorm dgamma qlnorm qgamma
 #' @export
-bass <- function(y, lags=frequency(y), seasonality=FALSE,
+bass <- function(data, lags=frequency(data), seasonality=FALSE,
                  distribution=c("dlnorm","dgamma","dinvgauss"), formula=NULL, ...){
   # Function implements a statistical Bass model
   distribution <- match.arg(distribution);
+  
+  # Process the provided data
+  # Remove consecutive zeroes from the data first...
+  # This should also use formula
+  if(is.matrix(data)){
+    y <- data[,1];
+  }
+  else if(is.data.frame(data)){
+    y <- data[[1]];
+  }
+  else{
+    y <- data;
+  }
   
   # Technical parameters
   obsInsample <- length(y);
