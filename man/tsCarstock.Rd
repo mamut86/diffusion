@@ -4,12 +4,14 @@
 \name{tsCarstock}
 \alias{tsCarstock}
 \title{Time series: Stock of cars}
-\format{A data frame with 25 observations and 3 variables
+\format{
+A data frame with 25 observations and 3 variables
 \describe{
 \item{year}{Year}
 \item{raw}{Raw stock numbers}
 \item{smoothed}{Smoothed stock numbers as described by Franses (1994)}
-  }}
+  }
+}
 \description{
 A dataset containing the yearly stock of cars in the Netherlands (1965-1989).
 }

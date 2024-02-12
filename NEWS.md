@@ -1,4 +1,4 @@
-#### v.0.3.1.909 ####
+#### v.0.3.1.910 ####
 
 changes
 - added documentation for tsMetal.RData
@@ -7,6 +7,8 @@ changes
 - cleaned documentation
 - Automated removal of leading and trailing NAs. Error abort if NA within series
 - changed non-critical warnings to type message, to allow easy surpression
+- bass() function implementing Bass Model, together with plot(), print(), nobs(), logLik() and actuals() methods.
+- is.diffusion() and is.bass() functions
 
 bugfixes
 - issues with log errors - reverted error measure to v.0.2.7 for the time being
@@ -18,6 +20,7 @@ bugfixes
 - updated documentation for diffusion() - Thx Ivan!
 - fixed error when plot.seqdiffusion() was used with cleanlead = F
 - fixed error in gompertz when cleanlead = F
+- fixed the tsmetal issue - the object now has the correct name
 
 #### v.0.3.0 (30/04/18) ####
 

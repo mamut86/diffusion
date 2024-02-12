@@ -4,7 +4,8 @@
 \name{tsAc}
 \alias{tsAc}
 \title{Time series: Assassins Creeds}
-\format{A matrix with 380 observations and 8 variables
+\format{
+A matrix with 380 observations and 8 variables
 \describe{
 \item{ac1}{Assassins Creed 1}
 \item{ac2}{Assassins Creed 2}
@@ -14,7 +15,8 @@
 \item{ac6}{Assassins Creed 6}
 \item{ac7}{Assassins Creed 7}
 \item{ac8}{Assassins Creed 8}
-  }}
+  }
+}
 \description{
 A dataset containing the weekly sales of Assassins Creeds game.
 }

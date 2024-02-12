@@ -18,8 +18,7 @@ diffusion(
   type = c("bass", "gompertz", "gsgompertz", "weibull"),
   optim = c("nm", "hj"),
   maxiter = Inf,
-  opttol = 1e-06,
-  na.rm = c(FALSE, TRUE)
+  opttol = 1e-06
 )
 }
 \arguments{
@@ -59,8 +58,6 @@ significance level used to eliminate parameters}
 \code{10000} for "nm" and \code{Inf} for "hj")}
 
 \item{opttol}{Tolerance for convergence (default == 1.e-06)}
-
-\item{na.rm}{Removes NA values}
 }
 \value{
 Returns an object of class \code{diffusion}, which contains:
@@ -97,7 +94,7 @@ vector \code{w} needs to be provided for the Bass curve in the order of
   point).
   
   For the Weibull curve, vector \code{w} needs to be in the form of
-  \cod{("a", "b", "m")}. Where "a" is the scale parameter, "b" determines the
+  \code{("a", "b", "m")}. Where "a" is the scale parameter, "b" determines the
   shape. Together, "a" and "b" determine the stepness of the curve. The "m"
   parameter sets the market potential (saturation point).
 
