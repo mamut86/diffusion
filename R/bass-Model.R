@@ -103,10 +103,20 @@ bass <- function(data, lags=frequency(data), seasonality=FALSE,
   }
   
   # Technical parameters
-  obsInsample <- length(y);
   yIndex <- try(time(y), silent=TRUE);
   yFrequency <- frequency(y);
+  
+  # Remove consecutive zeroes
+  zeroesStart <- which(y!=0)[1];
+  zeroesEnd <- tail(which(y!=0),1);
+  if(length(zeroesStart)!=0 || length(zeroesEnd)!=0){
+    y <- y[zeroesStart:zeroesEnd];
+    yIndex <- yIndex[zeroesStart:zeroesEnd];
+    warning("Data had some zeroes in the beginning/end. We dropped them.",
+            call.=FALSE);
+  }
   yStart <- yIndex[1];
+  obsInsample <- length(y);
   
   ellipsis <- list(...);
   
