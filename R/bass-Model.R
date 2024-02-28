@@ -161,7 +161,7 @@ bass <- function(data, lags=frequency(data), seasonality=FALSE,
     print_level <- ellipsis$print_level;
   }
   if(is.null(ellipsis$B)){
-    B <- bassInit(y);
+    B <- abs(bassInit(y));
   }
   else{
     B <- ellipsis$B;
@@ -176,10 +176,10 @@ bass <- function(data, lags=frequency(data), seasonality=FALSE,
     lb <- ellipsis$lb;
   }
   if(is.null(ellipsis$ub)){
-    ub <- bassInit(y);
+    ub <- c(1, 1, Inf);
   }
   else{
-    ub <- c(1, 1, Inf);
+    ub <- ellipsis$ub;
   }
   
   # Loss/cost function
@@ -208,7 +208,6 @@ bass <- function(data, lags=frequency(data), seasonality=FALSE,
   if(is.null(maxeval)){
     maxevalUsed <- 1000;
   }
-  
   
   res <- nloptr(B, CF, lb=lb, ub=ub,
                 opts=list(algorithm=algorithm, xtol_rel=xtol_rel, xtol_abs=xtol_abs,
