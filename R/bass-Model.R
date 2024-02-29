@@ -194,6 +194,7 @@ bass <- function(data, lags=frequency(data), seasonality=FALSE,
         yDecomposition <- msdecompose(yInSample, lags=lags[lags!=1],
                                       type="multiplicative");
         BSeasonal <- unlist(yDecomposition$seasonal)[-lags];
+        names(BSeasonal) <- paste0("seasonal",c(1:(lags-1)));
         B <- c(abs(bassInit(yDecomposition$trend[!is.na(yDecomposition$trend)])),
                BSeasonal);
       }
