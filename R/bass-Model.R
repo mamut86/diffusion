@@ -81,6 +81,7 @@
 #' @importFrom utils head
 #' @importFrom graphics legend lines
 #' @importFrom greybox AICc BICc
+#' @importFrom smooth msdecompose
 #' 
 #' @rdname bass
 #' @export
@@ -109,14 +110,17 @@ bass <- function(data, lags=frequency(data), seasonality=FALSE,
   # Remove consecutive zeroes
   zeroesStart <- which(y!=0)[1];
   zeroesEnd <- tail(which(y!=0),1);
-  if(length(zeroesStart)!=0 || length(zeroesEnd)!=0){
-    y <- y[zeroesStart:zeroesEnd];
+  if(zeroesStart!=1 || zeroesEnd!=length(y)){
+    yInSample <- y[zeroesStart:zeroesEnd];
     yIndex <- yIndex[zeroesStart:zeroesEnd];
     warning("Data had some zeroes in the beginning/end. We dropped them.",
             call.=FALSE);
   }
+  else{
+    yInSample <- y;
+  }
   yStart <- yIndex[1];
-  obsInsample <- length(y);
+  obsInsample <- length(yInSample);
   
   ellipsis <- list(...);
   
@@ -171,12 +175,36 @@ bass <- function(data, lags=frequency(data), seasonality=FALSE,
     print_level <- ellipsis$print_level;
   }
   if(is.null(ellipsis$B)){
-    B <- abs(bassInit(y));
+    BNotProvided <- TRUE;
   }
   else{
+    BNotProvided <- FALSE;
     B <- ellipsis$B;
   }
-  names(B) <- c("p","q","m");
+  
+  # Estimate parameters
+  if(BNotProvided){
+    # Deal with seasonality
+    if(seasonality){
+      if(all(lags==1)){
+        warning("Cannot build seasonal model with lags=1",
+                call.=FALSE);
+      }
+      else{
+        yDecomposition <- msdecompose(yInSample, lags=lags[lags!=1],
+                                      type="multiplicative");
+        BSeasonal <- unlist(yDecomposition$seasonal)[-lags];
+        B <- c(abs(bassInit(yDecomposition$trend[!is.na(yDecomposition$trend)])),
+               BSeasonal);
+      }
+    }
+    else{
+      B <- abs(bassInit(lowess(yInSample)$y));
+      # B <- abs(bassInit(yInSample));
+      BSeasonal <- NULL;
+    }
+  }
+  nParamSeasonal <- length(BSeasonal);
   
   # Upper and lower bounds for the parameters
   if(is.null(ellipsis$lb)){
@@ -186,7 +214,7 @@ bass <- function(data, lags=frequency(data), seasonality=FALSE,
     lb <- ellipsis$lb;
   }
   if(is.null(ellipsis$ub)){
-    ub <- c(1, 1, Inf);
+    ub <- c(1, 1, Inf, rep(Inf, nParamSeasonal));
   }
   else{
     ub <- ellipsis$ub;
@@ -195,15 +223,20 @@ bass <- function(data, lags=frequency(data), seasonality=FALSE,
   # Loss/cost function
   CF <- function(B){
     yFitted <- bassCurve(obsInsample, B)[,"Adoption"];
+    if(seasonality){
+      BSeasonal <- c(B[-c(1:3)],1);
+      BSeasonal[length(BSeasonal)] <- 1/prod(BSeasonal);
+      yFitted[] <- (yFitted * rep(BSeasonal,ceiling(obsInsample/lags)))[1:obsInsample];
+    }
     scale <- switch(distribution,
-                    "dlnorm"=sqrt(mean((log(y) - log(yFitted))^2)),
-                    "dgamma"=mean((y - yFitted)^2),
-                    "dinvgauss"=mean((y - yFitted)^2),
-                    mean((y - yFitted)^2/(1 + y - yFitted)));
+                    "dlnorm"=sqrt(mean((log(yInSample) - log(yFitted))^2)),
+                    "dgamma"=mean((yInSample - yFitted)^2),
+                    "dinvgauss"=mean((yInSample - yFitted)^2),
+                    mean((yInSample - yFitted)^2/(1 + yInSample - yFitted)));
     CFValue <- -sum(switch(distribution,
-                           "dlnorm"=dlnorm(y, log(yFitted), scale, log=TRUE),
-                           "dgamma"=dgamma(y, shape=1/scale, scale=scale*yFitted, log=TRUE),
-                           "dinvgauss"=dinvgauss(y, mean=yFitted, dispersion=scale/yFitted, log=TRUE)));
+                           "dlnorm"=dlnorm(yInSample, log(yFitted), scale, log=TRUE),
+                           "dgamma"=dgamma(yInSample, shape=1/scale, scale=scale*yFitted, log=TRUE),
+                           "dinvgauss"=dinvgauss(yInSample, mean=yFitted, dispersion=scale/yFitted, log=TRUE)));
     
     return(CFValue);
   }
@@ -216,7 +249,7 @@ bass <- function(data, lags=frequency(data), seasonality=FALSE,
   
   maxevalUsed <- maxeval;
   if(is.null(maxeval)){
-    maxevalUsed <- 1000;
+    maxevalUsed <- 2000;
   }
   
   res <- nloptr(B, CF, lb=lb, ub=ub,
@@ -234,11 +267,14 @@ bass <- function(data, lags=frequency(data), seasonality=FALSE,
   
   bassValues <- bassCurve(obsInsample, B);
   yFitted <- bassValues[,"Adoption"];
-  scale <- sqrt(mean((log(y) - log(yFitted))^2));
+  if(seasonality){
+    yFitted[] <- (yFitted * rep(B[-c(1:3)],ceiling(obsInsample/lags)))[1:obsInsample];
+  }
+  scale <- sqrt(mean((log(yInSample) - log(yFitted))^2));
   
-  modelReturned <- list(data=y, fitted=yFitted, residuals=log(y) - log(yFitted),
+  modelReturned <- list(data=yInSample, fitted=yFitted, residuals=log(yInSample) - log(yFitted),
                         B=B, curves=bassValues, scale=scale, distribution=distribution,
-                        loss="likelihood", lossValue=CFValue, logLik=logLikBass);
+                        loss="likelihood", lossValue=CFValue, logLik=logLikBass, res=res);
   
   return(structure(modelReturned, class="bass"));
 }
@@ -303,13 +339,14 @@ plot.bass <- function(x, level=0.95, ...){
   ellipsis$x <- actuals(x);
   
   do.call("plot", ellipsis);
-  lines(fitted(x), col="darkred");
+  lines(yFitted, col="darkorange");
+  lines(x$curves[,2], col="darkred");
   lines(x$curves[,3], col="darkgreen");
   lines(x$curves[,4], col="darkblue");
   lines(quantileValues[,1], col="darkgrey", lty=2);
   lines(quantileValues[,2], col="darkgrey", lty=2);
-  legend("topright", legend=c("Adoption","Innovators","Imitators",paste0(round(level*100,0),"% Prediction level")),
-         col=c("darkred","darkgreen","darkblue","darkgrey"), lwd=1, lty=c(1,1,1,2))
+  legend("topright", legend=c("Fitted","Adoption","Innovators","Imitators",paste0(round(level*100,0),"% Prediction level")),
+         col=c("darkorange","darkred","darkgreen","darkblue","darkgrey"), lwd=1, lty=c(1,1,1,1,2))
 }
 
 #' @export

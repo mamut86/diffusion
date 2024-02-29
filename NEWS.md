@@ -1,4 +1,4 @@
-#### v.0.3.1.910 ####
+#### v.0.3.1.911 ####
 
 changes
 - added documentation for tsMetal.RData
@@ -9,6 +9,7 @@ changes
 - changed non-critical warnings to type message, to allow easy surpression
 - bass() function implementing Bass Model, together with plot(), print(), nobs(), logLik() and actuals() methods.
 - is.diffusion() and is.bass() functions
+- Seasonality in the Bass model. Currently the fixed one is supported.
 
 bugfixes
 - issues with log errors - reverted error measure to v.0.2.7 for the time being
