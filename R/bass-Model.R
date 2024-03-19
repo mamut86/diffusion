@@ -269,7 +269,9 @@ bass <- function(data, lags=frequency(data), seasonality=FALSE,
   bassValues <- bassCurve(obsInsample, B);
   yFitted <- bassValues[,"Adoption"];
   if(seasonality){
-    yFitted[] <- (yFitted * rep(B[-c(1:3)],ceiling(obsInsample/lags)))[1:obsInsample];
+    BSeasonal <- c(B[-c(1:3)],1);
+    BSeasonal[length(BSeasonal)] <- 1/prod(BSeasonal);
+    yFitted[] <- (yFitted * rep(BSeasonal,ceiling(obsInsample/lags)))[1:obsInsample];
   }
   scale <- sqrt(mean((log(yInSample) - log(yFitted))^2));
   
@@ -337,7 +339,7 @@ plot.bass <- function(x, level=0.95, ...){
   }
 
   # The actuals
-  ellipsis$x <- actuals(x);
+  ellipsis$x <- as.vector(actuals(x));
   
   do.call("plot", ellipsis);
   lines(yFitted, col="darkorange");
