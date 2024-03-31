@@ -78,51 +78,51 @@ vector \code{w} needs to be provided for the Bass curve in the order of
   
   For the Gompertz curve, vector \code{w} needs to be in the form of
   \code{("m", "a", "b")}. Where "a" is the x-axis displacement coefficient, "b"
-  determines the growth rate and "m" sets, similarly to Bass model, the
+  determines the growth rate and "m" sets, similarly to the Bass curve, the
   market potential (saturation point).
   
   For the Shifted-Gompertz curve, vector \code{w} needs to be in the form of 
   \code{("m", "a", "b", "c")}. Where "a" is the x-axis displacement
   coefficient, "b" determines the growth rate, "c" is the shifting parameter
-  and "m" sets, similarly to Bass model, the market potential (saturation
+  and "m" sets, similarly to the Bass curve, the market potential (saturation
   point).
   
   For the Weibull curve, vector \code{w} needs to be in the form of
   \code{("m", "a", "b")}. Where "a" is the scale parameter, "b" determines the
-  shape. Together, "a" and "b" determine the stepness of the curve. The "m"
+  shape. Together, "a" and "b" determine the steepness of the curve. The "m"
   parameter sets the market potential (saturation point).
 
 Parameters are estimated by 
 minimising the Mean Squared Error with a Subplex algorithm from the optimx package. 
 Optionally p-values of the coefficients can be determined via
-bootstraping. Furthermore, the bootstrapping allows to remove insignificant
-parameters from the optimisation process.
+bootstraping. Furthermore, the bootstrapping allows removing insignificant
+parameters from the optimization process.
 }
 \section{Bass curve}{
 
-The optimisation of the Bass curve is initialisated by the linear
-aproximation suggested in Bass (1969).
+The optimization of the Bass curve is initialized by the linear
+approximation suggested in Bass (1969).
 }
 
 \section{Gompertz curve}{
 
-The initialisation of the Gompertz curve uses the
+The initialization of the Gompertz curve uses the
 approach suggested by Jukic et al. (2004), but is adapted to allow for the
-non-exponential version of Gompertz curve. This makes the market potential
-parameter equivalent to the Bass curves's and the market potential from
-Bass curve is used for initialisation.
+non-exponential version of the Gompertz curve. This makes the market potential
+parameter equivalent to the Bass curves and the market potential from
+Bass curve is used for initialization.
 }
 
 \section{Gamma/Shifted Gompertz}{
 
-The curve is initialised by assuming the shift operator to be 1 and 
+The curve is initialized by assuming the shift operator to be 1 and 
 becomes equivalent to the Bass curve, as shown in Bemmaor (1994). A Bass
 curve is therefore used as an estimator for the remaining initial parameters.
 }
 
 \section{Weibull}{
 
-The initialisation is obatained through by a linear approximation
+The initialization is obtained through by a linear approximation
 median-ranked OLS described in Sharif and Islam 1980.
 }
 
@@ -141,7 +141,7 @@ median-ranked OLS described in Sharif and Islam 1980.
 }
 \references{
 \itemize{
-\item{For an introduction to diffusion curves see: Ord K., Fildes R., Kourentzes N. (2017) \href{http://kourentzes.com/forecasting/2017/10/16/new-forecasting-book-principles-of-business-forecasting-2e/}{Principles of Business Forecasting 2e}. \emph{Wessex Press Publishing Co.}, Chapter 12.}
+\item{For an introduction to diffusion curves see Ord K., Fildes R., Kourentzes N. (2017) \href{http://kourentzes.com/forecasting/2017/10/16/new-forecasting-book-principles-of-business-forecasting-2e/}{Principles of Business Forecasting 2e}. \emph{Wessex Press Publishing Co.}, Chapter 12.}
 \item{Bass, F.M., 1969. A new product growth for model consumer durables. Management Science 15(5), 215-227.}
 \item{Bemmaor, A. 1994. Modeling the Diffusion of New Durable Goods: Word-of-Mouth Effect versus Consumer Heterogeneity. In G. Laurent, G.L. Lilien and B. Pras (Eds.). Research Traditions in Marketing. Boston: Kluwer, pp. 201-223.}
 \item{Jukic, D., Kralik, G. and Scitovski, R., 2004. Least-squares fitting Gompertz curve. Journal of Computational and Applied Mathematics, 169, 359-375.}
