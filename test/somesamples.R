@@ -57,7 +57,7 @@ plot(gen2, cumulative = T)
 
 
 gln <- seqdiffusion(oil, type = "gompertz", optim = "nm", initpar = "linearize",
-                    mscal = T, eliminate= TRUE, verbose = F, pvalreps = 1000)
+                    mscal = T, eliminate= TRUE, verbose = T, pvalreps = 1000)
 
 
 gln <- seqdiffusion(tsIbm, type = "gompertz", optim = "nm", initpar = "linearize",
