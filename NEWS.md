@@ -1,15 +1,20 @@
 #### v.0.3.1.911 ####
 
 changes
+- new automated removal of leading and trailing NAs. Error abort if NA within series
+- new search optimisation option
 - added documentation for tsMetal.RData
 - added internal sum squared error function for the optimiser
-- Passing optim setting int trough Gompertz and GSGompertz initialisation
-- cleaned documentation
-- Automated removal of leading and trailing NAs. Error abort if NA within series
+- added passing optim setting int trough Gompertz and GSGompertz initialisation
 - changed non-critical warnings to type message, to allow easy surpression
 - bass() function implementing Bass Model, together with plot(), print(), nobs(), logLik() and actuals() methods.
 - is.diffusion() and is.bass() functions
 - Seasonality in the Bass model. Currently the fixed one is supported.
+- renamed option variable l to loss (for l-norm selection)
+- renamed option variable x to y (the response variable)
+- introudced initmeth option to chose between set of different initalisation ways
+- introduced scal option to scale market potential for better optimisation results
+- updated documentation for diffusion() - Thx Ivan!
 
 bugfixes
 - issues with log errors - reverted error measure to v.0.2.7 for the time being
@@ -18,7 +23,6 @@ bugfixes
 - fixed typo in documentation for predict function
 - fixed fcst table to contain same number as horizons
 - fixed number of paramters that go into G/GS (only relevant if w.idx is active)
-- updated documentation for diffusion() - Thx Ivan!
 - fixed error when plot.seqdiffusion() was used with cleanlead = F
 - fixed error in gompertz when cleanlead = F
 - fixed the tsmetal issue - the object now has the correct name

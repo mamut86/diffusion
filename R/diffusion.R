@@ -30,7 +30,7 @@
 #' @param prew Experimental. Ignore!
 #'  the \code{w} of the previous generation. This is used for
 #'  sequential fitting.
-#' @param l the l-norm (1 is absolute errors, 2 is squared errors).
+#' @param loss the l-norm (1 is absolute errors, 2 is squared errors).
 #' @param cumulative If TRUE optimisation is done on cumulative adoption.
 #' @param pvalreps Experimental. Ignore!
 #' bootstrap repetitions to estimate (marginal) p-values
@@ -119,18 +119,27 @@
 #' @rdname diffusion  
 #' @export diffusion
 diffusion <- function(x, w = NULL, cleanlead = c(TRUE, FALSE), prew = NULL,
-                      l = 2, cumulative = c(TRUE, FALSE), pvalreps = 0, 
+                      loss = 2, cumulative = c(TRUE, FALSE), pvalreps = 0, 
                       eliminate = c(FALSE, TRUE), sig = 0.05, verbose = c(FALSE, TRUE),
-                      type = c("bass", "gompertz", "gsgompertz", "weibull"),
-                      optim = c("nm", "hj"), maxiter = Inf, opttol = 1.e-06) {
+                      type = c("bass", "gompertz", "gsgompertz", "weibull", "gompertz2", "bass2"),
+                      optim = c("nm", "hj"), maxiter = Inf, opttol = 1.e-06,
+                      optsol = c("multi", "single"), initopt = c("static", "linearize"),
+                      mscal = c(FALSE, TRUE)) {
 
-  type <- match.arg(type, c("bass", "gompertz", "gsgompertz", "weibull"))
+  type <- match.arg(type, c("bass", "gompertz", "gsgompertz", "weibull", "gompertz2", "bass2"))
   optim <- match.arg(optim, c("nm", "hj"))
+  optsol <- match.arg(optsol, c("multi", "single"))
+  initopt <- match.arg(initopt, c("aprx", "fix"))
+  if (!is.numeric(initopt)){
+    initopt <- match.arg(initopt, c("static", "linearize"))
+  }
+  
   
   cumulative <- cumulative[1]
   eliminate <- eliminate[1]
   verbose <- verbose[1]
   cleanlead <- cleanlead[1] # note dependency in seqdiffusion plot
+  mscal <- mscal[1]
   
   if (cleanlead == TRUE) {
     x <- cleanzero(x)$x
@@ -140,9 +149,10 @@ diffusion <- function(x, w = NULL, cleanlead = c(TRUE, FALSE), prew = NULL,
     # Optimise parameters
   if (is.null(w)) {
 
-    opt <- diffusionEstim(x, l, cumulative, prew, pvalreps, eliminate,
+    opt <- diffusionEstim(x, loss, cumulative, prew, pvalreps, eliminate,
                           sig, verbose, type = type, optim  = optim,
-                          maxiter = maxiter)
+                          maxiter = maxiter, optsol = optsol, initopt = initopt,
+                          mscal = mscal)
 
     w <- opt$w
     pval <- opt$pval
@@ -155,7 +165,8 @@ diffusion <- function(x, w = NULL, cleanlead = c(TRUE, FALSE), prew = NULL,
          "bass" = fit <- bassCurve(n, w),
          "gompertz" = fit <- gompertzCurve(n, w),
          "gsgompertz" = fit <- gsgCurve(n, w),
-         "weibull" = fit <- weibullCurve(n, w))
+         "weibull" = fit <- weibullCurve(n, w),
+         "gompertz2" = fit <- gompertzCurve(n, w))
   
   mse <- mean((x - fit[,2])^2)
   
@@ -166,16 +177,17 @@ diffusion <- function(x, w = NULL, cleanlead = c(TRUE, FALSE), prew = NULL,
 }
 
 
-diffusionEstim <- function(x, l = 2, cumulative = c(FALSE, TRUE),
+diffusionEstim <- function(x, loss = 2, cumulative = c(FALSE, TRUE),
                            prew = NULL, pvalreps = 0,
                            eliminate = c(FALSE, TRUE), sig = 0.05,
                            verbose = c(FALSE, TRUE),
                            type = c("bass", "gompertz", "gsgompertz", "weibull"),
-                           optim = c("nm", "hj"), maxiter = Inf, opttol = 1.e-06)
-                          {
+                           optim = c("nm", "hj"), maxiter = Inf, opttol = 1.e-06,
+                           optsol = c("multi", "single"), initopt = c("static", "linearize"),
+                           mscal = c(FALSE, TRUE) ) {
   # Internal function: estimate bass parameters 
   # x, adoption per period
-  # l, the l-norm (1 is absolute errors, 2 is squared errors)
+  # loss, the l-norm (1 is absolute errors, 2 is squared errors)
   # cumulative, if TRUE optimise on cumulative adoption. 
   # prew, the w of the previous generation - this is used for sequential fitting
   # pvalreps, bootstrap repetitions to estimate (marginal) p-values
@@ -187,20 +199,32 @@ diffusionEstim <- function(x, l = 2, cumulative = c(FALSE, TRUE),
   # optim, optimisation algorithm, "nm" is nelder-mead, "hj" is hooke-jeeves
   # maxiter, numbers of iterations the optimsation algorithm is allowed to take
   # opttol, convergence tolerance for nm and hj algorithm
+  # optsol, run multiple initialisation or just single
+  # initopt, aprx uses linear approximation, fix has set initalisation parameters
+  # mscal, TRUE scales market potential times the maximum
   
-  type <- match.arg(type,c("bass", "gompertz", "gsgompertz", "weibull"))
-  optim <- match.arg(optim,c("nm", "hj"))
+  type <- match.arg(type, c("bass", "gompertz", "gsgompertz", "weibull", "gompertz2", "bass2"))
+  optim <- match.arg(optim, c("nm", "hj"))
+  optsol <- match.arg(optsol, c("multi", "single"))
+  if (!is.numeric(initopt)){
+    initopt <- match.arg(initopt, c("static", "linearize"))
+  }
   
   # Defaults 
+  mscal <- mscal[1]
   cumulative <- cumulative[1]
   eliminate <- eliminate[1]
   verbose <- verbose[1]
   
   # determine how many paramters needed
-  if (type == "bass" | type == "gompertz" | type == "weibull"){
+  if (type == "bass" | type == "gompertz" | type == "weibull" | type == "gompertz2"){
     no.w <- 3
   } else if (type == "gsgompertz"){
     no.w <- 4
+  }
+  
+  if (is.numeric(initopt) & length(initopt) != no.w) {
+    stop(sprintf("Initalisation parameters do not match the required number of %i paramters", no.w))
   }
   
   if (eliminate == TRUE & pvalreps == 0){
@@ -219,6 +243,12 @@ diffusionEstim <- function(x, l = 2, cumulative = c(FALSE, TRUE),
     stop("To eliminate coefficients from the estimation p-values need to be calculated. Use positive pvalreps.")
   }
   
+  # check on deprecated input variables
+  # if (!is.null(l)) {
+  #   loss <- l
+  #   warning("input variable l is now named loss")
+  # }
+  
   # Initially all parameters are estimated
   w.idx <- rep(TRUE, no.w)         # Which parameters to estimate 
   
@@ -232,14 +262,32 @@ diffusionEstim <- function(x, l = 2, cumulative = c(FALSE, TRUE),
   #   prew[is.na(prew)] <- 0 # set NA to 0 in order to estimated
   # }
   
-  switch(type,
-         "bass" = init <- bassInit(x),
-         "gompertz" = init <- gompertzInit(x, l, optim),
-         "gsgompertz" = init <- gsgInit(x, l, optim),
-         "weibull" = init <- weibullInit(x))
+  if (initopt == "aprx") { # find initial apprximated paramters
+    switch(type,
+           "bass" = init <- bassInit(x),
+           "gompertz" = init <- gompertzInit(x, loss, optim),
+           "gsgompertz" = init <- gsgInit(x, loss, optim),
+           "weibull" = init <- weibullInit(x),
+           "gompertz2" = init <- gompertzInit2(x, loss, optim),
+           "bass2" = init <- bassInit2(x, loss, optim)
+           )
+    
+    init <- init - prew
+    init[(init + prew) <= 0] <- 0.00001
+  } else if (initopt == "fix") { # use fixed initialisation parameters
+    
+    switch(type,
+           "bass" = init <- c(0.5, 0.5, 0.5),
+           "gompertz" = init <- c(0.5, 0.5, 0.5),
+           "gsgompertz" = init <- c(0.5, 0.5, 0.5, 0.5),
+           "weibull" = init <- c(0.5, 0.5, 0.5),
+           "gompertz2" = init <- c(0.5, 0.5, 0.5),
+           "bass2" = init <- c(0.5, 0.5, 0.5)
+           )
+    init <- init - prew
+    init[(init + prew) <= 0] <- 0.00001
+  }
   
-  init <- init - prew
-  init[(init + prew) <= 0] <- 0.00001
   n <- length(x)
   
   # Iterate until all p-values are < sig
@@ -270,20 +318,25 @@ diffusionEstim <- function(x, l = 2, cumulative = c(FALSE, TRUE),
         switch(type,
                "bass" = w.new <- dfoptim::nmk(par = init[w.idx], fn = bassCost,
                                               control = list(tol = opttol, maxfeval = maxiter),
-                                              x = x, l = l, prew = prew,
+                                              x = x, loss = loss, prew = prew,
                                               cumulative = cumulative, w.idx = w.idx)$par,
                "gompertz" = w.new <- dfoptim::nmk(par = init[w.idx], fn = gompertzCost,
                                                   control = list(maxfeval = maxiter, tol = opttol),
-                                                  x = x, l = l, prew = prew,
+                                                  x = x, loss = loss, prew = prew,
                                                   cumulative=cumulative, w.idx = w.idx)$par,
                "gsgompertz" = w.new <- dfoptim::nmk(par = init[w.idx], fn = gsgCost,
                                                     control = list(maxfeval = maxiter, tol = opttol),
-                                                    x = x, l = l, prew = prew,
+                                                    x = x, loss = loss, prew = prew,
                                                     cumulative = cumulative, w.idx = w.idx)$par,
                "weibull" = w.new <- dfoptim::nmk(par = init[w.idx], fn = weibullCost,
                                                  control = list(maxfeval = maxiter, tol = opttol),
-                                                 x = x, l = l, prew = prew,
-                                                 cumulative = cumulative, w.idx = w.idx)$par)
+                                                 x = x, loss = loss, prew = prew,
+                                                 cumulative = cumulative, w.idx = w.idx)$par,
+               "gompertz2" = w.new <- callOptim(x, loss, optim, type,init[w.idx],
+                                                  w.idx, prew, cumulative, optsol, mscal),
+               "bass2" = w.new <- callOptim(x, loss, optim, type,init[w.idx],
+                                                w.idx, prew, cumulative, optsol, mscal)
+               )
         
       } else {
         
@@ -305,26 +358,31 @@ diffusionEstim <- function(x, l = 2, cumulative = c(FALSE, TRUE),
 
                "bass" = w.new <- dfoptim::hjk(par = init[w.idx], fn = bassCost,
                                             control = list(maxfeval = maxiter, tol = opttol, info = verbose),
-                                            x = x, l = l, prew = prew,
+                                            x = x, loss = loss, prew = prew,
                                             cumulative = cumulative, w.idx = w.idx)$par,
                "gompertz" = w.new <- dfoptim::hjk(par = init[w.idx],
                                                 fn = gompertzCost,
                                                 control = list(maxfeval = maxiter, tol = opttol, info = verbose),
-                                                x = x, l = l, prew = prew,
+                                                x = x, loss = loss, prew = prew,
                                                 cumulative = cumulative, w.idx = w.idx)$par,
                "gsgompertz" = w.new <- dfoptim::hjk(par = init[w.idx],
                                                  fn = gsgCost,
                                                   control = list(maxfeval = maxiter, tol = opttol, info = verbose),
-                                                  x = x, l = l, prew = prew,
+                                                  x = x, loss = loss, prew = prew,
                                                  cumulative = cumulative, w.idx = w.idx)$par,
                "weibull" = w.new <- dfoptim::hjk(par = init[w.idx],
                                                     fn = weibullCost,
                                                     control = list(maxfeval = maxiter, tol = opttol, info = verbose),
-                                                    x = x, l = l, prew = prew,
-                                                    cumulative = cumulative, w.idx = w.idx)$par
+                                                    x = x, loss = loss, prew = prew,
+                                                    cumulative = cumulative, w.idx = w.idx)$par,
+               "gompertz2" = w.new <- dfoptim::hjk(par = init[w.idx],
+                                                  fn = gompertzCost2,
+                                                  control = list(maxfeval = maxiter, tol = opttol, info = verbose),
+                                                  x = x, loss = loss, prew = prew,
+                                                  cumulative = cumulative, w.idx = w.idx)$par,
                # "gsgompertz" = opt <- dfoptim::hjkb(par = init[w.idx], fn = gsgCost, upper = up, lower = lo,
                #                                   control = list(maxfeval = maxiter, tol = opttol, info = T),
-               #                                   x = x, l = l, prew = prew,
+               #                                   x = x, loss = loss, prew = prew,
                #                                   w.idx = w.idx)
         )
 
@@ -335,14 +393,16 @@ diffusionEstim <- function(x, l = 2, cumulative = c(FALSE, TRUE),
       # Max iterations included in the BFGS
       
       switch(type,
-             "bass" = w.new <- optim(init[w.idx], bassCost, method = "BFGS", x = x, l = l,
+             "bass" = w.new <- optim(init[w.idx], bassCost, method = "BFGS", x = x, loss = loss,
                                    cumulative = cumulative, prew = prew, w.idx = w.idx)$par,
-             "gompertz" = w.new <- optim(init[w.idx], gompertzCost, method = "BFGS", x = x, l = l,
+             "gompertz" = w.new <- optim(init[w.idx], gompertzCost, method = "BFGS", x = x, loss = loss,
                                        cumulative = cumulative, prew = prew, w.idx = w.idx)$par,
-             "gsgompertz" = w.new <- optim(init[w.idx], gsgCost, method = "BFGS", x = x, l = l,
+             "gsgompertz" = w.new <- optim(init[w.idx], gsgCost, method = "BFGS", x = x, loss = loss,
                                         cumulative = cumulative, prew = prew, w.idx = w.idx)$par,
-             "weibull" = w.new <- optim(init[w.idx], weibullCost, method = "BFGS", x = x, l = l,
-                                           cumulative = cumulative, prew = prew, w.idx = w.idx)$par)
+             "weibull" = w.new <- optim(init[w.idx], weibullCost, method = "BFGS", x = x, loss = loss,
+                                           cumulative = cumulative, prew = prew, w.idx = w.idx)$par,
+             "gompertz2" = w.new <- optim(init[w.idx], gompertzCost2, method = "BFGS", x = x, loss = loss,
+                                         cumulative = cumulative, prew = prew, w.idx = w.idx)$par)
     }
     
     w[w.idx] <- w.new
@@ -354,7 +414,8 @@ diffusionEstim <- function(x, l = 2, cumulative = c(FALSE, TRUE),
              "bass" = yhat <- bassCurve(n, prew+w)[, 2],
              "gompertz" = yhat <- gompertzCurve(n, prew+w)[, 2],
              "sgompertz" = yhat <- gsgCurve(n, prew+w)[, 2],
-             "weibull" = yhat <- weibullCurve(n, prew+w)[, 2])
+             "weibull" = yhat <- weibullCurve(n, prew+w)[, 2],
+             "gompertz2" = yhat <- gompertzCurve(n, prew+w)[, 2])
       
       sigma <- sqrt(mean((x - yhat)^2))
       
@@ -369,14 +430,16 @@ diffusionEstim <- function(x, l = 2, cumulative = c(FALSE, TRUE),
       # Estimate model
       for (i in 1:pvalreps){
         switch(type,
-               "bass" = wboot[i,] <- diffusionEstim(yboot[, i], l, pvalreps = 0,
+               "bass" = wboot[i,] <- diffusionEstim(yboot[, i], loss, pvalreps = 0,
                                                     type = "bass")$w - prew,
-               "gompertz" = wboot[i,] <- diffusionEstim(yboot[, i], l, pvalreps = 0,
+               "gompertz" = wboot[i,] <- diffusionEstim(yboot[, i], loss, pvalreps = 0,
                                                         type = "gompertz")$w - prew,
-               "gsgompertz" = wboot[i,] <- diffusionEstim(yboot[, i], l, pvalreps = 0,
+               "gsgompertz" = wboot[i,] <- diffusionEstim(yboot[, i], loss, pvalreps = 0,
                                                          type = "gsgompertz")$w - prew,
-               "weibull" = wboot[i,] <- diffusionEstim(yboot[, i], l, pvalreps = 0,
-                                                          type = "weibull")$w - prew)
+               "weibull" = wboot[i,] <- diffusionEstim(yboot[, i], loss, pvalreps = 0,
+                                                          type = "weibull")$w - prew,
+               "gompertz2" = wboot[i,] <- diffusionEstim(yboot[, i], loss, pvalreps = 0,
+                                                        type = "gompertz2")$w - prew,)
       }
 
       pval <- colMeans((abs(wboot - 
@@ -420,7 +483,8 @@ diffusionEstim <- function(x, l = 2, cumulative = c(FALSE, TRUE),
              "bass" = rownames(temp) <- c("p", "q", "m"),
              "gompertz" = rownames(temp) <- c("a", "b", "m"),
              "gsgompertz" = rownames(temp) <- c("a", "b", "c", "m"),
-             "weibull" = rownames(temp) <- c("a", "b", "m"))
+             "weibull" = rownames(temp) <- c("a", "b", "m"),
+             "gompertz2" = rownames(temp) <- c("m", "a", "b"),)
       
       colnames(temp) <- c("Estimate", "p-value", "")[1:(2+!is.na(loc))]
       print(temp, quote = FALSE)
@@ -474,7 +538,8 @@ diffusionPlot <- function(x, cumulative = c(FALSE, TRUE), ...){
          "bass" = elmt <- 3,
          "gompertz" = elmt <- 1,
          "gsgompertz" = elmt <- 1,
-         "weibull" = elmt <- 1)
+         "weibull" = elmt <- 1,
+         "gompertz2" = elmt <- 1,)
   
   cumulative <- cumulative[1]
   
@@ -604,7 +669,10 @@ diffusionPrint <- function(x, ...){
                                            "m - Market potential"),
          "weibull" = rownames(temp) <- c("a - scale",
                                             "b - shape",
-                                            "m - Market potential"))
+                                            "m - Market potential"),
+         "gompertz2" = rownames(temp) <- c("a - displacement",
+                                          "b - growth",
+                                          "m - Market potential"))
   
   print(temp)
   writeLines("")
@@ -684,7 +752,8 @@ difcurve <- function(n, w = c(0.01, 0.1, 10),
          "bass" = {y <- bassCurve(n, w)},
          "gompertz" = {y <- gompertzCurve(n, w)},
          "gsgompertz" = {y <- gsgCurve(n, w)},
-         "weibull" = {y <- weibullCurve(n, w)})
+         "weibull" = {y <- weibullCurve(n, w)},
+         "gompertz2" = {y <- gompertzCurve(n, w)},)
   
   return(y)
   
@@ -738,7 +807,8 @@ predict.diffusion <- function(object,h=10,...){
          "bass" = {y <- bassCurve(n, w)},
          "gompertz" = {y <- gompertzCurve(n, w)},
          "gsgompertz" = {y <- gsgCurve(n, w)},
-         "weibull" = {y <- weibullCurve(n, w)})
+         "weibull" = {y <- weibullCurve(n, w)},
+         "gompertz2" = {y <- gompertzCurve(n, w)})
   
   y <- y[(n-h+1):n,]
   

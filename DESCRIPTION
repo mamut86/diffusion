@@ -20,5 +20,6 @@ Imports:
     systemfit,
     statmod,
     greybox,
-    smooth
+    smooth,
+    optimx
 RoxygenNote: 7.3.1

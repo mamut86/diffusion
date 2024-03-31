@@ -58,11 +58,11 @@ weibullInit <- function(x){
 }
 
 
-weibullCost <- function(w, x, l, w.idx = rep(TRUE, 3), prew = NULL, cumulative = c(TRUE, FALSE)){
+weibullCost <- function(w, x, loss, w.idx = rep(TRUE, 3), prew = NULL, cumulative = c(TRUE, FALSE)){
   # Internal function: cost function for numerical optimisation
   # w, current parameters
   # x, adoption per period
-  # l, the l-norm (1 is absolute errors, 2 is squared errors)
+  # loss, the l-norm (1 is absolute errors, 2 is squared errors)
   # w.idx, logical vector with three elements. Use FALSE to not estimate respective parameter
   # prew, the w of the previous generation - this is used for sequential fitting
   # cumulative, use cumulative adoption or not
@@ -83,7 +83,7 @@ weibullCost <- function(w, x, l, w.idx = rep(TRUE, 3), prew = NULL, cumulative =
   
   fit <- weibullCurve(n, weibullw)
   
-  se <- getse(x, fit, l, cumulative) # auxiliary.R
+  se <- getse(x, fit, loss, cumulative) # auxiliary.R
   
   # Ensure positive coefficients
   if (any(weibullw <= 0)){

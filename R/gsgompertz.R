@@ -27,13 +27,13 @@ gsgCurve <- function(n, w){
   return(Y)
 }
 
-gsgInit <- function(x, l, optim){
+gsgInit <- function(x, loss, optim){
   # Internal function: get initial values
   # We use Bass model paramters assuming c = 1 (see Bemmaor 1994)
   # x in adoption per period
   
   # calling bass estimates
-  what <- diffusionEstim(x, l, pvalreps = 0, type = "bass", optim = optim)$w
+  what <- diffusionEstim(x, loss, pvalreps = 0, type = "bass", optim = optim)$w
 
   # Bemmaor shows that if a = 1, Beta = p/q and b = p + q
   a <- what[1] / what[2] # the shape parameter beta
@@ -47,12 +47,12 @@ gsgInit <- function(x, l, optim){
   return(w)
 }
 
-gsgCost <- function(w, x, l, w.idx = rep(TRUE, 4), prew = NULL,
+gsgCost <- function(w, x, loss, w.idx = rep(TRUE, 4), prew = NULL,
                           cumulative = c(TRUE, FALSE)) {
   # Internal function: cost function for numerical optimisation
   # w, current parameters
   # x, adoption per period
-  # l, the l-norm (1 is absolute errors, 2 is squared errors)
+  # loss, the l-norm (1 is absolute errors, 2 is squared errors)
   # w.idx, logical vector with three elements. Use FALSE to not estimate
   # respective parameter
   # prew, the w of the previous generation - this is used for sequential fitting
@@ -74,7 +74,7 @@ gsgCost <- function(w, x, l, w.idx = rep(TRUE, 4), prew = NULL,
   
   fit <- gsgCurve(n, gsgpw)
 
-  se <- getse(x, fit, l, cumulative) # auxiliary.R
+  se <- getse(x, fit, loss, cumulative) # auxiliary.R
   
   # Ensure positive coefficients
   if (any(gsgpw <= 0)){
