@@ -23,6 +23,8 @@ changes
 - renamed option variable x to y (the response variable)
 - updated documentation for diffusion() - Thx Ivan!
 - removed tsBroadband dataset due to data privacy concerns
+- bass() function implementing Bass Model, together with plot(), print(), nobs(), logLik() and actuals() methods.
+- is.diffusion() and is.bass() functions
 
 bugfixes
 - fixed
@@ -43,6 +45,7 @@ bugfixes
 - included error check for pvalreps in seqdiffusion
 - included error check for y to be vector or ts-object / matrix or mts for seqdiffusion
 - included a revert method in case optimization fails and warning messages
+- fixed the tsmetal issue - the object now has the correct name
 
 #### v.0.3.0 (30/04/18) ####
 
