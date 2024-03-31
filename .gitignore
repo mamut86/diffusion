@@ -9,3 +9,5 @@ _testing/
 _old/
 _datasets/
 sync.ffs_db
+# Rprofile
+.Rprofile
