@@ -176,6 +176,7 @@ bass <- function(data, lags=frequency(data), seasonality=FALSE,
   }
   if(is.null(ellipsis$B)){
     BNotProvided <- TRUE;
+    B <- abs(bassInit(y));
   }
   else{
     BNotProvided <- FALSE;
