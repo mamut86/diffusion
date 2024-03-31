@@ -170,5 +170,5 @@ median-ranked OLS described in Sharif and Islam 1980.
 \author{
 Oliver Schaer, \email{info@oliverschaer.ch},
 
-Nikoloas Kourentzes, \email{nikoloas@kourentzes.com}
+Nikolaos Kourentzes, \email{nikolaos@kourentzes.com}
 }

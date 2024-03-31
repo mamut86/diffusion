@@ -29,7 +29,7 @@ seqdiffusion(
 \item{y}{matrix containing in each column the adoption per period for generation k}
 
 \item{w}{matrix containing in each column the curve parameters for generation k (see note). Parameters set to NA will be
-optimized. If \code{w = NULL} (default) all paramters are optimized.}
+optimized. If \code{w = NULL} (default) all parameters are optimized.}
 
 \item{cleanlead}{removes leading zeros for fitting purposes (default == T)}
 
@@ -132,6 +132,6 @@ median-ranked OLS described in Sharif and Islam 1980.
 \author{
 Oliver Schaer, \email{info@oliverschaer.ch},
 
-Nikoloas Kourentzes, \email{nikoloas@kourentzes.com}
+Nikolaos Kourentzes, \email{nikolaos@kourentzes.com}
 }
 \keyword{internal}

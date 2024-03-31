@@ -15,7 +15,7 @@
 #' 
 #' @param y matrix containing in each column the adoption per period for generation k
 #' @param w matrix containing in each column the curve parameters for generation k (see note). Parameters set to NA will be
-#'   optimized. If \code{w = NULL} (default) all paramters are optimized.
+#'   optimized. If \code{w = NULL} (default) all parameters are optimized.
 #' @param cleanlead removes leading zeros for fitting purposes (default == T)
 #' @param loss the l-norm (1 is absolute errors, 2 is squared errors)
 #' @param cumulative If TRUE optimization is done on cumulative adoption.
@@ -59,7 +59,7 @@
 #' @seealso \code{\link{plot.seqdiffusion}} and \code{\link{print.seqdiffusion}}.   
 #'   
 #' @author Oliver Schaer, \email{info@@oliverschaer.ch}, 
-#' @author Nikoloas Kourentzes, \email{nikoloas@@kourentzes.com}
+#' @author Nikolaos Kourentzes, \email{nikolaos@@kourentzes.com}
 #' 
 #' @keywords internal
 #' 
