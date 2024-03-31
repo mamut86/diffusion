@@ -226,7 +226,7 @@ bass <- function(data, lags=frequency(data), seasonality=FALSE,
   
   # Loss/cost function
   CF <- function(B){
-    yFitted <- bassCurve(obsInsample, B)[,"Adoption"];
+    yFitted <- bassCurve(obsInsample, B[c(1:3)])[,"Adoption"];
     if(seasonality){
       BSeasonal <- c(B[-c(1:3)],1);
       BSeasonal[length(BSeasonal)] <- 1/prod(BSeasonal);
@@ -280,6 +280,7 @@ bass <- function(data, lags=frequency(data), seasonality=FALSE,
   
   modelReturned <- list(data=yInSample, fitted=yFitted, residuals=log(yInSample) - log(yFitted),
                         B=B, curves=bassValues, scale=scale, distribution=distribution,
+                        lags=lags, seasonality=seasonality,
                         loss="likelihood", lossValue=CFValue, logLik=logLikBass, res=res);
   
   return(structure(modelReturned, class="bass"));
@@ -330,7 +331,7 @@ plot.bass <- function(x, level=0.95, ...){
   }
   
   if(!any(names(ellipsis)=="ylim")){
-    ellipsis$ylim <- range(c(x$data, fitted(x)), quantileValues);
+    ellipsis$ylim <- range(c(actuals(x), yFitted), quantileValues);
   }
 
   if(!any(names(ellipsis)=="ylab")){
@@ -371,11 +372,130 @@ print.bass <- function(x, digits=4, ...){
   print(round(ICs,digits));
 }
 
+#' @importFrom stats coef
 #' @export
 coef.bass <- function(object, ...){
   return(object$B);
 }
+
+#' @export
+predict.bass <- function(object, h=10, interval="prediction",
+                         level=0.95, ...){
+  # Calculate forecasts for fitted diffusion curves
   
+  if (h <= 1){
+    stop("Horizon h must be positive integer.")
+  }
+  
+  obsAll <- nobs(object) + h;
+  
+  B <- coef(object);
+  
+  yForecast <- tail(bassCurve(obsAll, B[1:3])[,"Adoption"], h);
+  bassValues <- bassCurve(obsAll, B);
+  if(object$seasonality){
+    BSeasonal <- c(B[-c(1:3)],1);
+    BSeasonal[length(BSeasonal)] <- 1/prod(BSeasonal);
+    yForecast[] <- yForecast * tail(rep(BSeasonal,ceiling(obsAll/object$lags)), h);
+  }
+
+  quantileValues <- matrix(switch(object$distribution,
+                                  "dlnorm"=qlnorm(rep(c((1-level)/2,(1+level)/2),each=h),
+                                                  log(yForecast), object$scale),
+                                  "dgamma"=qgamma(rep(c((1-level)/2,(1+level)/2),each=h),
+                                                  shape=1/object$scale, scale=object$scale*yForecast),
+                                  "dinvgauss"=qinvgauss(rep(c((1-level)/2,(1+level)/2),each=h),
+                                                        mean=yForecast, dispersion=object$scale/yForecast)),
+                           h, 2,
+                           dimnames=list(NULL, c(paste0("Lower bound (",(1-level)/2*100,"%)"),
+                                                 paste0("Upper bound (",(1+level)/2*100,"%)"))));
+  
+  
+  return(structure(list(mean=yForecast, lower=quantileValues[,1,drop=FALSE], upper=quantileValues[,2,drop=FALSE], model=object,
+                        curves=bassValues, level=level, interval=interval, h=h),
+                   class=c("bass.forecast")));
+}
+
+#' @export
+print.bass.forecast <- function(x, ...){
+    if(x$interval!="none"){
+        returnedValue <- cbind(x$mean,x$lower,x$upper);
+        colnames(returnedValue) <- c("Point forecast",colnames(x$lower),colnames(x$upper))
+    }
+    else{
+        returnedValue <- x$mean;
+    }
+    print(returnedValue);
+}
+
+#' @importFrom graphics abline
+#' @export
+plot.bass.forecast <- function(x, ...){
+  ellipsis <- list(...);
+  obsInsample <- nobs(x$model);
+  h <- x$h;
+  obsAll <- obsInsample + h;
+  yFitted <- fitted(x$model);
+  level <- x$level;
+  
+  quantileValues <- matrix(switch(x$model$distribution,
+                                  "dlnorm"=qlnorm(rep(c((1-level)/2,(1+level)/2),each=obsInsample),
+                                                  log(yFitted), x$model$scale),
+                                  "dgamma"=qgamma(rep(c((1-level)/2,(1+level)/2),each=obsInsample),
+                                                  shape=1/x$model$scale, scale=x$model$scale*yFitted),
+                                  "dinvgauss"=qinvgauss(rep(c((1-level)/2,(1+level)/2),each=obsInsample),
+                                                        mean=yFitted, dispersion=x$model$scale/yFitted)),
+                           obsInsample, 2);
+  
+  yForecast <- x$mean;
+  yLower <- x$lower;
+  yUpper <- x$upper;
+  
+  # Set default plot parameters
+  if(!any(names(ellipsis)=="main")){
+    ellipsis$main <- paste0("Statistical Bass model with ",
+                        switch(x$model$distribution,
+                               "dlnorm"="Log-Normal",
+                               "dgamma"="Gamma",
+                               "dinvgauss"="Inverse Gaussian",
+                               "Normal"),
+                        " distribution");
+  }
+  
+  if(!any(names(ellipsis)=="ylim")){
+    ellipsis$ylim <- range(c(x$data, yFitted, yForecast), quantileValues, yLower, yUpper);
+  }
+
+  if(!any(names(ellipsis)=="xlim")){
+    ellipsis$xlim <- c(1, obsAll);
+  }
+  
+  if(!any(names(ellipsis)=="ylab")){
+    ellipsis$ylab <- "Adoption";
+  }
+
+  if(!any(names(ellipsis)=="xlab")){
+    ellipsis$xlab <- "Time";
+  }
+
+  # The actuals
+  ellipsis$x <- as.vector(actuals(x$model));
+  
+  do.call("plot", ellipsis);
+  lines(yFitted, col="darkorange");
+  lines(obsInsample+c(1:h), yForecast, col="darkorange", lwd=2);
+  lines(obsInsample+c(1:h), yLower, col="darkgrey", lty=2, lwd=2);
+  lines(obsInsample+c(1:h), yUpper, col="darkgrey", lty=2, lwd=2);
+  lines(x$curves[,2], col="darkred");
+  lines(x$curves[,3], col="darkgreen");
+  lines(x$curves[,4], col="darkblue");
+  lines(quantileValues[,1], col="darkgrey", lty=2);
+  lines(quantileValues[,2], col="darkgrey", lty=2);
+  abline(v=obsInsample, col="red", lwd=2)
+  legend("topleft", legend=c("Fitted","Adoption","Innovators","Imitators",paste0(round(level*100,0),"% Prediction level")),
+         col=c("darkorange","darkred","darkgreen","darkblue","darkgrey"), lwd=1, lty=c(1,1,1,1,2))
+}
+
 # vcov.bass
 # confint.bass
 # summary.bass
