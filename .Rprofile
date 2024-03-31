@@ -1,6 +1,4 @@
-library(generics)
 library(greybox)
 library(nloptr)
 library(statmod)
-library(pracma)
 library(smooth)
