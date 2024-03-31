@@ -122,6 +122,8 @@
 #' @author Oliver Schaer, \email{info@@oliverschaer.ch}, 
 #' @author Nikolaos Kourentzes, \email{nikolaos@@kourentzes.com}
 #' 
+#' @importFrom stats is.ts runif sd
+#' @importFrom utils tail
 #' @rdname diffusion  
 #' @export diffusion
 diffusion <- function(y, w = NULL, cleanlead = c(TRUE, FALSE),
