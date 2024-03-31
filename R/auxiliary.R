@@ -146,7 +146,7 @@ callOptim <- function(y, loss, optim, maxiter, type, init, w.idx = rep(TRUE, 3),
   # function to call optimisation process
   # optsol, using mulitiple initial values to derive at more optimal solutions
   # mscal, decides whether m parameter is being rescaled
-  
+
   # "L-BFGS-B" needs lower bounds
   if (optim == "L-BFGS-B") {
     lbound <- rep(0.00001, length(init))
@@ -159,6 +159,11 @@ callOptim <- function(y, loss, optim, maxiter, type, init, w.idx = rep(TRUE, 3),
   # make sure init is matching lbounds
   init[init < lbound] <- lbound[init < lbound]
   
+  if (mscal == TRUE) {
+    # Fix scale of first parameter
+    init[1] <- init[1]/(10*max(cumsum(y)))  # The 10x should be data driven. Something that would bring w_1 closer to 1-10?
+  }
+  
   if (optsol == "multi") {
     # The m parameter of growth curves is notoriously hard to optimise. 
     # We will try different initial values and check the resulting costs.
@@ -167,11 +172,11 @@ callOptim <- function(y, loss, optim, maxiter, type, init, w.idx = rep(TRUE, 3),
     # We also need to worry about the scale of the parameters. We scale m by
     # 10*max(y) to bring it to a region closer to the other paramters.  
     
-    # Step 1: corse search
+    # Step 1: coarse search
     optSols <- list()
     for (s in 1:10) {
       
-      w <- as.vector(c(s, init[2:length(init)]))
+      w <- as.vector(c(s*init[1], init[2:length(init)]))
       # nmlk seems to work well but without bounds
       
       optSols[[s]] <-  optimx::optimx(w, difCost, method = optim,
@@ -190,7 +195,7 @@ callOptim <- function(y, loss, optim, maxiter, type, init, w.idx = rep(TRUE, 3),
     optSols <- list()
     for (s in 1:19){
       
-      w <- as.vector(c((idx + seq(-0.9, 0.9, 0.1))[s], init[2:length(init)]))
+      w <- as.vector(c((idx + seq(-0.9, 0.9, 0.1))[s]*init[1], init[2:length(init)]))
       optSols[[s]] <- optimx::optimx(w, difCost, method = optim,
                                      lower = lbound, y = y,
                                      loss = loss, type = type, prew = prew, cumulative = cumulative,
@@ -206,7 +211,8 @@ callOptim <- function(y, loss, optim, maxiter, type, init, w.idx = rep(TRUE, 3),
       w[1] <- w[1]*10*max(cumsum(y))
     }
     
-  } else {
+  } else { # optsol == "single"
+
     init <- as.vector(init)
     # single optimisation
     opt <- optimx::optimx(init, difCost, method = optim,
@@ -237,7 +243,7 @@ difCost <- function(w, y, loss, type, w.idx, prew, cumulative, mscal, ibound){
   # cumulative, use cumulative adoption or not
   # mscal, should market parameter be scaled
   # bound, parameters to be checked for being >0 if no bounds are provided in the optimiser
-  
+
   n <- length(y)
   
   # If some elements of w are not optimised, sort out vectors

@@ -27,27 +27,18 @@
 #' @param w vector of curve parameters (see note). If provided no estimation
 #'   is done.
 #' @param cleanlead removes leading zeros for fitting purposes (default == TRUE)
-#' @param prew Experimental. Ignore!
-#'  the \code{w} of the previous generation. This is used for
-#'  sequential fitting.
 #' @param loss the l-norm (1 is absolute errors, 2 is squared errors).
 #' @param cumulative If TRUE optimisation is done on cumulative adoption.
-#' @param pvalreps Experimental. Ignore!
-#' bootstrap repetitions to estimate (marginal) p-values
-#' @param eliminate Experimental. Ignore!
-#'   if TRUE eliminates insignificant parameters from the
-#'   estimation. Forces \code{pvalreps = 1000} if left to 0.
-#' @param sig Experimental. Ignore! 
-#' significance level used to eliminate parameters
 #' @param verbose if TRUE console output is provided during estimation (default
 #'   == FALSE)
 #' @param type diffusion curve to use. This can be "bass", "gompertz" and "gsgompertz"
-#' @param optim optimization method to use. These can be \code{"Nelder-Meade", "L-BFGS-B", "BFGS", "hjkb", "Rcgmin", "bobyqa"}. Typically, good performance is achieved with \code{"Nelder-Meade"} and \code{"L-BFGS-B}. \code{hjkb} and \code{Rcgmin} might be an alternative for complex shapes but have substantially higher computational costs. For further details on optimisation algorithms we refer to the optimx package documentation
+#' @param optim optimization method to use. These can be \code{"Nelder-Meade"}, \code{"L-BFGS-B"}, \code{"BFGS"}, \code{"hjkb"}, \code{"Rcgmin"}, \code{"bobyqa"}. Typically, good performance is achieved with \code{"Nelder-Meade"} and \code{"L-BFGS-B"}. \code{"hjkb"} and \code{"Rcgmin"} might be an alternative for complex shapes but have substantially higher computational costs. For further details on optimisation algorithms we refer to the optimx package documentation
 #' @param maxiter number of iterations the optimser takes (default == \code{5000})
 #' @param opttol Tolerance for convergence (default == 1.e-06)
 #' @param optsol when \code{"multi"} multiple optmisation solutions from different initialisations of the market parameter are used (default == \code{"single"})
 #' @param initpar vector of initalisation parameters. If set to \code{static} a predfined set of internal initalisation parameters is used while \code{"linearize"} uses linearized initalisation methods (default == \code{"linearize"}.
 #' @param mscal, scales market potential at initalisation with the maximum of the observed market potential for better optimisation results (default == \code{TRUE})
+#' @param ... accepts \code{pvalreps}, bootstrap repetitions to estimate (marginal) p-values; \code{eliminate}, if TRUE eliminates insignificant parameters from the estimation (forces \code{pvalreps = 1000} if left to 0);\code{sig}, significance level used to eliminate parameters.
 #' 
 #' @return Returns an object of class \code{diffusion}, which contains:
 #' \itemize{
@@ -79,7 +70,7 @@
 #'   point).
 #'   
 #'   For the Weibull curve, vector \code{w} needs to be in the form of
-#'   \code{("a", "b", "m")}. Where "a" is the scale parameter, "b" determines the
+#'   \code{("m", "a", "b")}. Where "a" is the scale parameter, "b" determines the
 #'   shape. Together, "a" and "b" determine the stepness of the curve. The "m"
 #'   parameter sets the market potential (saturation point).
 #'   
@@ -120,13 +111,12 @@
 #' 
 #' @rdname diffusion  
 #' @export diffusion
-diffusion <- function(y, w = NULL, cleanlead = c(TRUE, FALSE), prew = NULL,
-                      loss = 2, cumulative = c(TRUE, FALSE), pvalreps = 0, 
-                      eliminate = c(FALSE, TRUE), sig = 0.05, verbose = c(FALSE, TRUE),
+diffusion <- function(y, w = NULL, cleanlead = c(TRUE, FALSE),
+                      loss = 2, cumulative = c(TRUE, FALSE), verbose = c(FALSE, TRUE),
                       type = c("bass", "gompertz", "gsgompertz", "weibull"),
                       optim = c("L-BFGS-B", "Nelder-Mead", "BFGS", "hjkb", "Rcgmin", "bobyqa"),
                       maxiter = 500, opttol = 1.e-06, optsol = c("single", "multi"),
-                      initpar = c("static", "linearize"), mscal = c(FALSE, TRUE), ...) {
+                      initpar = c("linearize","static"), mscal = c(TRUE, FALSE), ...) {
 
   type <- match.arg(type[1], c("bass", "gompertz", "gsgompertz", "weibull"))
   optim <- match.arg(optim[1], c("L-BFGS-B", "Nelder-Mead", "BFGS", "hjkb", "Rcgmin", "bobyqa", "nm", "hj"))
@@ -135,14 +125,38 @@ diffusion <- function(y, w = NULL, cleanlead = c(TRUE, FALSE), prew = NULL,
     initpar <- match.arg(initpar[1], c("static", "linearize"))
   }
   
-  # check deprecated arguments doesn't work somehow
+  # Check arguments in ellipsis
   el <- list(...)
-  if (!is.null(el$l)) {
+  nel <- names(el)
+  # First check for arguments used by seqdiffusion
+  if ("pvalreps" %in% nel){
+    pvalreps <- el$pvalreps
+  } else {
+    pvalreps <- 0
+  }
+  if ("eliminate" %in% nel){
+    eliminate <- el$eliminate
+  } else {
+    eliminate <- FALSE
+  }
+  if ("sig" %in% nel){
+    sig <- el$sig
+  } else {
+    sig <- 0.05
+  }
+  if ("prew" %in% nel){
+    prew <- el$prew
+  } else {
+    prew <- NULL
+  }
+  # Then check for deprecated arguments
+  if ("l" %in% nel) {
     warning("Argument \"l\" has been deprecated and replaced by \"loss\"")
-    loss <- l
-  } else if(!is.null(el$x)) {
+    loss <- el$l
+  } 
+  if("x" %in% nel) {
     warning("Argument \"x\" has been deprecated and replaced by \"y\"")
-    y <- x
+    y <- el$x
   }
   
   cumulative <- cumulative[1]
@@ -156,7 +170,7 @@ diffusion <- function(y, w = NULL, cleanlead = c(TRUE, FALSE), prew = NULL,
   }
   y <- cleanna(y)$x
   
-    # Optimise parameters
+  # Optimise parameters
   if (is.null(w)) {
 
     opt <- diffusionEstim(y, loss, cumulative, prew, pvalreps, eliminate,
@@ -184,13 +198,13 @@ diffusion <- function(y, w = NULL, cleanlead = c(TRUE, FALSE), prew = NULL,
   
   out <- structure(list("type" = type, "call" = sys.call(),
                         "w" = w, "y" = y, "fit" = fit, "frc" = NULL, 
-                        "mse" = mse, "prew" = prew, "pval" = pval, "init" = init), class="diffusion")
+                        "mse" = mse, "pval" = pval, "init" = init), class="diffusion")
   return(out)
 }
 
 
 diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
-                           prew = NULL, pvalreps = 0,
+                           prew=NULL, pvalreps = 0,
                            eliminate = c(FALSE, TRUE), sig = 0.05,
                            verbose = c(FALSE, TRUE),
                            type = c("bass", "gompertz", "gsgompertz", "weibull"),
@@ -248,23 +262,26 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
     optim <- "hjkb"
   }
   
-  if (optim == "Nelder-Maed" & maxiter < 500) {
+  ## I don't think it is good to override user arguments. Someone may have
+  ## a reason. We can have a note in the help file
+  ## Also changed 1'000 to 1 000, as this is more universal
+  if (optim == "Nelder-Mead" & maxiter < 500) {
     maxiter <- 500
-    message("Set maxiter to 1'000 for better results with Naelder-Maed optimiser")
+    message("Set maxiter to 1 000 for better results with Nelder-Mead optimiser")
   } else if (maxiter == Inf) {
     maxiter <- 100000
-    message("Set maxiter to 10'000")
+    message("Set maxiter to 10 000")
   } else if (optim == "hjkb" & maxiter < 1000) {
     maxiter <- 1000
-    message("Set maxiter to 1'000 for better results with hjkb optimiser")
+    message("Set maxiter to 1 000 for better results with hjkb optimiser")
   }
   
   if (eliminate == TRUE & pvalreps == 0){
     pvalreps <- 1000
-    message("To eliminate parameters p-values must be estimated. Setting pvalreps = 1000.")
+    warning("To eliminate parameters p-values must be estimated. Setting pvalreps = 1000.")
   }
   
-  # Check botstrap repetitions (pvalreps)
+  # Check bootstrap repetitions (pvalreps)
   if (pvalreps < 0 | !is.numeric(pvalreps)) {
     stop("pvalreps must be positive number.")
   }
@@ -276,29 +293,35 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
   # Initially all parameters are estimated
   w.idx <- rep(TRUE, no.w)         # Which parameters to estimate 
 
-  # Initialise --> see commented out part for the fixing parameter
-    if (is.null(prew)) {
+  # For sequential generations
+  if (is.null(prew)) {
     # no values from previous generation
     prew <- rep(0, no.w)
-  } # else if (anyNA(prew)) {
+  }
+  
+  # # Initialise --> see commented out part for the fixing parameter
+  #   if (is.null(prew)) {
+  #   # no values from previous generation
+  #   prew <- rep(0, no.w)
+  # } # else if (anyNA(prew)) {
   #   # partially fixed parameters
   #   w.idx[!is.na(prew)] <- FALSE # disable parameters
   #   prew[is.na(prew)] <- 0 # set NA to 0 in order to estimated
   # }
   
   if (is.numeric(initpar)) { # use provided initalisation values
+    init <- initpar
     init <- initpar - prew
     init[(initpar + prew) <= 0] <- 0.00001
     
-  } else if (initpar == "linearize") { # find initial apprximated paramters
-
+  } else if (initpar == "linearize") { # find initial approximated parameters
+    
     switch(type,
            "bass" = init <- bassInit(y),
            "gompertz" = init <- gompertzInit(y, loss, optim, optsol, initpar, mscal),
            "gsgompertz" = init <- gsgInit(y, loss, optim, optsol, initpar, mscal),
            "weibull" = init <- weibullInit(y)
            )
-    
     init <- init - prew
     init[(init + prew) <= 0] <- 0.00001
 
@@ -310,6 +333,11 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
            "gsgompertz" = init <- c(0.5, 0.5, 0.5, 0.5),
            "weibull" = init <- c(0.5, 0.5, 0.5)
            )
+    ## We need something to bring the initial values to the right scale
+    # Add scale to first parameter
+    if (mscal == TRUE){
+      init[1] <- init[1]*(4*max(cumsum(y)))
+    }
     init <- init - prew
     init[(init + prew) <= 0] <- 0.00001
   }
@@ -334,20 +362,21 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
     w <- rep(0, no.w)
     
     if (sum(w.idx) > 1) {
-      # This optimisation algorithms are multidimensional, so revert to BFGS if needed
+      # These optimisation algorithms are multidimensional, so revert to BFGS if needed
       
-      w.new <- callOptim(y, loss, optim, maxiter, type, init[w.idx],
+      wNew <- callOptim(y, loss, optim, maxiter, type, init[w.idx],
                          w.idx, prew, cumulative, optsol, mscal)
+
     } else {
       # Revert to L-BFGS-B if only one parameter is required
       # Max iterations included in the BFGS
       
-      w.new <- callOptim(y, loss, optim = "L-BFGS-B", maxiter, type, init[w.idx],
+      wNew <- callOptim(y, loss, optim = "L-BFGS-B", maxiter, type, init[w.idx],
                          w.idx, prew, cumulative, optsol, mscal)
       
     }  
       
-    w[w.idx] <- w.new
+    w[w.idx] <- wNew
     
     # Bootstrap p-values
     if (pvalreps > 0){
@@ -370,8 +399,8 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
       # Estimate model
       for (i in 1:pvalreps){
         
-        wboot[i,] <- diffusionEstim(y, loss, cumulative, prew, pvalreps = 0, type = type,
-                                    optim, maxiter, optsol, initpar, mscal)$w - prew
+        wboot[i,] <- diffusionEstim(y=y, loss=loss, cumulative=cumulative, pvalreps=0, type=type,
+                                    optim=optim, maxiter=maxiter, optsol=optsol, initpar=prew, mscal=mscal)$w - prew
       }
 
       pval <- colMeans((abs(wboot - 
@@ -428,7 +457,7 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
       writeLines("")
     }
   }
-  
+
   w <- w + prew
   names(w) <- names(init)
   names(pval) <- names(w)

@@ -5,30 +5,30 @@
 \title{Enables fitting various sequential diffusion curves.}
 \usage{
 seqdiffusion(
-  x,
+  y,
   cleanlead = c(TRUE, FALSE),
-  prew = NULL,
-  l = 2,
+  loss = 2,
   cumulative = c(TRUE, FALSE),
   pvalreps = 0,
   eliminate = c(FALSE, TRUE),
   sig = 0.05,
   verbose = c(FALSE, TRUE),
   type = c("bass", "gompertz", "gsgompertz", "weibull"),
-  optim = c("nm", "hj"),
-  maxiter = Inf,
-  opttol = 1e-06
+  optim = c("L-BFGS-B", "Nelder-Mead", "BFGS", "hjkb", "Rcgmin", "bobyqa"),
+  maxiter = 500,
+  opttol = 1e-06,
+  optsol = c("single", "multi"),
+  initpar = c("static", "linearize"),
+  mscal = c(FALSE, TRUE),
+  ...
 )
 }
 \arguments{
-\item{x}{matrix containing in each column the adoption per period for generation k}
+\item{y}{matrix containing in each column the adoption per period for generation k}
 
 \item{cleanlead}{removes leading zeros for fitting purposes (default == T)}
 
-\item{prew}{the \code{w} of the previous generation. This is used for
-sequential fitting.}
-
-\item{l}{the l-norm (1 is absolute errors, 2 is squared errors)}
+\item{loss}{the l-norm (1 is absolute errors, 2 is squared errors)}
 
 \item{cumulative}{If TRUE optimisation is done on cumulative adoption.}
 
@@ -62,7 +62,7 @@ Returns an object of class \code{seqdiffusion}, which contains:
 \code{\link{diffusion}} for details)
 \item \code{call} calls function fitted
 \item \code{w} named matrix of fitted parameters for each generation
-\item \code{x} matrix of actuals
+\item \code{y} matrix of actuals
 \item \code{mse} insample Mean Squared Error for each generation
 \item \code{pval} all p-values for \code{w} at each generation
 }
@@ -75,34 +75,6 @@ Mean Squared Error with the subplex algorithm from the nloptr package.
 Optionally p-values of the coefficients can be determined via bootstraping.
 Furthermore, the bootstrapping allows to remove insignificant parameters from
 the optimisation process.
-}
-\note{
-vector \code{w} needs to be provided for the Bass curve in the order of
-  \code{"p", "q", "m"}, where "p" is the coefficient of innovation, "q" is the
-  coefficient of imitation and "m" is the market size coefficient.
-  
-  For the Gompertz curve, vector \code{w} needs to be in the form of
-  \code{("a", "b", "m")}. Where "a" is the x-axis displacement coefficient, "b"
-  determines the growth rate and "m" sets, similarly to Bass model, the
-  market potential (saturation point).
-  
-  For the Shifted-Gompertz curve, vector \code{w} needs to be in the form of 
-  \code{("a", "b", "c", "m")}. Where "a" is the x-axis displacement
-  coefficient, "b" determines the growth rate, "c" is the shifting parameter
-  and "m" sets, similarly to Bass model, the market potential (saturation
-  point).
-  
-  For the Weibull curve, vector \code{w} needs to be in the form of
-  \code{("a", "b", "m")}. Where "a" is the scale parameter, "b" determines the
-  shape. Together, "a" and "b" determine the stepness of the curve. The "m"
-  parameter sets the market potential (saturation point).
-
-Parameters are estimated by 
-minimising the Mean Squared Error with a Subplex algorithm from the nloptr
-package. 
-Optionally p-values of the coefficients can be determined via
-bootstraping. Furthermore, the bootstrapping allows to remove insignificant
-parameters from the optimisation process.
 }
 \section{Bass curve}{
 
