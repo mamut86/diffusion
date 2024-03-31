@@ -262,7 +262,7 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
                            method = c("L-BFGS-B", "Nelder-Mead", "BFGS", "hjkb", "Rcgmin", "bobyqa"), maxiter = 500, opttol = 1.e-06,
                            multisol = c(FALSE, TRUE), initpar = c("preset", "linearize"),
                            mscal = c(TRUE, FALSE), wFix = NULL, bootloss = c("smthempir", "empir", "se")) {
-  # Internal function: estimate bass parameters 
+  # Internal function: estimate diffusion parameters 
   # y, adoption per period
   # loss, the l-norm (1 is absolute errors, 2 is squared errors)
   # cumulative, if TRUE optimise on cumulative adoption. 
@@ -433,21 +433,10 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
   
   while (elim == TRUE) {
     
-    # Optimise
-    if (sum(wIdx) > 1 | method == "Rcgmin") {
-      # These optimisation algorithms are multidimensional, so revert to BFGS if needed unless it is Rcgmin
-      w <- callOptim(y, loss, method, maxiter, type, init,
-                     wIdx, prew, cumulative, multisol, mscal, ibound, lbound)
+    # # Optimise
+    w <- callOptim(y, loss, method, maxiter, type, init, wIdx, prew, cumulative,
+                   multisol, mscal, ibound, lbound)
       
-    } else {
-      # Revert to L-BFGS-B if only one parameter is required
-      # Max iterations included in the BFGS
-      
-      w <- callOptim(y, loss, method = "L-BFGS-B", maxiter, type, init,
-                     wIdx, prew, cumulative, multisol, mscal, ibound = F, lbound)
-
-    }
-
     ## When w has 1e-9 values, it means we have hit the lbound
     ## Perhaps we should consider replacing those with zero in the sequential case.
     # The resulting w contains the differences from prew. Final parameters are prew+w
@@ -506,9 +495,13 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
       # wboot contains only the additional bit over prew
       # http://www.inference.org.uk/mackay/itila/ pp. 457-466
       # https://stats.stackexchange.com/questions/83012/how-to-obtain-p-values-of-coefficients-from-bootstrap-regression
-      ## Removed! - remove NA for failed estimations
+      # Error if nay 
+      if (any(is.na(wboot))) {
+        warning(sprintf("Removed %d bootstraps for which no parameter could be obtained.", length(is.na(wboot))))
+      }
+      
       wboot0m <- abs(wboot - matrix(rep(colMeans(wboot, na.rm = T), pvalreps), ncol = noW, byrow = T))
-      pval <- colMeans(wboot0m > abs(matrix(rep(w, pvalreps), ncol = noW, byrow = T)))
+      pval <- colMeans(wboot0m > abs(matrix(rep(w, pvalreps), ncol = noW, byrow = T)), na.rm = T)
       
 
     } else {

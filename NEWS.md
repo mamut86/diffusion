@@ -1,4 +1,4 @@
-#### v.0.3.1.917 ####
+#### v.0.3.1.918 ####
 
 changes
 - new automated removal of leading and trailing NAs. Error abort if NA within series
@@ -21,7 +21,8 @@ changes
 - Seasonality in the Bass model. Currently the fixed one is supported.
 - renamed option variable l to loss (for l-norm selection)
 - renamed option variable x to y (the response variable)
-
+- updated documentation for diffusion() - Thx Ivan!
+- removed tsBroadband dataset due to data privacy concerns
 
 bugfixes
 - issues with log errors - reverted error measure to v.0.2.7 for the time being
@@ -37,8 +38,10 @@ bugfixes
 - fixed an error when elimante was TRUE with 0 pval reps to stop.
 - fixed the sequential diffusion pval elimination process
 - fixed error when linearization fails and reverting now to preset
+- fixed error when bootstrapping produced NA now ignoring NA and warning.
 - included error check for pvalreps in seqdiffusion
 - included error check for y to be vector or ts-object / matrix or mts for seqdiffusion
+- included a revert method in case optimization fails and warning messages
 
 #### v.0.3.0 (30/04/18) ####
 

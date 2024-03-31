@@ -5,6 +5,7 @@
 # RStudio files
 .Rproj.user
 # some folders not needed
-testing/
+_testing/
 _old/
+_datasets/
 sync.ffs_db

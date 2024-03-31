@@ -1,7 +1,9 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
 ^sync\.ffs_db$
-^testing$
+^_testing$
 ^NEWS\.md$
 ^README\.Rmd$
 ^\.travis\.yml$
+^_datasets$
+^_old$

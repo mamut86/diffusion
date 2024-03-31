@@ -1,24 +1,49 @@
 # Some internal auxiliary functions
 
-cleanzero <- function(x) {
-  # Internal function: remove leadig zeros
+
+cleanzero <- function(x, c.zero = c("lead", "trail")) {
+  # Internal function: remove leadig or trailing zeros
   # x, vector of values
+  # c.zero, removes either leading or trailing 0s
+  
+  c.zero <- c.zero[1]
   
   idx <- which(x == 0)
   n <- length(x)
   l <- length(idx)
   
-  if (l>0 & idx[1]==1){
-    d.idx <- diff(idx)
-    loc <- which(d.idx > 1)[1]
-    if (is.na(loc)){
-      loc <- l
+  
+  if (c.zero == "lead") {
+    
+    if (l > 0 & idx[1] == 1){
+      d.idx <- diff(idx)
+      
+      
+      loc <- which(d.idx > 1)[1]
+      if (is.na(loc)){
+        loc <- l
+      }
+      x <- x[(loc+1):n]
+    } else {
+      
+      loc <- 1
     }
-    x <- x[(loc+1):n]
-  } else {
-    loc <- 1
   }
   
+  if (c.zero == "trail") {
+    
+    if (l > 0 & idx[l] == n){
+      d.idx <- rev(diff(idx))
+      
+      loc <- n - which(d.idx > 1)[1]
+      if (is.na(loc)){
+        loc <- n-l
+      }
+      x <- x[1:loc]
+    } else {
+      loc <- n
+    }
+  }  
   return(list("x" = x, "loc" = loc))
 }
 
@@ -159,7 +184,6 @@ callOptim <- function(y, loss, method, maxiter, type, init, wIdx = rep(TRUE, len
     init[1] <- scaleM(y, init[1], scaledir = "down")
     prew[1] <- scaleM(y, prew[1], scaledir = "down")
   }
-
   
   # Limit number of parameters to estimate according to wIdx
   lbound <- lbound[wIdx]
@@ -178,17 +202,14 @@ callOptim <- function(y, loss, method, maxiter, type, init, wIdx = rep(TRUE, len
     optSols <- list()
     for (s in 1:10) {
       
-      if (length(initF)>1){
+      if (length(initF) > 1) {
         w <- as.vector(c(s*initF[1], initF[2:length(initF)]))
       } else {
         w <- as.vector(s*initF[1])
       }
       
-      optSols[[s]] <-  optimx::optimx(w, difCost, method = method, lower = lbound, y = y,
-                                      loss = loss, type = type, cumulative = cumulative,
-                                      wIdx = wIdx, wFix = wFix, prew = prew, mscal = mscal, ibound = ibound,
-                                      control = list(trace = 0, dowarn = TRUE,
-                                                     maxit = maxiter, starttests = FALSE))
+      optSols[[s]] <- runOptim(w, method, lbound, y, loss, type, cumulative,
+                               wIdx, wFix, prew, mscal, ibound, maxiter)
     }
     # Get all the loss function results and find the lowest, this will indicate our more local search
     cf <- unlist(lapply(optSols, function(x) {x$value}))
@@ -209,11 +230,8 @@ callOptim <- function(y, loss, method, maxiter, type, init, wIdx = rep(TRUE, len
         } else {
           w <- as.vector((idx + seq(-0.9, 0.9, 0.1)[s])*initF[1])
         }
-        optSols[[s]] <- optimx::optimx(w, difCost, method = method, lower = lbound, y = y,
-                                       loss = loss, type = type, cumulative = cumulative,
-                                       wIdx = wIdx, wFix = wFix, prew = prew, mscal = mscal, ibound = ibound,
-                                       control = list(trace = 0, dowarn = TRUE,
-                                                      maxit = maxiter, starttests = FALSE))
+        optSols[[s]] <- runOptim(w, method, lbound, y, loss, type, cumulative,
+                                 wIdx, wFix, prew, mscal, ibound, maxiter)
       }
       cf <- unlist(lapply(optSols, function(x) {x$value}))
       
@@ -227,25 +245,14 @@ callOptim <- function(y, loss, method, maxiter, type, init, wIdx = rep(TRUE, len
     
     # print(paste(lbound))
     # single optimisation 
-    opt <- optimx::optimx(initF, difCost, method = method, lower = lbound, y = y,
-                          loss = loss, type = type, cumulative = cumulative,
-                          wIdx = wIdx, wFix = wFix, prew = prew, mscal = mscal, ibound = ibound,
-                          control = list(trace = 0, dowarn = TRUE, maxit = maxiter, starttests = FALSE))
-    
-    # revert to Rcgmin when error optimiser - this will fix an error we observed with L-BFGS-B
-    if (opt$convcode == 9999) {
-      opt <- optimx::optimx(initF, difCost, method = "Rcgmin", lower = -Inf, y = y,
-                            loss = loss, type = type, cumulative = cumulative,
-                            wIdx = wIdx, wFix = wFix, prew = prew, mscal = mscal, ibound = T,
-                            control = list(trace = 0, dowarn = TRUE, maxit = maxiter, starttests = FALSE))
-    }
-
+    opt <- runOptim(w = initF, method, lbound, y, loss, type, cumulative,
+                    wIdx, wFix, prew, mscal, ibound, maxiter)
   }
   
   # Distribute optimal and fixed values
   w <- rep(0,length(init))
   w[wIdx] <- unlist(opt[1:sum(wIdx)])
-
+  
   # Revert scaling
   if (mscal == TRUE & wIdx[1] == TRUE){
     w[1] <- scaleM(y, w[1], scaledir = "up")
@@ -253,8 +260,53 @@ callOptim <- function(y, loss, method, maxiter, type, init, wIdx = rep(TRUE, len
   
   # name parameter output
   w <- nameParameters(as.matrix(w), type)[, 1]
-  # if(any(is.na(w))){browser()}
+  if(any(is.na(w))){browser()}
   return(w)
+}
+
+runOptim <- function(w, method, lbound, y, loss, type, cumulative, wIdx, wFix,
+                     prew, mscal, ibound, maxiter) {
+  # function that runs the optimiser function
+  # reverts to Rcgmin in case only one parameter to estimate
+  # Includes a few fallbacks for convcode 9999
+  
+  if (length(w) > 1 | method == "Rcgmin") {
+    # These optimisation algorithms are multidimensional, so revert to BFGS if needed unless it is Rcgmin
+    opt <- optimx::optimx(w, difCost, method = method, lower = lbound, y = y,
+                   loss = loss, type = type, cumulative = cumulative,
+                   wIdx = wIdx, wFix = wFix, prew = prew, mscal = mscal, ibound = ibound,
+                   control = list(trace = 0, dowarn = TRUE,
+                                  maxit = maxiter, starttests = FALSE))
+    
+  } else {
+    # revert to single parameter optimisation algorithms
+    # Max iterations included in the BFGS
+    opt <- optimx::optimx(w, difCost, method = "L-BFGS-B", lower = -Inf, y = y,
+                          loss = loss, type = type, cumulative = cumulative,
+                          wIdx = wIdx, wFix = wFix, prew = prew, mscal = mscal, ibound = F,
+                          control = list(trace = 0, dowarn = TRUE, maxit = maxiter, starttests = FALSE))
+  }
+  
+  
+  # revert to Rcgmin when error optimiser - this will fix an error we observed with L-BFGS-B
+  # if (opt$convcode == 9999) {browser()} # to trackerror
+  if (opt$convcode == 9999) {
+    # first try Rcgmin
+    opt <- optimx::optimx(w, difCost, method = "Rcgmin", lower = -Inf, y = y,
+                          loss = loss, type = type, cumulative = cumulative,
+                          wIdx = wIdx, wFix = wFix, prew = prew, mscal = mscal, ibound = T,
+                          control = list(trace = 0, dowarn = TRUE, maxit = maxiter, starttests = FALSE))
+  } else if (opt$convcode == 9999) {
+    # revert to BFGS
+    opt <- optimx::optimx(w, difCost, method = "BFGS", lower = lbound, y = y,
+                          loss = loss, type = type, cumulative = cumulative,
+                          wIdx = wIdx, wFix = wFix, prew = prew, mscal = mscal, ibound = ibound,
+                          control = list(trace = 0, dowarn = TRUE, maxit = maxiter, starttests = FALSE))
+  } else if (opt$convcode == 9999) {
+    warning("Failed to optimize all parameters")
+  }
+
+  return(opt)
 }
 
 
