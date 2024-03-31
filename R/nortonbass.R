@@ -274,7 +274,7 @@ Nortonbass_estim <- function(x, gn, gstart, startval, flexpq, estim.met){
 #' 
 #' @param x matrix with generations
 #' @param gstart optional vector of starting points for the generations
-#' @param flexpq For \code{"startvalgen="BB"}. Allows parameters p and q to be flexible if set \code{TRUE}. 
+#' @param flexpq For \code{startvalgen="BB"}. Allows parameters p and q to be flexible if set \code{TRUE}. 
 #' @param startvalgen \code{"iBM"} fits individual Bass model to each generation;
 #'   \code{"BB"} uses the approach described in Bass and Bass (2004).
 #'   

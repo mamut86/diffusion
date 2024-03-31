@@ -77,7 +77,7 @@
 #' @importFrom nloptr nloptr
 #' @importFrom statmod dinvgauss qinvgauss
 #' @importFrom stats dlnorm dgamma qlnorm qgamma
-#' @importFrom stats AIC BIC fitted frequency lm time
+#' @importFrom stats AIC BIC fitted frequency lm time lowess
 #' @importFrom utils head
 #' @importFrom graphics legend lines
 #' @importFrom greybox AICc BICc

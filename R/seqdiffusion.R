@@ -63,6 +63,7 @@
 #' 
 #' @keywords internal
 #' 
+#' @importFrom stats is.mts
 #' @rdname seqdiffusion  
 #' @export seqdiffusion
 seqdiffusion <- function(y, w = NULL, cleanlead = c(TRUE, FALSE), loss = 2,

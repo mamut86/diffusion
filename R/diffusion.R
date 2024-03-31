@@ -122,6 +122,8 @@
 #' @author Oliver Schaer, \email{info@@oliverschaer.ch}, 
 #' @author Nikolaos Kourentzes, \email{nikolaos@@kourentzes.com}
 #' 
+#' @importFrom stats is.ts runif sd
+#' @importFrom utils tail
 #' @rdname diffusion  
 #' @export diffusion
 diffusion <- function(y, w = NULL, cleanlead = c(TRUE, FALSE),
@@ -781,7 +783,7 @@ difcurve <- function(n, w = c(0.01, 0.1, 10),
   
   # Check inputs
   if (!is.null(curve)){
-    if (class(curve) == "diffusion"){
+    if (is.diffusion(curve)){
       type <- curve$type
       w <- curve$w
     }
