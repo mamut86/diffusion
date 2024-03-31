@@ -105,7 +105,7 @@ seqdiffusion <- function(y, w = NULL, cleanlead = c(TRUE, FALSE), loss = 2,
   }
   
   # check the healthiness of y
-  if (!is.matrix(y) & !is.mts(y)) {
+  if (!is.matrix(y) && !is.mts(y) && !is.data.frame(y)) {
     stop('Argument "y" needs to be a matrix or mts-object')
   }
   
