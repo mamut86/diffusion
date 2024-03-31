@@ -3,8 +3,8 @@
 changes
 - new automated removal of leading and trailing NAs. Error abort if NA within series
 - new search optimisation argument (multisol)
-- new option to partially fix/optimise paramters w in both diffusion and seqdiffusion
-- new bootloss argument to control for different loss function of the bootstrapping
+- new option to partially fix/optimise parameters w in both diffusion and seqdiffusion
+- new bootloss argument to control fo r different loss function of the bootstrapping
 - added documentation for tsMetal.RData
 - added internal sum squared error function for the optimiser
 - added passing optim setting int trough Gompertz and GSGompertz initialisation
@@ -12,12 +12,18 @@ changes
 - renamed argument l to loss (for l-norm selection)
 - renamed argument x to y (the response variable)
 - renamed argument optim to method (the optimiser selection)
-- introudced argument initpar to allow manual initalisation, preset and automatic
+- introduced argument initpar to allow manual initialisation, preset and automatic
 - introduced argument mscal to scale market potential for better optimisation results
 - introduced argument bootloss to choose from different loss function for bootstraps
-- changed non-critical warnings to type message, to allow easy surpression
+- changed non-critical warnings to type message, to allow easy suppression
+- is.diffusion() and is.bass() functions
+- renamed option variable l to loss (for l-norm selection)
+- renamed option variable x to y (the response variable)
 - updated documentation for diffusion() - Thx Ivan!
 - removed tsBroadband dataset due to data privacy concerns
+- bass() function implementing Bass Model, together with plot(), print(), nobs(), logLik() and actuals() methods.
+- Seasonality in the Bass model. Currently the fixed one is supported.
+- new search optimisation option
 
 bugfixes
 - fixed
@@ -26,11 +32,12 @@ bugfixes
 - fixed titles for graphs
 - fixed typo in documentation for predict function
 - fixed fcst table to contain same number as horizons
-- fixed number of paramters that go into G/GS (only relevant if w.idx is active)
+- fixed number of parameters that go into G/GS (only relevant if w.idx is active)
 - fixed error when plot.seqdiffusion() was used with cleanlead = F
 - fixed error in gompertz when cleanlead = F
+- fixed the tsmetal issue - the object now has the correct name
 - fixed error when plotting ts-object with cumulative = F
-- fixed an error when elimante was TRUE with 0 pval reps to stop.
+- fixed an error when eliminate was TRUE with 0 pval reps to stop.
 - fixed the sequential diffusion pval elimination process
 - fixed error when linearization fails and reverting now to preset
 - fixed error when bootstrapping produced NA now ignoring NA and warning.

@@ -56,4 +56,3 @@ bassInit <- function(y){
   
   return(init)
 }
-

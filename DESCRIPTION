@@ -5,7 +5,10 @@ Version: 0.3.1.919
 Authors@R: c(person("Oliver", "Schaer", email = "info@oliverschaer.ch",
                     role = c("aut", "cre")),
              person("Nikolaos", "Kourentzes", email = "nikolaos@kourentzes.com",
-                    role = c("aut")))        
+                    role = c("aut")),
+             person("Ivan", "Svetunkov", email = "ivan@svetunkov.com",
+                    role = c("aut"),
+                    comment="Lecturer at Centre for Marketing Analytics and Forecasting, Lancaster University, UK"))
 URL: https://github.com/mamut86/diffusion
 BugReports: https://github.com/mamut86/diffusion/issues
 Description: Various diffusion models to forecast new product growth. Currently
@@ -18,5 +21,8 @@ Imports:
     dfoptim,
     nloptr,
     systemfit,
+    statmod,
+    greybox,
+    smooth,
     optimx
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.1
