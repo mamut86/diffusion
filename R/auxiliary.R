@@ -140,7 +140,7 @@ getse <- function(y, fit, loss, cumulative) {
   return(se)
 }
 
-callOptim <- function(y, loss, optim, maxiter, type, init, wIdx = rep(TRUE, length(init)),
+callOptim <- function(y, loss, method, maxiter, type, init, wIdx = rep(TRUE, length(init)),
                       prew = NULL, cumulative = c(TRUE, FALSE),
                       multisol = c(FALSE, TRUE), mscal = c(TRUE, FALSE), ibound, lbound) {
   # function to call optimisation process
@@ -182,7 +182,7 @@ callOptim <- function(y, loss, optim, maxiter, type, init, wIdx = rep(TRUE, leng
         w <- as.vector(s*initF[1])
       }
       
-      optSols[[s]] <-  optimx::optimx(w, difCost, method = optim, lower = lbound, y = y,
+      optSols[[s]] <-  optimx::optimx(w, difCost, method = method, lower = lbound, y = y,
                                       loss = loss, type = type, cumulative = cumulative,
                                       wIdx = wIdx, wFix = wFix, prew = prew, mscal = mscal, ibound = ibound,
                                       control = list(trace = 0, dowarn = TRUE,
@@ -207,7 +207,7 @@ callOptim <- function(y, loss, optim, maxiter, type, init, wIdx = rep(TRUE, leng
         } else {
           w <- as.vector((idx + seq(-0.9, 0.9, 0.1)[s])*initF[1])
         }
-        optSols[[s]] <- optimx::optimx(w, difCost, method = optim, lower = lbound, y = y,
+        optSols[[s]] <- optimx::optimx(w, difCost, method = method, lower = lbound, y = y,
                                        loss = loss, type = type, cumulative = cumulative,
                                        wIdx = wIdx, wFix = wFix, prew = prew, mscal = mscal, ibound = ibound,
                                        control = list(trace = 0, dowarn = TRUE,
@@ -224,7 +224,7 @@ callOptim <- function(y, loss, optim, maxiter, type, init, wIdx = rep(TRUE, leng
   } else { # multisol == FALSE
 
     # single optimisation 
-    opt <- optimx::optimx(initF, difCost, method = optim, lower = lbound, y = y,
+    opt <- optimx::optimx(initF, difCost, method = method, lower = lbound, y = y,
                           loss = loss, type = type, cumulative = cumulative,
                           wIdx = wIdx, wFix = wFix, prew = prew, mscal = mscal, ibound = ibound,
                           control = list(trace = 0, dowarn = TRUE, maxit = maxiter, starttests = FALSE))
@@ -307,15 +307,15 @@ difCost <- function(w, y, loss, type, wIdx, wFix, prew, cumulative, mscal, iboun
 # }
 
 
-checkInit <- function(init, optim, prew) {
+checkInit <- function(init, method, prew) {
   # function to check the initalisation for scale and sets bounds
   # init, the initalisation parameters
-  # optim, the optimisation algorithm selected
+  # method, the optimisation algorithm selected
   # prew, any previous generations, if available - is inputed scaled if mscal==TRUE
   
   # "L-BFGS-B" needs lower bounds
   # ibounds uses internal bounds
-  if (optim == "L-BFGS-B") {
+  if (method == "L-BFGS-B") {
     lbound <- rep(1e-9, length(init))
     ibound <- FALSE
   } else {

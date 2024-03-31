@@ -13,3 +13,5 @@ plot(tt2)
 # seems the bobyqa optimisation algorithm is dead. I remember vaguely that it worked at some point.
 # The error seems to be with the control variables but we haven't added much there. Maybe just remove bobyqa option? 
 tt3 <- diffusion(adat[[1]][,2], w = NULL, optim = "bobyqa")
+
+

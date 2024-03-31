@@ -1,4 +1,4 @@
-#### v.0.3.1.913 ####
+#### v.0.3.1.914 ####
 
 changes
 - new automated removal of leading and trailing NAs. Error abort if NA within series
@@ -9,15 +9,18 @@ changes
 - added internal sum squared error function for the optimiser
 - added passing optim setting int trough Gompertz and GSGompertz initialisation
 - added error handling for optimx function
+- renamed argument l to loss (for l-norm selection)
+- renamed argument x to y (the response variable)
+- renamed argument optim to method (the optimiser selection)
+- introduced argument initpar to allow manual initalisation, preset and automatic
+- introduced argument mscal to scale market potential for better optimisation results
+- introduced argument bootloss to choose from different loss function for bootstraps
 - changed non-critical warnings to type message, to allow easy surpression
 - bass() function implementing Bass Model, together with plot(), print(), nobs(), logLik() and actuals() methods.
 - is.diffusion() and is.bass() functions
 - Seasonality in the Bass model. Currently the fixed one is supported.
 - renamed option variable l to loss (for l-norm selection)
 - renamed option variable x to y (the response variable)
-- introudced initpar argument to allow manual initalisation, preset and automatic
-- introduced mscal argument to scale market potential for better optimisation results
-- updated documentation for diffusion() - Thx Ivan!
 
 
 bugfixes
@@ -33,7 +36,7 @@ bugfixes
 - fixed error when plotting ts-object with cumulative = F
 - fixed an error when elimante was TRUE with 0 pval reps to stop.
 - fixed the sequential diffusion pval elimination process
-- included a revert to preset initials when linearization fails
+- fixed error when linearization fails and reverting now to preset
 
 #### v.0.3.0 (30/04/18) ####
 
