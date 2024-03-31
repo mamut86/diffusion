@@ -4,80 +4,87 @@
 #' \code{"gompertz"}, \code{"gsgompertz"} (Gamma/Shifted Gompertz curve) or \code{"Weibull"} type. 
 #' 
 #' @section Bass curve:
-#' The optimisation of the Bass curve is initialisated by the linear
-#' aproximation suggested in Bass (1969).
+#' The optimization of the Bass curve is initialized by the linear
+#' approximation suggested in Bass (1969).
 #' 
 #' @section Gompertz curve:
-#' The initialisation of the Gompertz curve uses the
+#' The initialization of the Gompertz curve uses the
 #' approach suggested by Jukic et al. (2004), but is adapted to allow for the
-#' non-exponential version of Gompertz curve. This makes the market potential
-#' parameter equivalent to the Bass curves's and the market potential from
-#' Bass curve is used for initialisation.
+#' non-exponential version of the Gompertz curve. This makes the market potential
+#' parameter equivalent to the Bass curves and the market potential from
+#' Bass curve is used for initialization.
 #' 
 #' @section Gamma/Shifted Gompertz:
-#' The curve is initialised by assuming the shift operator to be 1 and 
+#' The curve is initialized by assuming the shift operator to be 1 and 
 #' becomes equivalent to the Bass curve, as shown in Bemmaor (1994). A Bass
 #' curve is therefore used as an estimator for the remaining initial parameters.
 #' 
 #' @section Weibull:
-#' The initialisation is obatained through by a linear approximation
+#' The initialization is obtained through by a linear approximation
 #' median-ranked OLS described in Sharif and Islam 1980.
 #' 
-#' @param x vector with adoption per period
-#' @param w vector of curve parameters (see note). If provided no estimation
-#'   is done.
+#' @param y vector with adoption per period
+#' @param w vector of curve parameters (see note). Parameters set to NA will be
+#'   optimized. If \code{w = NULL} (default) all paramters are optimized.
 #' @param cleanlead removes leading zeros for fitting purposes (default == TRUE)
-#' @param prew Experimental. Ignore!
-#'  the \code{w} of the previous generation. This is used for
-#'  sequential fitting.
-#' @param l the l-norm (1 is absolute errors, 2 is squared errors).
+#' @param loss the l-norm (1 is absolute errors, 2 is squared errors).
 #' @param cumulative If TRUE optimisation is done on cumulative adoption.
-#' @param pvalreps Experimental. Ignore!
-#' bootstrap repetitions to estimate (marginal) p-values
-#' @param eliminate Experimental. Ignore!
-#'   if TRUE eliminates insignificant parameters from the
-#'   estimation. Forces \code{pvalreps = 1000} if left to 0.
-#' @param sig Experimental. Ignore! 
-#' significance level used to eliminate parameters
-#' @param verbose if TRUE console output is provided during estimation (default
-#'   == FALSE)
+#' @param verbose if TRUE console output is provided during estimation (default == FALSE)
 #' @param type diffusion curve to use. This can be "bass", "gompertz" and "gsgompertz"
-#' @param optim optimization method to use. This can be "nm" for Nelder-Meade or "hj" for Hooke-Jeeves.
-#' @param maxiter number of iterations the optimser takes (default ==
-#'   \code{10000} for "nm" and \code{Inf} for "hj")
+#' @param method optimization method to use. These can be \code{"Nelder-Meade"},
+#'   \code{"L-BFGS-B"}, \code{"BFGS"}, \code{"hjkb"}, \code{"Rcgmin"},
+#'   \code{"bobyqa"}. Typically, good performance is achieved with
+#'   \code{"Nelder-Meade"} and \code{"L-BFGS-B"}. \code{"hjkb"} and
+#'   \code{"Rcgmin"} might be an alternative for complex shapes but have
+#'   substantially higher computational costs. For further details on
+#'   optimization algorithms we refer to the optimx package documentation
+#' @param maxiter number of iterations the optimzer takes (default == \code{5000})
 #' @param opttol Tolerance for convergence (default == 1.e-06)
+#' @param multisol when \code{"TRUE"} multiple optmisation solutions from
+#'   different initialisations of the market parameter are used (default ==
+#'   \code{"FALSE"})
+#' @param initpar vector of initalisation parameters. If set to \code{preset} a
+#'   predfined set of internal initalisation parameters is used while
+#'   \code{"linearize"} uses linearized initalisation methods (default == \code{"linearize"}.
+#' @param mscal scales market potential at initalisation with the maximum of the
+#'   observed market potential for better optimization results (default == \code{TRUE})
+#' @param ... accepts \code{pvalreps}, bootstrap repetitions to estimate
+#'   (marginal) p-values; \code{eliminate}, if TRUE eliminates insignificant
+#'   parameters from the estimation (forces \code{pvalreps = 1000} if left to 0)
+#'   \code{sig}, significance level used to eliminate parameters.
 #' 
 #' @return Returns an object of class \code{diffusion}, which contains:
 #' \itemize{
 #' \item \code{type} diffusion curve type used
 #' \item \code{call} calls function fitted
 #' \item \code{w} named vector of fitted parameters
-#' \item \code{x} actuals
+#' \item \code{y} actuals
 #' \item \code{fit} fitted values of model
 #' \item \code{frc} forecasts for future periods. This is \code{NULL} until \code{\link{predict.diffusion}} is called.
 #' \item \code{mse} insample Mean Squared Error
 #' \item \code{prew} the \code{w} of the previous generation
 #' \item \code{pval} p-values for \code{w}
+#' \item \code{init} the initial values that have been used for the optimizer
 #' }
 #' 
 #' @note vector \code{w} needs to be provided for the Bass curve in the order of
-#'   \code{"p", "q", "m"}, where "p" is the coefficient of innovation, "q" is the
+#'   \code{"m", "p", "q"}, where "p" is the coefficient of innovation, "q" is the
 #'   coefficient of imitation and "m" is the market size coefficient.
 #'   
 #'   For the Gompertz curve, vector \code{w} needs to be in the form of
-#'   \code{("a", "b", "m")}. Where "a" is the x-axis displacement coefficient, "b"
-#'   determines the growth rate and "m" sets, similarly to Bass model, the
+#'   \code{("m", "a", "b")}. Where "a" is the x-axis displacement coefficient, "b"
+#'   determines the growth rate and "m" sets, similarly to the Bass curve, the
 #'   market potential (saturation point).
 #'   
 #'   For the Shifted-Gompertz curve, vector \code{w} needs to be in the form of 
-#'   \code{("a", "b", "c", "m")}. Where "a" is the x-axis displacement
+#'   \code{("m", "a", "b", "c")}. Where "a" is the x-axis displacement
 #'   coefficient, "b" determines the growth rate, "c" is the shifting parameter
-#'   and "m" sets, similarly to Bass model, the market potential (saturation
+#'   and "m" sets, similarly to the Bass curve, the market potential (saturation
 #'   point).
 #'   
 #'   For the Weibull curve, vector \code{w} needs to be in the form of
-#'   \cod{("a", "b", "m")}. Where "a" is the scale parameter, "b" determines the
-#'   shape. Together, "a" and "b" determine the stepness of the curve. The "m"
+#'   \code{("m", "a", "b")}. Where "a" is the scale parameter, "b" determines the
+#'   shape. Together, "a" and "b" determine the steepness of the curve. The "m"
 #'   parameter sets the market potential (saturation point).
 #'   
 #' @examples 
@@ -94,7 +101,7 @@
 #' 
 #' @references
 #' \itemize{
-#' \item{For an introduction to diffusion curves see: Ord K., Fildes R., Kourentzes N. (2017) \href{http://kourentzes.com/forecasting/2017/10/16/new-forecasting-book-principles-of-business-forecasting-2e/}{Principles of Business Forecasting 2e}. \emph{Wessex Press Publishing Co.}, Chapter 12.}
+#' \item{For an introduction to diffusion curves see Ord K., Fildes R., Kourentzes N. (2017) \href{http://kourentzes.com/forecasting/2017/10/16/new-forecasting-book-principles-of-business-forecasting-2e/}{Principles of Business Forecasting 2e}. \emph{Wessex Press Publishing Co.}, Chapter 12.}
 #' \item{Bass, F.M., 1969. A new product growth for model consumer durables. Management Science 15(5), 215-227.}
 #' \item{Bemmaor, A. 1994. Modeling the Diffusion of New Durable Goods: Word-of-Mouth Effect versus Consumer Heterogeneity. In G. Laurent, G.L. Lilien and B. Pras (Eds.). Research Traditions in Marketing. Boston: Kluwer, pp. 201-223.}
 #' \item{Jukic, D., Kralik, G. and Scitovski, R., 2004. Least-squares fitting Gompertz curve. Journal of Computational and Applied Mathematics, 169, 359-375.}
@@ -104,78 +111,160 @@
 #' @seealso \code{\link{predict.diffusion}}, \code{\link{plot.diffusion}} and \code{\link{print.diffusion}}.   
 #'   
 #' @note Parameters are estimated by 
-#' minimising the Mean Squared Error with a Subplex algorithm from the nloptr
-#' package. 
+#' minimising the Mean Squared Error with a Subplex algorithm from the optimx package. 
 #' Optionally p-values of the coefficients can be determined via
-#' bootstraping. Furthermore, the bootstrapping allows to remove insignificant
-#' parameters from the optimisation process.   
+#' bootstraping. Furthermore, the bootstrapping allows removing insignificant
+#' parameters from the optimization process.   
 #'   
 #' @seealso \code{\link{seqdiffusion}} for sequential diffusion model fitting
 #'  across product generations.
 #'   
 #' @author Oliver Schaer, \email{info@@oliverschaer.ch}, 
-#' @author Nikoloas Kourentzes, \email{nikoloas@@kourentzes.com}
+#' @author Nikolaos Kourentzes, \email{nikolaos@@kourentzes.com}
 #' 
 #' @rdname diffusion  
 #' @export diffusion
-diffusion <- function(x, w = NULL, cleanlead = c(TRUE, FALSE), prew = NULL,
-                      l = 2, cumulative = c(TRUE, FALSE), pvalreps = 0, 
-                      eliminate = c(FALSE, TRUE), sig = 0.05, verbose = c(FALSE, TRUE),
+diffusion <- function(y, w = NULL, cleanlead = c(TRUE, FALSE),
+                      loss = 2, cumulative = c(TRUE, FALSE), verbose = c(FALSE, TRUE),
                       type = c("bass", "gompertz", "gsgompertz", "weibull"),
-                      optim = c("nm", "hj"), maxiter = Inf, opttol = 1.e-06) {
+                      method = c("L-BFGS-B", "Nelder-Mead", "BFGS", "hjkb", "Rcgmin", "bobyqa"),
+                      maxiter = 500, opttol = 1.e-06, multisol = c(FALSE, TRUE),
+                      initpar = c("linearize","preset"), mscal = c(TRUE, FALSE), ...) {
 
-  type <- match.arg(type, c("bass", "gompertz", "gsgompertz", "weibull"))
-  optim <- match.arg(optim, c("nm", "hj"))
+  if (!is.vector(y) & !is.ts(y) ) {
+    stop('Argument "y" needs to be a vector or ts-object')
+  }
   
+  type <- match.arg(type[1], c("bass", "gompertz", "gsgompertz", "weibull"))
+  method <- match.arg(method[1], c("L-BFGS-B", "Nelder-Mead", "BFGS", "hjkb", "Rcgmin", "bobyqa", "nm", "hj"))
+  if (!is.numeric(initpar)){
+    initpar <- match.arg(initpar[1], c("preset", "linearize", "linearise"))
+  }
+  
+  # Check arguments in ellipsis
+  el <- list(...)
+  nel <- names(el)
+  # First check for arguments used by seqdiffusion
+  if ("pvalreps" %in% nel){
+    pvalreps <- el$pvalreps
+  } else {
+    pvalreps <- 0
+  }
+  if ("eliminate" %in% nel){
+    eliminate <- el$eliminate
+  } else {
+    eliminate <- FALSE
+  }
+  if ("sig" %in% nel){
+    sig <- el$sig
+  } else {
+    sig <- 0.05
+  }
+  if ("prew" %in% nel){
+    prew <- el$prew
+  } else {
+    prew <- NULL
+  }
+  
+  if ("bootloss" %in% nel){
+    bootloss <- el$bootloss
+  } else {
+    bootloss <- "smthempir"
+  }
+  
+  # Then check for deprecated arguments
+  if ("l" %in% nel) {
+    warning("Argument \"l\" has been deprecated and replaced by \"loss\"")
+    loss <- el$l
+  } 
+  if("x" %in% nel) {
+    warning("Argument \"x\" has been deprecated and replaced by \"y\"")
+    y <- el$x
+  }
+  
+  if("optim" %in% nel) {
+    warning("Argument \"optim\" has been deprecated and replaced by \"method\"")
+    method <- el$optim
+  }
+  
+  multisol <- multisol[1]
   cumulative <- cumulative[1]
   eliminate <- eliminate[1]
   verbose <- verbose[1]
   cleanlead <- cleanlead[1] # note dependency in seqdiffusion plot
+  mscal <- mscal[1]
   
   if (cleanlead == TRUE) {
-    x <- cleanzero(x)$x
+    y <- cleanzero(y)$x
   }
-  x <- cleanna(x)$x
+  y <- cleanna(y)$x
   
-    # Optimise parameters
-  if (is.null(w)) {
+  # Check which parameters to estimate
+  
+  # determine how many paramters needed
+  noW <- numberParameters(type)
 
-    opt <- diffusionEstim(x, l, cumulative, prew, pvalreps, eliminate,
-                          sig, verbose, type = type, optim  = optim,
-                          maxiter = maxiter)
+  if (is.null(w)){
+    # If no parameters given then everything is estimated
+    wFix <- NULL
+    optPar <- TRUE
+  } else {
+    # Otherwise only NA parameters are estimated
+    wFix <- is.na(w)
+    if (all(wFix == FALSE)){
+      optPar <- FALSE
+    } else {
+      optPar <- TRUE
+      wFix <- w
+    }
+  }
+  
+  # Optimise parameters
+  if (optPar) {
+    opt <- diffusionEstim(y, loss, cumulative, prew, pvalreps, eliminate,
+                          sig, verbose, type = type, method  = method,
+                          maxiter = maxiter, multisol = multisol, initpar = initpar,
+                          mscal = mscal, wFix = wFix, bootloss = bootloss)
 
     w <- opt$w
     pval <- opt$pval
+    init <- opt$init
+    warnScal <- opt$warnScal
+    vOut <- opt$vOut
   } else {
     pval <- rep(NA, length(w))
+    warnScal <- FALSE
+    init <- rep(NA, length(w))
   }
   
-  n <- length(x)
-  switch(type,
-         "bass" = fit <- bassCurve(n, w),
-         "gompertz" = fit <- gompertzCurve(n, w),
-         "gsgompertz" = fit <- gsgCurve(n, w),
-         "weibull" = fit <- weibullCurve(n, w))
+  n <- length(y)
+  fit <- getCurve(n, w, type)
+  mse <- mean((y - fit[, 2])^2)
   
-  mse <- mean((x - fit[,2])^2)
+  if (warnScal == TRUE & mscal == FALSE) {
+    warning('Initalisation parameters are of different scale. Consider argument "mscal" for better optimzation results')
+  } else if (warnScal == TRUE & mscal == TRUE) {
+    warning("Initalisation parameters are of different scale. Optimization might be impacted")
+  }
   
   out <- structure(list("type" = type, "call" = sys.call(),
-                        "w" = w, "x" = x, "fit" = fit, "frc" = NULL, 
-                        "mse" = mse, "prew" = prew, "pval" = pval), class="diffusion")
+                        "w" = w, "y" = y, "fit" = fit, "frc" = NULL, 
+                        "mse" = mse, "pval" = pval, "init" = init, "vOut" = vOut), class="diffusion")
   return(out)
 }
 
 
-diffusionEstim <- function(x, l = 2, cumulative = c(FALSE, TRUE),
-                           prew = NULL, pvalreps = 0,
+diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
+                           prew=NULL, pvalreps = 0,
                            eliminate = c(FALSE, TRUE), sig = 0.05,
                            verbose = c(FALSE, TRUE),
                            type = c("bass", "gompertz", "gsgompertz", "weibull"),
-                           optim = c("nm", "hj"), maxiter = Inf, opttol = 1.e-06)
-                          {
-  # Internal function: estimate bass parameters 
-  # x, adoption per period
-  # l, the l-norm (1 is absolute errors, 2 is squared errors)
+                           method = c("L-BFGS-B", "Nelder-Mead", "BFGS", "hjkb", "Rcgmin", "bobyqa"), maxiter = 500, opttol = 1.e-06,
+                           multisol = c(FALSE, TRUE), initpar = c("preset", "linearize"),
+                           mscal = c(TRUE, FALSE), wFix = NULL, bootloss = c("smthempir", "empir", "se")) {
+  # Internal function: estimate diffusion parameters 
+  # y, adoption per period
+  # loss, the l-norm (1 is absolute errors, 2 is squared errors)
   # cumulative, if TRUE optimise on cumulative adoption. 
   # prew, the w of the previous generation - this is used for sequential fitting
   # pvalreps, bootstrap repetitions to estimate (marginal) p-values
@@ -187,215 +276,251 @@ diffusionEstim <- function(x, l = 2, cumulative = c(FALSE, TRUE),
   # optim, optimisation algorithm, "nm" is nelder-mead, "hj" is hooke-jeeves
   # maxiter, numbers of iterations the optimsation algorithm is allowed to take
   # opttol, convergence tolerance for nm and hj algorithm
+  # multisol, run multiple initialisation or just single
+  # initpar, aprx uses linear approximation, fix has set initalisation parameters
+  # mscal, TRUE scales market potential times the maximum
+  # wFix, used to control user fixed parameters
   
-  type <- match.arg(type,c("bass", "gompertz", "gsgompertz", "weibull"))
-  optim <- match.arg(optim,c("nm", "hj"))
+  type <- match.arg(type[1], c("bass", "gompertz", "gsgompertz", "weibull"))
+  method <- match.arg(method[1], c("L-BFGS-B", "Nelder-Mead", "BFGS", "hjkb", "Rcgmin", "bobyqa", "nm", "hj"))
   
-  # Defaults 
+  if (!is.numeric(initpar)){
+    initpar <- match.arg(initpar[1], c("preset", "linearize", "linearise"))
+  }
+  bootloss <- match.arg(bootloss[1], c( "smthempir", "empir", "se"))
+  
+  # Defaults
+  multisol <- multisol[1]
+  mscal <- mscal[1]
   cumulative <- cumulative[1]
   eliminate <- eliminate[1]
   verbose <- verbose[1]
   
-  # determine how many paramters needed
-  if (type == "bass" | type == "gompertz" | type == "weibull"){
-    no.w <- 3
-  } else if (type == "gsgompertz"){
-    no.w <- 4
+  # Number of paramters needed
+  noW <- numberParameters(type)
+  
+  if (is.numeric(initpar) & length(initpar) != noW) {
+    stop(sprintf("%s requires vector of %i paramters for initpar ", type, noW))
+  }
+  
+  # backward compability to old optimisation paramters
+  if (method == "nm") {
+    method <- "Nelder-Mead"
+  }
+  
+  if (method == "hj") {
+    method <- "hjkb"
+  }
+  
+  # Check maxiter argument
+  if (method == "Nelder-Mead" & maxiter < 500) {
+    message("It is recommend to set \"maxiter\" to 500 or more for better results with Nelder-Mead optimizer")
+  } else if (maxiter == Inf) {
+    maxiter <- 100000
+    message("Set \"maxiter\" to 100 000")
+  } else if (method == "hjkb" & maxiter < 1000) {
+    message("It is recommend to set \"maxiter\" to 1000 or more for better results with HJKB optimizer")
+  }
+  
+  # Check bootstrap repetitions (pvalreps)
+  if (pvalreps < 0 | !is.numeric(pvalreps)) {
+    stop('Argument "pvalreps" must be a positive number.')
   }
   
   if (eliminate == TRUE & pvalreps == 0){
     pvalreps <- 1000
-    message("To eliminate parameters p-values must be estimated. Setting pvalreps = 1000.")
+    warning("To eliminate parameters p-values must be estimated. Setting pvalreps = 1000.")
   }
+
+  ## Let prew proceed as NULL, this is needed to distinguish between fixed parameters
+  ## and previous generations
+  # # For sequential generations
+  # if (is.null(prew)) {
+  #   # no values from previous generation
+  #   prew <- rep(0, noW)
+  # }
   
-  # Check botstrap repetitions (pvalreps)
-  if (pvalreps > 0 & pvalreps < 500){
-    warning("Very few bootstraps, unreliable p-values.")
-  }
-  if (pvalreps < 0){
-    stop("pvalreps must be positive.")
-  }
-  if (pvalreps == 0 & eliminate == TRUE){
-    stop("To eliminate coefficients from the estimation p-values need to be calculated. Use positive pvalreps.")
-  }
-  
-  # Initially all parameters are estimated
-  w.idx <- rep(TRUE, no.w)         # Which parameters to estimate 
-  
-  # Initialise --> see commented out part for the fixing parameter
-    if (is.null(prew)) {
-    # no values from previous generation
-    prew <- rep(0, no.w)
-  } # else if (anyNA(prew)) {
+  # # Initialise --> see commented out part for the fixing parameter
+  #   if (is.null(prew)) {
+  #   # no values from previous generation
+  #   prew <- rep(0, noW)
+  # } # else if (anyNA(prew)) {
   #   # partially fixed parameters
-  #   w.idx[!is.na(prew)] <- FALSE # disable parameters
+  #   wIdx[!is.na(prew)] <- FALSE # disable parameters
   #   prew[is.na(prew)] <- 0 # set NA to 0 in order to estimated
   # }
   
-  switch(type,
-         "bass" = init <- bassInit(x),
-         "gompertz" = init <- gompertzInit(x, l, optim),
-         "gsgompertz" = init <- gsgInit(x, l, optim),
-         "weibull" = init <- weibullInit(x))
+  if (is.numeric(initpar)) { # use provided initalisation values
+    init <- initpar
+  }
   
-  init <- init - prew
-  init[(init + prew) <= 0] <- 0.00001
-  n <- length(x)
+  if (initpar[1] == "linearize") {
+    # make sure linearization does not break down the process
+    tryCatch( {switch(type,
+                      "bass" = init <- bassInit(y),
+                      "gompertz" = init <- gompertzInit(y, loss, method, multisol, initpar, mscal),
+                      "gsgompertz" = init <- gsgInit(y, loss, method, multisol, initpar, mscal),
+                      "weibull" = init <- weibullInit(y))
+      
+      # Check validity of initials
+      if (init[1] < max(y)){init[1] <- max(y)}
+      
+    }, error = function(err) {
+      warning('Not able to run linearization. Reverted to "preset" values.')
+      initpar <- "preset"
+    })
+  }
+  
+  if (initpar[1] == "preset") {
+    
+    switch(type,
+           "bass" = init <- c(0.5, 0.5, 0.5),
+           "gompertz" = init <- c(1, 1, 1),
+           "gsgompertz" = init <- c(0.5, 0.5, 0.5, 0.5),
+           "weibull" = init <- c(0.5, 0.5, 0.5)
+           )
+    
+    # Add scale to first parameter
+    if (mscal == TRUE){
+      init[1] <- scaleM(y, init[1], scaledir = "up")
+    }
+  }
+  
+  # Check which parameters are estimated
+  wIdx <- rep(TRUE, noW)         # Which parameters to estimate 
+  if (!is.null(wFix)){
+    if (any(!is.na(wFix))){
+      # And which to fix
+      fIdx <- !is.na(wFix)
+      wIdx[fIdx] <- FALSE
+      init[fIdx] <- wFix[fIdx]
+    }
+  }
+  
+  # If prew then adjust initials to be difference from it
+  # We are estimating how parameters change from prew
+  if (!is.null(prew)) {
+    init <- init - prew
+    init[(init + prew) <= 0] <- 1e-9
+  }
+  
+ init <- nameParameters(as.matrix(init), type)[,1]
+  
+
+  # check initalisation
+  # prewscal <- prew
+  # if (!is.null(prew)) {
+  #   prewscal[1] <- prewscal[1]/(10*sum(y))
+  # }
+  # initval <- checkInit(init, method, prewscal)
+  initval <- checkInit(init, method, prew, y, mscal)
+  init <- initval$init
+  lbound <- initval$lbound
+  ibound <- initval$ibound
+  warnScal <- initval$warnScal
+  
+  n <- length(y)
   
   # Iterate until all p-values are < sig
   # If eliminate is not requested it will only iterate once
   elim <- TRUE
   it <- 1
+  if (verbose == TRUE) {
+    vOut <- list()
+  } else {
+    vOut <- NULL
+  }
   
-  while (elim == TRUE){
+  while (elim == TRUE) {
     
-    # Optimise
-    w <- rep(0, no.w)
-    
-    if (sum(w.idx) > 1){
-      # This optimisation algorithms are multidimensional, so revert to BFGS if needed
+    # # Optimise
+    w <- callOptim(y, loss, method, maxiter, type, init, wIdx, prew, cumulative,
+                   multisol, mscal, ibound, lbound)
       
-      if (optim == "nm"){
-        
-        # set maximum iterations (see documentation of dfotpim::nmk)
-        if (maxiter < 5000){
-          #if (20*length(w.idx)^2 > 1500) {
-          maxiter <- 5000
-          message("Set maxiter to 5'000 for better results with Naelder-Maed optimiser")
-        } else if (maxiter == Inf) {
-          maxiter <- 10000
-        }
-          
-        # Nelder-Meade works typically quite well
-        switch(type,
-               "bass" = w.new <- dfoptim::nmk(par = init[w.idx], fn = bassCost,
-                                              control = list(tol = opttol, maxfeval = maxiter),
-                                              x = x, l = l, prew = prew,
-                                              cumulative = cumulative, w.idx = w.idx)$par,
-               "gompertz" = w.new <- dfoptim::nmk(par = init[w.idx], fn = gompertzCost,
-                                                  control = list(maxfeval = maxiter, tol = opttol),
-                                                  x = x, l = l, prew = prew,
-                                                  cumulative=cumulative, w.idx = w.idx)$par,
-               "gsgompertz" = w.new <- dfoptim::nmk(par = init[w.idx], fn = gsgCost,
-                                                    control = list(maxfeval = maxiter, tol = opttol),
-                                                    x = x, l = l, prew = prew,
-                                                    cumulative = cumulative, w.idx = w.idx)$par,
-               "weibull" = w.new <- dfoptim::nmk(par = init[w.idx], fn = weibullCost,
-                                                 control = list(maxfeval = maxiter, tol = opttol),
-                                                 x = x, l = l, prew = prew,
-                                                 cumulative = cumulative, w.idx = w.idx)$par)
-        
+    ## When w has 1e-9 values, it means we have hit the lbound
+    ## Perhaps we should consider replacing those with zero in the sequential case.
+    # The resulting w contains the differences from prew. Final parameters are prew+w
+    if (any(!is.na(wFix))) {
+      if (is.null(prew)) {
+        w[fIdx] <- wFix[fIdx]
       } else {
-        
-        # there is some problem that s gompertz switches to very large variables
-        # one way would be to set bounds but this does necessarliy mean that the
-        # bounds are correct. Use hjkb function for this but it also needs lower
-        # value to be set as there seems to be an error
-        # up <- c(5000, 100, 1000, 1e20)
-        # lo <- -Inf
-        # print(init[w.idx])
-        
-        if (maxiter < 100000){
-          maxiter <- 100000
-          message("Set maxiter to 100'000 for hj optimiser")
-        }
-        
-        # Hooker-Jeeves is slow but optimises tough stuff
-        switch(type,
-
-               "bass" = w.new <- dfoptim::hjk(par = init[w.idx], fn = bassCost,
-                                            control = list(maxfeval = maxiter, tol = opttol, info = verbose),
-                                            x = x, l = l, prew = prew,
-                                            cumulative = cumulative, w.idx = w.idx)$par,
-               "gompertz" = w.new <- dfoptim::hjk(par = init[w.idx],
-                                                fn = gompertzCost,
-                                                control = list(maxfeval = maxiter, tol = opttol, info = verbose),
-                                                x = x, l = l, prew = prew,
-                                                cumulative = cumulative, w.idx = w.idx)$par,
-               "gsgompertz" = w.new <- dfoptim::hjk(par = init[w.idx],
-                                                 fn = gsgCost,
-                                                  control = list(maxfeval = maxiter, tol = opttol, info = verbose),
-                                                  x = x, l = l, prew = prew,
-                                                 cumulative = cumulative, w.idx = w.idx)$par,
-               "weibull" = w.new <- dfoptim::hjk(par = init[w.idx],
-                                                    fn = weibullCost,
-                                                    control = list(maxfeval = maxiter, tol = opttol, info = verbose),
-                                                    x = x, l = l, prew = prew,
-                                                    cumulative = cumulative, w.idx = w.idx)$par
-               # "gsgompertz" = opt <- dfoptim::hjkb(par = init[w.idx], fn = gsgCost, upper = up, lower = lo,
-               #                                   control = list(maxfeval = maxiter, tol = opttol, info = T),
-               #                                   x = x, l = l, prew = prew,
-               #                                   w.idx = w.idx)
-        )
-
+        w[fIdx] <- wFix[fIdx] - prew[fIdx]
       }
-        
-    } else {
-      # Revert to BFGS if only one parameter is required
-      # Max iterations included in the BFGS
-      
-      switch(type,
-             "bass" = w.new <- optim(init[w.idx], bassCost, method = "BFGS", x = x, l = l,
-                                   cumulative = cumulative, prew = prew, w.idx = w.idx)$par,
-             "gompertz" = w.new <- optim(init[w.idx], gompertzCost, method = "BFGS", x = x, l = l,
-                                       cumulative = cumulative, prew = prew, w.idx = w.idx)$par,
-             "gsgompertz" = w.new <- optim(init[w.idx], gsgCost, method = "BFGS", x = x, l = l,
-                                        cumulative = cumulative, prew = prew, w.idx = w.idx)$par,
-             "weibull" = w.new <- optim(init[w.idx], weibullCost, method = "BFGS", x = x, l = l,
-                                           cumulative = cumulative, prew = prew, w.idx = w.idx)$par)
     }
-    
-    w[w.idx] <- w.new
     
     # Bootstrap p-values
     if (pvalreps > 0){
       
-      switch(type,
-             "bass" = yhat <- bassCurve(n, prew+w)[, 2],
-             "gompertz" = yhat <- gompertzCurve(n, prew+w)[, 2],
-             "sgompertz" = yhat <- gsgCurve(n, prew+w)[, 2],
-             "weibull" = yhat <- weibullCurve(n, prew+w)[, 2])
+      yhat <- getCurve(n, w = (prew+w), type)[, 2]
+
+      switch (bootloss,
+        "se" = {# Option 1, assuming normal errors      
+          sigma <- sqrt(mean((y - yhat)^2))
+          yboot <- matrix(stats::rnorm(n*pvalreps, 0, sigma), nrow = n) + matrix(rep(yhat, pvalreps), ncol = pvalreps)},
+        "empir" = { # Option 2, use the empirical distribution of the errors
+          err <- y-yhat
+          yboot <- matrix(sample(err,n*pvalreps,replace=TRUE), nrow = n) + matrix(rep(yhat, pvalreps), ncol = pvalreps)},
+        "smthempir" = {# Option 3, construct a smooth empirical distribution and sample from that
+          err <- y-yhat
+          kde <- stats::density(err)
+          kdeY <- cumsum(kde$y)/sum(kde$y)
+          
+          # get uniform distribution and scale it with kdeY to make sure min values are within limits
+          uDist <- runif(n*pvalreps)
+          uDscl <- min(kdeY)+(uDist - min(uDist))*(max(kdeY)-min(kdeY)) / (max(uDist)-min(uDist))
+          
+          # approximate from distribution
+          errKDE <- stats::approx(kdeY, kde$x, uDscl, ties = "ordered")$y
+          yboot <- matrix(errKDE, nrow = n) + matrix(rep(yhat, pvalreps), ncol = pvalreps)})
       
-      sigma <- sqrt(mean((x - yhat)^2))
-      
+ 
+      ## This can be improved to be a non-parametric bootstrap. Now we impose a severe assumption
       # Construct bootstraps
-      wboot <- array(NA, c(pvalreps, no.w))
-      yboot <- matrix(stats::rnorm(n*pvalreps, 0, sigma), nrow = n) +
-        matrix(rep(yhat, pvalreps), ncol = pvalreps)
+      wboot <- array(0, c(pvalreps, noW))
       
       # This needs to become multiplicative
       yboot[yboot < 0] <- 0.001
       
       # Estimate model
       for (i in 1:pvalreps){
-        switch(type,
-               "bass" = wboot[i,] <- diffusionEstim(yboot[, i], l, pvalreps = 0,
-                                                    type = "bass")$w - prew,
-               "gompertz" = wboot[i,] <- diffusionEstim(yboot[, i], l, pvalreps = 0,
-                                                        type = "gompertz")$w - prew,
-               "gsgompertz" = wboot[i,] <- diffusionEstim(yboot[, i], l, pvalreps = 0,
-                                                         type = "gsgompertz")$w - prew,
-               "weibull" = wboot[i,] <- diffusionEstim(yboot[, i], l, pvalreps = 0,
-                                                          type = "weibull")$w - prew)
-      }
+        
+        # Estimate parameters on the bootstrapped curve, starting from prew
+        # In wboot we store differences from prew, as we want to find which of these are significant
+        wboot[i,] <- callOptim(yboot[,i], loss, method, maxiter, type, init = init,
+                                   wIdx, prew = prew, cumulative, multisol, mscal, ibound, lbound) 
 
-      pval <- colMeans((abs(wboot - 
-                              matrix(rep(colMeans(wboot), pvalreps),
-                                     ncol = no.w, byrow = T))) > 
-                         abs(matrix(rep(w, pvalreps), ncol = no.w, byrow = T)))
+      } 
+
+      # Calculation of the p-values
+      # wboot contains only the additional bit over prew
+      # http://www.inference.org.uk/mackay/itila/ pp. 457-466
+      # https://stats.stackexchange.com/questions/83012/how-to-obtain-p-values-of-coefficients-from-bootstrap-regression
+      # Error if nay 
+      if (any(is.na(wboot))) {
+        warning(sprintf("Removed %d bootstraps for which no parameter could be obtained.", length(is.na(wboot))))
+      }
+      
+      wboot0m <- abs(wboot - matrix(rep(colMeans(wboot, na.rm = T), pvalreps), ncol = noW, byrow = T))
+      pval <- colMeans(wboot0m > abs(matrix(rep(w, pvalreps), ncol = noW, byrow = T)), na.rm = T)
+      
+
     } else {
-      pval <- rep(NA, no.w)
+      pval <- rep(NA, noW)
     }
     
     # Elimination process
-    if (eliminate == TRUE & any(pval[w.idx] > sig)){
+    if (eliminate == TRUE & any(pval[wIdx] > sig)){
       # Find most insignificant
-      pval.temp <- pval
-      pval.temp[pval.temp < sig] <- sig
-      pval.temp <- pval.temp - sig
-      pval.temp[!w.idx] <- 0
-      loc <- which(pval.temp == max(pval.temp))[1]
-      w.idx[loc] <- FALSE
+      pvalTemp <- pval
+      pvalTemp[pvalTemp < sig] <- sig
+      pvalTemp <- pvalTemp - sig
+      pvalTemp[!wIdx] <- 0
+      loc <- which(pvalTemp == max(pvalTemp))[1]
+      wIdx[loc] <- FALSE
+      
+      if (all(wIdx == FALSE)){ # check if any variable is still left
+        elim <- FALSE
+      }
     } else {
       # Stop elimination iterations
       elim <- FALSE
@@ -405,24 +530,28 @@ diffusionEstim <- function(x, l = 2, cumulative = c(FALSE, TRUE),
     # Provide console output
     if (verbose == TRUE){
       writeLines(paste0("Estimation iteration: ", it))
-      it <- it + 1
       
       if (!is.na(loc)){
-        locv <- rep("", 3)
+        locv <- rep("", noW)
         locv[loc] <- "X"
+        locv2 <- rep(FALSE, noW)
+        locv2[loc] <- TRUE 
       } else {
         locv <- NULL
+        locv2 <- NULL
       }
       
-      temp <- cbind(round(cbind(w, pval), 4), locv)
+      if (!is.null(prew)){
+        temp <- cbind(round(cbind(w, pval), 4), round(prew+w,4), locv)
+        vOut[[it]] <- cbind(cbind(w, pval), (prew+w), locv2)
+        colnames(temp) <- colnames(vOut[[it]]) <- c("Estimate", "p-value", "Total", "")[1:(3+!is.na(loc))]
+      } else {
+        temp <- cbind(round(cbind(w, pval), 4), locv)
+        colnames(temp) <- c("Estimate", "p-value", "")[1:(2+!is.na(loc))]
+        vOut[[it]] <- temp
+      }
       
-      switch(type,
-             "bass" = rownames(temp) <- c("p", "q", "m"),
-             "gompertz" = rownames(temp) <- c("a", "b", "m"),
-             "gsgompertz" = rownames(temp) <- c("a", "b", "c", "m"),
-             "weibull" = rownames(temp) <- c("a", "b", "m"))
-      
-      colnames(temp) <- c("Estimate", "p-value", "")[1:(2+!is.na(loc))]
+      # temp <- nameParameters(temp, type)
       print(temp, quote = FALSE)
       
       if (elim == FALSE){
@@ -430,14 +559,19 @@ diffusionEstim <- function(x, l = 2, cumulative = c(FALSE, TRUE),
       }
       
       writeLines("")
+      it <- it + 1
     }
   }
   
-  w <- w + prew
-  names(w) <- names(init)
-  
+  # w so far is the difference over prew. We output the final parameters.
+  if (!is.null(prew)){
+    w <- w + prew  
+  }
   names(pval) <- names(w)
-  return(list("w" = w, "pval" = pval))
+  # round values for nice output
+  pval <- round(pval, 3)
+  
+  return(list("w" = w, "pval" = pval, "init" = init, "warnScal" = warnScal, "vOut" = vOut))
   
 }
 
@@ -474,7 +608,8 @@ diffusionPlot <- function(x, cumulative = c(FALSE, TRUE), ...){
          "bass" = elmt <- 3,
          "gompertz" = elmt <- 1,
          "gsgompertz" = elmt <- 1,
-         "weibull" = elmt <- 1)
+         "weibull" = elmt <- 1
+         )
   
   cumulative <- cumulative[1]
   
@@ -482,24 +617,24 @@ diffusionPlot <- function(x, cumulative = c(FALSE, TRUE), ...){
   cmp <- c("#E41A1C", "#377EB8", "#4DAF4A")
   # Check if forecasts exist and construct xx
   if (!is.null(x$frc)){
-    xx <- c(1, (length(x$x) + dim(x$frc)[1]))
+    xx <- c(1, (length(x$y) + dim(x$frc)[1]))
   } else {
-    xx <- c(1, (length(x$x)))
+    xx <- c(1, (length(x$y)))
   }
   
   if (cumulative == FALSE){
     
     # Get yy min-max
     if (!is.null(x$frc)){
-      yy <- range(c(x$x, x$fit[, 2:(1 + elmt)], x$frc[, 2:(1 + elmt)]))
+      yy <- range(c(x$y, x$fit[, 2:(1 + elmt)], x$frc[, 2:(1 + elmt)]))
     } else {
-      yy <- range(cbind(x$x, x$fit[, 2:(1 + elmt)]))
+      yy <- range(cbind(x$y, x$fit[, 2:(1 + elmt)]))
     }
     yy <- yy + c(-1, 1) * 0.04 * diff(yy)
     yy[1] <- max(0, yy[1])
     
     # Plot fit
-    graphics::plot(x$x,type="p", pch = 20, ylab = "Adoption", xlab = "Period",
+    graphics::plot(as.vector(x$y), type="p", pch = 20, ylab = "Adoption", xlab = "Period",
          ylim = yy, xlim = xx, main = x$type)
     for (i in 1:elmt){
       graphics::lines(x$fit[, 1+i], col = cmp[i])
@@ -507,7 +642,7 @@ diffusionPlot <- function(x, cumulative = c(FALSE, TRUE), ...){
     # Check if forecasts exist and plot
     if (!is.null(x$frc)){
       for (i in 1:elmt){
-        graphics::lines((length(x$x)+1):xx[2], x$frc[, i+1], col=cmp[i])
+        graphics::lines((length(x$y)+1):xx[2], x$frc[, i+1], col=cmp[i])
       }
     }
     graphics::legend("topleft", c("Adoption", "Innovators", "Imitators")[1:elmt],
@@ -518,17 +653,17 @@ diffusionPlot <- function(x, cumulative = c(FALSE, TRUE), ...){
     
     # Get yy min-max
     if (!is.null(x$frc)){
-      yy <- range(c(cumsum(x$x), x$frc[, 1]))
+      yy <- range(c(cumsum(x$y), x$frc[, 1]))
     } else {
-      yy <- range(cbind(cumsum(x$x), x$fit[, 1]))
+      yy <- range(cbind(cumsum(x$y), x$fit[, 1]))
     }
     yy <- yy + c(-1,1) * 0.04 * diff(yy)
     yy[1] <- max(0, yy[1])
     
     # Plot fit
-    graphics::plot(cumsum(x$x), type = "p", pch = 20, ylab = "Cumulative Adoption",
-         xlab="Period", ylim=yy, xlim = xx, main = x$method)
-    graphics::lines(x$fit[, 1], col=cmp[1])
+    graphics::plot(cumsum(x$y), type = "p", pch = 20, ylab = "Cumulative Adoption",
+         xlab="Period", ylim = yy, xlim = xx, main = x$method)
+    graphics::lines(x$fit[, 1], col = cmp[1])
     
     if (type == "bass"){
       for (i in 1:2){
@@ -538,9 +673,9 @@ diffusionPlot <- function(x, cumulative = c(FALSE, TRUE), ...){
     
     # Check if forecasts exist and plot
     if (!is.null(x$frc)){
-      fstart <- apply(x$fit, 2, cumsum)[length(x$x), 2:(1+elmt)]
+      fstart <- apply(x$fit, 2, cumsum)[length(x$y), 2:(1+elmt)]
       for (i in 1:elmt){
-        graphics::lines((length(x$x)+1):xx[2],
+        graphics::lines((length(x$y)+1):xx[2],
               cumsum(x$frc[, i+1]) + fstart[i], col = cmp[i])
       }
     }
@@ -591,20 +726,7 @@ diffusionPrint <- function(x, ...){
     colnames(temp) <- c("Estimate", "Marginal", " Marginal p-value")
   }
   
-  switch(type,
-         "bass" = rownames(temp) <- c("p - Coefficient of innovation",
-                                      "q - Coefficient of imitation",
-                                      "m - Market potential"),
-         "gompertz" = rownames(temp) <- c("a - displacement",
-                                          "b - growth",
-                                          "m - Market potential"),
-         "gsgompertz" = rownames(temp) <- c("a - displacement",
-                                           "b - growth",
-                                           "c - shift",
-                                           "m - Market potential"),
-         "weibull" = rownames(temp) <- c("a - scale",
-                                            "b - shape",
-                                            "m - Market potential"))
+  temp <- nameParameters(temp, type)
   
   print(temp)
   writeLines("")
@@ -624,22 +746,22 @@ diffusionPrint <- function(x, ...){
 #' @return Returns a matrix of values with each row being a period.
 #' 
 #' @note \code{w} needs to be provided for the Bass curve in the order of
-#'   \code{"p", "q", "m"}, where "p" is the coefficient of innovation, "q" is the
+#'   \code{("m", "p", "q")}, where "p" is the coefficient of innovation, "q" is the
 #'   coefficient of imitation and "m" is the market size coefficient.
 #'   
 #'   For the Gompertz curve, vector \code{w} needs to be in the form of
-#'   \code{("a", "b", "m")}. Where "a" is the x-axis displacement coefficient, "b"
+#'   \code{("m", "a", "b")}. Where "a" is the x-axis displacement coefficient, "b"
 #'   determines the growth rate and "m" sets, similarly to Bass model, the
 #'   market potential (saturation point).
 #'   
 #'   For the Shifted-Gompertz curve, vector \code{w} needs to be in the form of 
-#'   \code{("a", "b", "c", "m")}. Where "a" is the x-axis displacement
+#'   \code{("m", "a", "b", "c")}. Where "a" is the x-axis displacement
 #'   coefficient, "b" determines the growth rate, "c" is the shifting parameter
 #'   and "m" sets, similarly to Bass model, the market potential (saturation
 #'   point).
 #'   
 #'   For the Weibull curve, vector \code{w} needs to be in the form of
-#'   \code{("a", "b", "m")}. Where "a" is the scale parameter, "b" determines the
+#'   \code{("m", "a", "b")}. Where "a" is the scale parameter, "b" determines the
 #'   shape. Together, "a" and "b" determine the stepness of the curve. The "m"
 #'   parameter sets the market potential (saturation point).
 #'   
@@ -680,13 +802,9 @@ difcurve <- function(n, w = c(0.01, 0.1, 10),
     stop("At least 1 point must be generated!")
   }
   
-  switch(type,
-         "bass" = {y <- bassCurve(n, w)},
-         "gompertz" = {y <- gompertzCurve(n, w)},
-         "gsgompertz" = {y <- gsgCurve(n, w)},
-         "weibull" = {y <- weibullCurve(n, w)})
+  x <- getCurve(n, w, type)
   
-  return(y)
+  return(x)
   
 }
 
@@ -703,7 +821,7 @@ difcurve <- function(n, w = c(0.01, 0.1, 10),
 #' \item \code{type} diffusion curve type used
 #' \item \code{call} calls function fitted
 #' \item \code{w} named vector of fitted parameters
-#' \item \code{x} actuals
+#' \item \code{y} actuals
 #' \item \code{fit} fitted values of model
 #' \item \code{frc} forecasts for future periods.
 #' \item \code{mse} insample Mean Squared Error
@@ -723,7 +841,7 @@ difcurve <- function(n, w = c(0.01, 0.1, 10),
 #'
 #' @export
 #' @method predict diffusion
-predict.diffusion <- function(object,h=10,...){
+predict.diffusion <- function(object, h=10,...){
   # Calculate forecasts for fitted diffusion curves
   
   if (h < 1){
@@ -732,17 +850,11 @@ predict.diffusion <- function(object,h=10,...){
   
   type <- object$type
   w <- object$w
-  n <- length(object$x) + h
+  n <- length(object$y) + h
   
-  switch(type,
-         "bass" = {y <- bassCurve(n, w)},
-         "gompertz" = {y <- gompertzCurve(n, w)},
-         "gsgompertz" = {y <- gsgCurve(n, w)},
-         "weibull" = {y <- weibullCurve(n, w)})
-  
-  y <- y[(n-h+1):n,]
-  
-  object$frc <- y
+  x <- getCurve(n, w, type)
+  x <- x[(n-h+1):n, , drop = FALSE]
+  object$frc <- x
   
   return(object)
 }

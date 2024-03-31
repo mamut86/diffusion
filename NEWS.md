@@ -1,23 +1,42 @@
-#### v.0.3.1.909 ####
+#### v.0.3.1 (30/03/2024) ####
 
 changes
+- new automated removal of leading and trailing NAs. Error abort if NA within series
+- new search optimisation argument (multisol)
+- new option to partially fix/optimise paramters w in both diffusion and seqdiffusion
+- new bootloss argument to control for different loss function of the bootstrapping
 - added documentation for tsMetal.RData
 - added internal sum squared error function for the optimiser
-- Passing optim setting int trough Gompertz and GSGompertz initialisation
-- cleaned documentation
-- Automated removal of leading and trailing NAs. Error abort if NA within series
+- added passing optim setting int trough Gompertz and GSGompertz initialisation
+- added error handling for optimx function
+- renamed argument l to loss (for l-norm selection)
+- renamed argument x to y (the response variable)
+- renamed argument optim to method (the optimiser selection)
+- introudced argument initpar to allow manual initalisation, preset and automatic
+- introduced argument mscal to scale market potential for better optimisation results
+- introduced argument bootloss to choose from different loss function for bootstraps
 - changed non-critical warnings to type message, to allow easy surpression
+- updated documentation for diffusion() - Thx Ivan!
+- removed tsBroadband dataset due to data privacy concerns
 
 bugfixes
+- fixed
 - issues with log errors - reverted error measure to v.0.2.7 for the time being
 - fixed an initalisation issue on the weibull model
 - fixed titles for graphs
 - fixed typo in documentation for predict function
 - fixed fcst table to contain same number as horizons
 - fixed number of paramters that go into G/GS (only relevant if w.idx is active)
-- updated documentation for diffusion() - Thx Ivan!
 - fixed error when plot.seqdiffusion() was used with cleanlead = F
 - fixed error in gompertz when cleanlead = F
+- fixed error when plotting ts-object with cumulative = F
+- fixed an error when elimante was TRUE with 0 pval reps to stop.
+- fixed the sequential diffusion pval elimination process
+- fixed error when linearization fails and reverting now to preset
+- fixed error when bootstrapping produced NA now ignoring NA and warning.
+- included error check for pvalreps in seqdiffusion
+- included error check for y to be vector or ts-object / matrix or mts for seqdiffusion
+- included a revert method in case optimization fails and warning messages
 
 #### v.0.3.0 (30/04/18) ####
 

@@ -11,10 +11,10 @@ Nortonbass_startvalgen(x, gstart, flexpq, startval.met)
 
 \item{gstart}{optional vector of starting points for the generations}
 
-\item{param}{the parameters for curve to estimated}
+\item{flexpq}{For \code{"startvalgen="BB"}. Allows parameters p and q to be flexible if set \code{TRUE}.}
 
-\item{startvalgen}{\code{"iBM"} fits Bass model to each genartion;
-\code{"BB"} uses Bass and Bass 2004 approach.}
+\item{startvalgen}{\code{"iBM"} fits individual Bass model to each generation;
+\code{"BB"} uses the approach described in Bass and Bass (2004).}
 }
 \value{
 starting values for all parameters

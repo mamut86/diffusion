@@ -1,7 +1,7 @@
 Package: diffusion
 Type: Package
 Title: Forecast the Diffusion of New Products
-Version: 0.3.1.909
+Version: 0.3.1.919
 Authors@R: c(person("Oliver", "Schaer", email = "info@oliverschaer.ch",
                     role = c("aut", "cre")),
              person("Nikolaos", "Kourentzes", email = "nikolaos@kourentzes.com",
@@ -17,5 +17,6 @@ LazyData: true
 Imports:
     dfoptim,
     nloptr,
-    systemfit
-RoxygenNote: 7.0.2
+    systemfit,
+    optimx
+RoxygenNote: 7.2.3

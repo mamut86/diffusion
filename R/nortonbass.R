@@ -273,10 +273,10 @@ Nortonbass_estim <- function(x, gn, gstart, startval, flexpq, estim.met){
 #' Fits Norton Bass curve and estimated RMSE
 #' 
 #' @param x matrix with generations
-#' @param param the parameters for curve to estimated
 #' @param gstart optional vector of starting points for the generations
-#' @param startvalgen \code{"iBM"} fits Bass model to each genartion;
-#'   \code{"BB"} uses Bass and Bass 2004 approach.
+#' @param flexpq For \code{"startvalgen="BB"}. Allows parameters p and q to be flexible if set \code{TRUE}. 
+#' @param startvalgen \code{"iBM"} fits individual Bass model to each generation;
+#'   \code{"BB"} uses the approach described in Bass and Bass (2004).
 #'   
 #' @return starting values for all parameters
 #' 
