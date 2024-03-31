@@ -21,75 +21,38 @@ weibullCurve <- function(n, w){
   
   # Cumulative adoption
   ts <- 1:n
-  At <- w[3] * (1-exp(-(ts/w[1])^w[2]))
+  At <- w[1] * (1-exp(-(ts/w[2])^w[3]))
   
   # Adoption per period
   at <- diff(c(0, At))
-  Y <- cbind(At, at)
-  colnames(Y) <- c("Cumulative Adoption", "Adoption")
+  x <- cbind(At, at)
+  colnames(x) <- c("Cumulative Adoption", "Adoption")
   
-  return(Y)
+  return(x)
 }
 
-weibullInit <- function(x){
+weibullInit <- function(y){
   # Internal function
   # get initial values using rank-median with OLS (see Abernethy 2006)
 
   # we are fitting on the cumulative adoption
-  X <- cumsum(x)
+  Y <- cumsum(y)
   
   # calculate Median rank
-  n <- length(X)
+  n <- length(Y)
   mdrk <- (1:n-0.3)/(n+0.4) #Benard's approximation faster
   # mdrk <- qbeta(p = 0.5,1:n,n:1) # alternative using more precise InvBetadist
   L <- 1 # we fix
 
   # Abernethy (2006) suggest to estimate X on Y for improved accuracy
-  wbfit <- lm(log(X) ~ log(log(L/(L-mdrk))))
+  wbfit <- lm(log(Y) ~ log(log(L/(L-mdrk))))
   
   b <- wbfit$coefficients[2]
   a <- exp(-(wbfit$coefficients[1]/b))
-  m <- X[length(X)]
+  m <- Y[length(Y)]
   
-  init <- c(a, b, m)
-  names(init) <- c("a", "b", "m")
+  init <- c(m, a, b)
+  names(init) <- c("m", "a", "b")
   
   return(init)
-}
-
-
-weibullCost <- function(w, x, loss, w.idx = rep(TRUE, 3), prew = NULL, cumulative = c(TRUE, FALSE)){
-  # Internal function: cost function for numerical optimisation
-  # w, current parameters
-  # x, adoption per period
-  # loss, the l-norm (1 is absolute errors, 2 is squared errors)
-  # w.idx, logical vector with three elements. Use FALSE to not estimate respective parameter
-  # prew, the w of the previous generation - this is used for sequential fitting
-  # cumulative, use cumulative adoption or not
-  
-  cumulative <- cumulative[1]
-  n <- length(x)
-  
-  # If some elements of w are not optimised, sort out vectors
-  w.all <- rep(0, 3)
-  w.all[w.idx] <- w
-  
-  # If sequential construct total parameters
-  if (is.null(prew)) {
-    weibullw <- w.all    
-  } else {
-    weibullw <- w.all + prew
-  }
-  
-  fit <- weibullCurve(n, weibullw)
-  
-  se <- getse(x, fit, loss, cumulative) # auxiliary.R
-  
-  # Ensure positive coefficients
-  if (any(weibullw <= 0)){
-    se <- 10e200
-  }
-  
-  return(se)
-  
 }

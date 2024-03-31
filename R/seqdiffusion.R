@@ -13,7 +13,7 @@
 #' @inheritSection diffusion Gamma/Shifted Gompertz
 #' @inheritSection diffusion Weibull
 #' 
-#' @param x matrix containing in each column the adoption per period for generation k
+#' @param y matrix containing in each column the adoption per period for generation k
 #' @param w vector of curve parameters (see note). If provided no estimation
 #'   is done.
 #' @param cleanlead removes leading zeros for fitting purposes (default == T)
@@ -41,7 +41,7 @@
 #' \code{\link{diffusion}} for details)
 #' \item \code{call} calls function fitted
 #' \item \code{w} named matrix of fitted parameters for each generation
-#' \item \code{x} matrix of actuals
+#' \item \code{y} matrix of actuals
 #' \item \code{mse} insample Mean Squared Error for each generation
 #' \item \code{pval} all p-values for \code{w} at each generation
 #' }
@@ -63,21 +63,40 @@
 #' 
 #' @rdname seqdiffusion  
 #' @export seqdiffusion
-seqdiffusion <- function(x, cleanlead = c(TRUE, FALSE), prew = NULL, loss = 2,
+seqdiffusion <- function(y, cleanlead = c(TRUE, FALSE), prew = NULL, loss = 2,
                          cumulative = c(TRUE, FALSE),
                          pvalreps = 0, eliminate = c(FALSE, TRUE), sig = 0.05, 
                          verbose = c(FALSE, TRUE),
                          type = c("bass", "gompertz", "gsgompertz", "weibull"),
-                         optim = c("nm", "hj"), maxiter = Inf, opttol = 1.e-06) {
+                         optim = c("L-BFGS-B", "Nelder-Mead", "BFGS", "hjkb", "Rcgmin", "bobyqa"),
+                         maxiter = 500, opttol = 1.e-06, optsol = c("single", "multi"),
+                         initpar = c("static", "linearize"), mscal = c(FALSE, TRUE), ...) {
   
-  type <- match.arg(type, c("bass", "gompertz", "gsgompertz", "weibull"))
-  optim <- match.arg(optim, c("nm", "hj"))
-  verbose <- verbose[1]
-  eliminate <- eliminate[1]
+  type <- match.arg(type[1], c("bass", "gompertz", "gsgompertz", "weibull"))
+  optim <- match.arg(optim[1], c("L-BFGS-B", "Nelder-Mead", "BFGS", "hjkb", "Rcgmin", "bobyqa", "nm", "hj"))
+  optsol <- match.arg(optsol[1], c("single", "multi"))
+  if (!is.numeric(initpar)){
+    initpar <- match.arg(initpar[1], c("static", "linearize"))
+  }
+  
+  # check deprecated arguments doesn't work somehow
+  el <- list(...)
+  if (!is.null(el$l)) {
+    warning("Argument \"l\" has been deprecated and replaced by \"loss\"")
+    loss <- l
+  } else if(!is.null(el$x)) {
+    warning("Argument \"x\" has been deprecated and replaced by \"y\"")
+    y <- x
+  }
+  
   cumulative <- cumulative[1]
+  eliminate <- eliminate[1]
+  verbose <- verbose[1]
+  cleanlead <- cleanlead[1] # note dependency in seqdiffusion plot
+  mscal <- mscal[1]
 
   # Number of curves
-  k <- dim(x)[2]
+  k <- dim(y)[2]
   
   fit <- vector("list", k)
   names(fit) <- paste0("Gen", 1:k)
@@ -95,9 +114,9 @@ seqdiffusion <- function(x, cleanlead = c(TRUE, FALSE), prew = NULL, loss = 2,
       elimin <- FALSE
     }
     
-    fit[[i]] <- diffusion(x[, i], w = NULL, cleanlead, prew, loss, cumulative, pvalreps, 
-                          elimin, sig, verbose, type = type, optim = optim,
-                          maxiter, opttol)
+    fit[[i]] <- diffusion(y[, i], w = NULL, cleanlead, prew, loss, cumulative,
+                          pvalreps, elimin, sig, verbose, type, optim, maxiter,
+                          opttol, optsol, initpar, mscal)
     
   }
   
@@ -105,10 +124,10 @@ seqdiffusion <- function(x, cleanlead = c(TRUE, FALSE), prew = NULL, loss = 2,
   allmse <- do.call(rbind, lapply(fit, function(x) {x$mse}))
   allpval <- do.call(rbind, lapply(fit, function(x) {x$pval}))
   
-  typ <- paste("Sequential", fit[[1]]$type)
+  type <- paste("Sequential", fit[[1]]$type)
   
-  return(structure(list("type" = typ, "call" = sys.call(), "diffusion" = fit,
-                        "x" = x, "w" = allw, "mse" = allmse, "pval" = allpval), 
+  return(structure(list("type" = type, "call" = sys.call(), "diffusion" = fit,
+                        "y" = y, "w" = allw, "mse" = allmse, "pval" = allpval), 
                    class = "seqdiffusion"))
 }
 
@@ -147,19 +166,24 @@ print.seqdiffusion <- function(x,...){
   writeLines("")
   writeLines("Parameters:")
   temp <- round(cbind(cbind(x$w, x$pval)[, sel],
-                      sqrt(x$mse)),
-                      4)
+                      sqrt(x$mse)), 4)
   
   switch(type,
-         bass = colnames(temp) <- c("p coef.", "pval.", "q coef.", "pval.",
-                                    "M size", "pval.", "sigma"),
-         gompertz = colnames(temp) <- c("p coef.", "pval.", "q coef.", "pval.",
-                                        "M size", "pval.", "sigma"),
-         gsgompertz = colnames(temp) <- c("a coef.", "pval.", "b coef.",
-                                         "pval.", "c coef", "pval.", "M size",
-                                         "pval.", "sigma"),
-         weibull = colnames(temp) <- c("a coef.", "pval.", "b coef.",
-                                          "pval.", "M size", "pval.", "sigma"))
+         bass = colnames(temp) <- c("m coef.", "pval.",
+                                    "p coef.", "pval.",
+                                    "q coef.", "pval.",  "sigma"),
+         gompertz = colnames(temp) <- c("m coef.", "pval.",
+                                        "p coef.", "pval.",
+                                        "q coef.", "pval.",
+                                        "sigma"),
+         gsgompertz = colnames(temp) <- c("m coef", "pval.",
+                                          "a coef.", "pval.",
+                                          "b coef.", "pval.",
+                                          "c coef", "pval.", "sigma"),
+         weibull = colnames(temp) <- c("m coef.", "pval.",
+                                       "a coef.", "pval.",
+                                       "b coef.", "pval.",
+                                       "sigma"))
   
 #   if (type == "bass"){
 #     colnames(temp) <- c("p coef.", "pval.", "q coef.", "pval.",
@@ -209,40 +233,40 @@ plot.seqdiffusion <- function(x, cumulative = c(FALSE, TRUE),...){
   
   
   cmp <- c("#B2182B", "#EF8A62", "#67A9CF", "#2166AC")
-  k <- dim(x$x)[2]
+  k <- dim(x$y)[2]
   cmp <- grDevices::colorRampPalette(cmp)(k)
-  N <- dim(x$x)[1]
+  N <- dim(x$y)[1]
   
   if (cumulative == FALSE){
-    X <- x$x
+    Y <- x$y
     ll <- 2
   } else {
-    X <- apply(x$x, 2, cumsum)
+    Y <- apply(x$y, 2, cumsum)
     ll <- 1
   }
   
-  yy <- range(X, na.rm = T)
+  yy <- range(Y, na.rm = T)
   yy <- yy + c(-1, 1)*0.04*diff(yy)
-  yy[1] <- max(0,yy[1])
+  yy[1] <- max(0, yy[1])
   
   graphics::plot(NA, NA, xlim = c(1, N), ylim = yy,
        xlab = "Period", ylab = "Adoption", main = x$type)
   for (i in 1:k){
-    x.temp <- X[, i]
+    y.temp <- Y[, i]
     
     if (cleanlead == TRUE) {
-      x.temp <- cleanzero(x.temp)
-      l <- x.temp$loc
-      x.temp <- x.temp$x
+      y.temp <- cleanzero(y.temp)
+      l <- y.temp$loc
+      y.temp <- y.temp$x
     } else {
       l <- 1
     }
     
-    x.temp <- cleanna(x.temp, silent = T)
-    l <- x.temp$locLead+l-1
-    n <- length(x.temp$x)
+    y.temp <- cleanna(y.temp, silent = T)
+    l <- y.temp$locLead+l-1
+    n <- length(y.temp$x)
     xx <- l:(l+n-1)
-    graphics::points(xx, x.temp$x, col = "black", pch = 21, bg = cmp[i], cex = 0.7)
-    graphics::lines(xx, x$diffusion[[i]]$fit[,ll], col = cmp[i], lwd = 2)
+    graphics::points(xx, y.temp$x, col = "black", pch = 21, bg = cmp[i], cex = 0.7)
+    graphics::lines(xx, x$diffusion[[i]]$fit[, ll], col = cmp[i], lwd = 2)
   }
 }

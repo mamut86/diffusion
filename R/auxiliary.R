@@ -23,11 +23,11 @@ cleanzero <- function(x) {
 }
 
 
-cleanna <- function(x, silent = c(FALSE, TRUE)) {
+cleanna <- function(x, silent = c(TRUE, FALSE)) {
   
   # internal function to remove NA values. Stops if NA is within time series.
   # # x, vector of values
-  # verbose, when TRUE warnings when removing leading and trailing NAs
+  # silent, when TRUE warnings when removing leading and trailing NAs
   
   silent <- silent[1]
   
@@ -83,7 +83,7 @@ cleanna <- function(x, silent = c(FALSE, TRUE)) {
   }
   
   # Warning message if needed
-  if (silent == T) {
+  if (silent == F) {
     if (tl == T && ld == T) {
       message("Removed leading and trailing NA values to fit model")
     }
@@ -102,38 +102,171 @@ cleanna <- function(x, silent = c(FALSE, TRUE)) {
 }
 
 
-getse <- function(x, fit, loss, cumulative) {
+getse <- function(y, fit, loss, cumulative) {
   # calculate squared error
   
   if (cumulative == FALSE) {
     if (loss == -1) {
-      se <- x - fit[, 2]
-      # se <- log(x) - log(fit[, 2])
+      se <- y - fit[, 2]
+      # se <- log(y) - log(fit[, 2])
       se <- sum(se[se>0]) + sum(-se[se<0])
     } else if (loss == 1){
-      # se <- sum(abs(log(x)-log(fit[, 2])))
-      se <- sum(abs(x - fit[, 2]))
+      # se <- sum(abs(log(y)-log(fit[, 2])))
+      se <- sum(abs(y - fit[, 2]))
     } else if (loss == 2){
-      se <- sum((x - fit[, 2])^2)
-      # se <- sum((log(x) - log(fit[, 2]))^2)
+      se <- sum((y - fit[, 2])^2)
+      # se <- sum((log(y) - log(fit[, 2]))^2)
     } else {
-      se <- sum(abs(x - fit[, 2])^loss)
-      # se <- sum(abs(log(x) - log(fit[, 2]))^loss)
+      se <- sum(abs(y - fit[, 2])^loss)
+      # se <- sum(abs(log(y) - log(fit[, 2]))^loss)
     }
   } else {
     if (loss == -1) {
-      se <- cumsum(x) - fit[, 1]
-      # se <- log(cumsum(x)) - log(fit[, 1])
+      se <- cumsum(y) - fit[, 1]
+      # se <- log(cumsum(y)) - log(fit[, 1])
       se <- sum(se[se>0]) + sum(-se[se<0])
     } else if (loss == 1) {
-      # se <- sum(abs(log(cumsum(x)) - log(fit[, 1])))
-      se <- sum(abs(cumsum(x) - fit[, 1]))
+      # se <- sum(abs(log(cumsum(y)) - log(fit[, 1])))
+      se <- sum(abs(cumsum(y) - fit[, 1]))
     } else if (loss == 2) {
-      # se <- sum((log(cumsum(x)) - log(fit[, 1]))^2)
-      se <- sum((cumsum(x) - fit[, 1])^2)
+      # se <- sum((log(cumsum(y)) - log(fit[, 1]))^2)
+      se <- sum((cumsum(y) - fit[, 1])^2)
     } else {
-      # se <- sum(abs(log(cumsum(x)) - log(fit[, 1]))^loss)
-      se <- sum(abs(cumsum(x) - fit[, 1])^loss)
+      # se <- sum(abs(log(cumsum(y)) - log(fit[, 1]))^loss)
+      se <- sum(abs(cumsum(y) - fit[, 1])^loss)
+    }
+  }
+  
+  return(se)
+}
+
+callOptim <- function(y, loss, optim, maxiter, type, init, w.idx = rep(TRUE, 3),
+                      prew = NULL, cumulative = c(TRUE, FALSE),
+                      optsol = c("multi", "single"), mscal = c(TRUE, FALSE)) {
+  # function to call optimisation process
+  # optsol, using mulitiple initial values to derive at more optimal solutions
+  # mscal, decides whether m parameter is being rescaled
+  
+  # "L-BFGS-B" needs lower bounds
+  if (optim == "L-BFGS-B") {
+    lbound <- rep(0.00001, length(init))
+    ibound <- FALSE
+  } else {
+    ibound <- TRUE
+    lbound <- -Inf
+  }
+  
+  # make sure init is matching lbounds
+  init[init < lbound] <- lbound[init < lbound]
+  
+  if (optsol == "multi") {
+    # The m parameter of growth curves is notoriously hard to optimise. 
+    # We will try different initial values and check the resulting costs.
+    # We also have to worry about sample randomness, so instead of picking the 
+    # absolute minimum, we will prefer a local minimum amonst the lowest locally.
+    # We also need to worry about the scale of the parameters. We scale m by
+    # 10*max(y) to bring it to a region closer to the other paramters.  
+    
+    # Step 1: corse search
+    optSols <- list()
+    for (s in 1:10) {
+      
+      w <- as.vector(c(s, init[2:length(init)]))
+      # nmlk seems to work well but without bounds
+      
+      optSols[[s]] <-  optimx::optimx(w, difCost, method = optim,
+                                      lower = lbound, y = y,
+                                      loss = loss, type = type, prew = prew, cumulative = cumulative,
+                                      w.idx = w.idx, mscal = mscal, ibound = ibound,
+                                      control = list(trace = 0, dowarn = TRUE, maxit = maxiter)
+      )
+    }
+    
+    # Get all the loss function results and find the lowest, this will indicate our more local search
+    cf <- unlist(lapply(optSols, function(x) {x$value}))
+    idx <- which.min(cf)
+    
+    # Step 2: detailed search - ideally most solutions should converge to the same!
+    optSols <- list()
+    for (s in 1:19){
+      
+      w <- as.vector(c((idx + seq(-0.9, 0.9, 0.1))[s], init[2:length(init)]))
+      optSols[[s]] <- optimx::optimx(w, difCost, method = optim,
+                                     lower = lbound, y = y,
+                                     loss = loss, type = type, prew = prew, cumulative = cumulative,
+                                     w.idx = w.idx, mscal = mscal, ibound = ibound,
+                                     control = list(trace = 0, dowarn = TRUE, maxit = maxiter)
+      )
+    }
+    cf <- unlist(lapply(optSols, function(x) {x$value}))
+    opt <- optSols[[which.min(cf)]]
+    
+    w <- unlist(opt[1:length(init)])
+    if (mscal == TRUE) {
+      w[1] <- w[1]*10*max(cumsum(y))
+    }
+    
+  } else {
+    init <- as.vector(init)
+    # single optimisation
+    opt <- optimx::optimx(init, difCost, method = optim,
+                          lower = lbound, y = y,
+                          loss = loss, type = type, prew = prew, cumulative = cumulative,
+                          w.idx = w.idx, mscal = mscal, ibound = ibound,
+                          control = list(trace = 0, dowarn = TRUE, maxit = maxiter))
+    
+    w <- unlist(opt[1:length(init)])
+    if (mscal == TRUE) {
+      w[1] <- w[1]*10*max(cumsum(y))
+    }
+    
+  }
+  
+  return(w)
+}
+
+difCost <- function(w, y, loss, type, w.idx, prew, cumulative, mscal, ibound){
+  # Internal function: cost function for numerical optimisation
+  # w, current parameters
+  # , adoption per period
+  # loss, the l-norm (1 is absolute errors, 2 is squared errors)
+  # type, the model type
+  # w.idx, logical vector with three elements. Use FALSE to not estimate
+  # respective parameter
+  # prew, the w of the previous generation - this is used for sequential fitting
+  # cumulative, use cumulative adoption or not
+  # mscal, should market parameter be scaled
+  # bound, parameters to be checked for being >0 if no bounds are provided in the optimiser
+  
+  n <- length(y)
+  
+  # If some elements of w are not optimised, sort out vectors
+  w.all <- rep(0, length(w))
+  w.all[w.idx] <- w
+  
+  # If sequential construct total parameters
+  if (!is.null(prew)){
+    w.all <- w.all + prew
+  }
+  
+  if (mscal == TRUE) {
+    # Fix scale of first parameter, instead of being the maximum it is a multiplier on current value
+    w.all[1] <- w.all[1]*(10*max(cumsum(y)))  # The 10x should be data driven. Something that would bring w_1 closer to 1-10?
+  }
+  
+  switch(type,
+         "bass" = fit <- bassCurve(n, w.all),
+         "gompertz" = fit <- gompertzCurve(n, w.all),
+         "gsgompertz" = fit <- gsgCurve(n, w.all),
+         "weibull" = fit <- weibullCurve(n, w.all)
+  )
+  
+  se <- getse(y, fit, loss, cumulative) # auxiliary.R
+  
+  # Ensure positive coefficients for optimisers without bounds
+  if (ibound == TRUE) {
+    if (any(w.all <= 0)){
+      se <- 10e200
     }
   }
   

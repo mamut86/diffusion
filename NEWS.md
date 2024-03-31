@@ -26,6 +26,8 @@ bugfixes
 - fixed error when plot.seqdiffusion() was used with cleanlead = F
 - fixed error in gompertz when cleanlead = F
 - fixed the tsmetal issue - the object now has the correct name
+- fixed error when plotting ts-object with cumulative = F
+- fixed an error when elimante was TRUE with 0 pval reps to stop.
 
 #### v.0.3.0 (30/04/18) ####
 
