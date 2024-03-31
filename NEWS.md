@@ -3,8 +3,8 @@
 changes
 - new automated removal of leading and trailing NAs. Error abort if NA within series
 - new search optimisation argument (multisol)
-- new option to partially fix/optimise paramters w in both diffusion and seqdiffusion
-- new bootloss argument to control for different loss function of the bootstrapping
+- new option to partially fix/optimise parameters w in both diffusion and seqdiffusion
+- new bootloss argument to control fo r different loss function of the bootstrapping
 - added documentation for tsMetal.RData
 - added internal sum squared error function for the optimiser
 - added passing optim setting int trough Gompertz and GSGompertz initialisation
@@ -12,20 +12,23 @@ changes
 - renamed argument l to loss (for l-norm selection)
 - renamed argument x to y (the response variable)
 - renamed argument optim to method (the optimiser selection)
-- introduced argument initpar to allow manual initalisation, preset and automatic
+- introduced argument initpar to allow manual initialisation, preset and automatic
 - introduced argument mscal to scale market potential for better optimisation results
 - introduced argument bootloss to choose from different loss function for bootstraps
-- changed non-critical warnings to type message, to allow easy surpression
-- bass() function implementing Bass Model, together with plot(), print(), nobs(), logLik() and actuals() methods.
+- changed non-critical warnings to type message, to allow easy suppression
 - is.diffusion() and is.bass() functions
-- Seasonality in the Bass model. Currently the fixed one is supported.
 - renamed option variable l to loss (for l-norm selection)
 - renamed option variable x to y (the response variable)
 - updated documentation for diffusion() - Thx Ivan!
 - removed tsBroadband dataset due to data privacy concerns
 - bass() function implementing Bass Model, together with plot(), print(), nobs(), logLik() and actuals() methods.
-- is.diffusion() and is.bass() functions
 - Seasonality in the Bass model. Currently the fixed one is supported.
+- new search optimisation option
+- added documentation for tsMetal.RData
+- added internal sum squared error function for the optimiser
+- added passing optim setting int trough Gompertz and GSGompertz initialisation
+- introduced initmeth option to chose between set of different initalisation ways
+- introduced scal option to scale market potential for better optimisation results
 
 bugfixes
 - fixed
@@ -34,7 +37,7 @@ bugfixes
 - fixed titles for graphs
 - fixed typo in documentation for predict function
 - fixed fcst table to contain same number as horizons
-- fixed number of paramters that go into G/GS (only relevant if w.idx is active)
+- fixed number of parameters that go into G/GS (only relevant if w.idx is active)
 - fixed error when plot.seqdiffusion() was used with cleanlead = F
 - fixed error in gompertz when cleanlead = F
 - fixed the tsmetal issue - the object now has the correct name
@@ -46,7 +49,6 @@ bugfixes
 - included error check for pvalreps in seqdiffusion
 - included error check for y to be vector or ts-object / matrix or mts for seqdiffusion
 - included a revert method in case optimization fails and warning messages
-- fixed the tsmetal issue - the object now has the correct name
 
 #### v.0.3.0 (30/04/18) ####
 

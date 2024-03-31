@@ -190,6 +190,8 @@ bass <- function(data, lags=frequency(data), seasonality=FALSE,
       if(all(lags==1)){
         warning("Cannot build seasonal model with lags=1",
                 call.=FALSE);
+        BSeasonal <- NULL;
+        B <- abs(bassInit(lowess(yInSample)$y));
       }
       else{
         yDecomposition <- msdecompose(yInSample, lags=lags[lags!=1],
@@ -216,7 +218,7 @@ bass <- function(data, lags=frequency(data), seasonality=FALSE,
     lb <- ellipsis$lb;
   }
   if(is.null(ellipsis$ub)){
-    ub <- c(1, 1, Inf, rep(Inf, nParamSeasonal));
+    ub <- c(Inf, 1, 1, rep(Inf, nParamSeasonal));
   }
   else{
     ub <- ellipsis$ub;
@@ -228,7 +230,7 @@ bass <- function(data, lags=frequency(data), seasonality=FALSE,
     if(seasonality){
       BSeasonal <- c(B[-c(1:3)],1);
       BSeasonal[length(BSeasonal)] <- 1/prod(BSeasonal);
-      yFitted[] <- (yFitted * rep(BSeasonal,ceiling(obsInsample/lags)))[1:obsInsample];
+      yFitted[] <- (yFitted * rep(BSeasonal,ceiling(obsInsample/lags))[1:obsInsample]);
     }
     scale <- switch(distribution,
                     "dlnorm"=sqrt(mean((log(yInSample) - log(yFitted))^2)),
@@ -272,7 +274,7 @@ bass <- function(data, lags=frequency(data), seasonality=FALSE,
   if(seasonality){
     BSeasonal <- c(B[-c(1:3)],1);
     BSeasonal[length(BSeasonal)] <- 1/prod(BSeasonal);
-    yFitted[] <- (yFitted * rep(BSeasonal,ceiling(obsInsample/lags)))[1:obsInsample];
+    yFitted[] <- yFitted * rep(BSeasonal,ceiling(obsInsample/lags))[1:obsInsample];
   }
   scale <- sqrt(mean((log(yInSample) - log(yFitted))^2));
   
