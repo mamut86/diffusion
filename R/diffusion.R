@@ -135,7 +135,7 @@ diffusion <- function(y, w = NULL, cleanlead = c(TRUE, FALSE),
     stop('Argument "y" needs to be a vector or ts-object')
   }
   
-  type <- match.arg(type)
+  type <- match.arg(type[1], c("bass", "gompertz", "gsgompertz", "weibull"))
   method <- match.arg(method[1], c("L-BFGS-B", "Nelder-Mead", "BFGS", "hjkb", "Rcgmin", "bobyqa", "nm", "hj"))
   if (!is.numeric(initpar)){
     initpar <- match.arg(initpar[1], c("preset", "linearize", "linearise"))
@@ -281,13 +281,13 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
   # mscal, TRUE scales market potential times the maximum
   # wFix, used to control user fixed parameters
   
-  type <- match.arg(type)
+  type <- match.arg(type[1], c("bass", "gompertz", "gsgompertz", "weibull"))
   method <- match.arg(method[1], c("L-BFGS-B", "Nelder-Mead", "BFGS", "hjkb", "Rcgmin", "bobyqa", "nm", "hj"))
   
   if (!is.numeric(initpar)){
     initpar <- match.arg(initpar[1], c("preset", "linearize", "linearise"))
   }
-  bootloss <- match.arg(bootloss)
+  bootloss <- match.arg(bootloss[1], c( "smthempir", "empir", "se"))
   
   # Defaults
   multisol <- multisol[1]
@@ -781,12 +781,12 @@ difcurve <- function(n, w = c(0.01, 0.1, 10),
   
   # Check inputs
   if (!is.null(curve)){
-    if (is.diffusion(curve)){
+    if (class(curve) == "diffusion"){
       type <- curve$type
       w <- curve$w
     }
   } else {
-    type <- match.arg(type)
+    type <- match.arg(type, c("bass", "gompertz", "gsgompertz", "weibull"))
     if (type == "gsgompertz"){
       if (length(w) != 4){
         stop("gsgompertz requires 4 parameters.")

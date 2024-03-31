@@ -485,5 +485,3 @@ numberParameters <- function(type) {
   return(noW)
   
 }
-
-
