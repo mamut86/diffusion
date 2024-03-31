@@ -61,13 +61,6 @@ jobs:
           remotes::install_cran("rcmdcheck")
         shell: Rscript {0}
 
-      - name: Install greybox and smooth from repo (devel only)
-        if: ${{ matrix.config.r == 'devel' }}
-        run: |
-          remotes::install_github("config-i1/greybox")
-          remotes::install_github("config-i1/smooth")
-        shell: Rscript {0}
-
       - name: Session info
         run: |
           options(width = 100)
