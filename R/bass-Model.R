@@ -368,8 +368,11 @@ print.bass <- function(x, digits=4, ...){
   print(round(ICs,digits));
 }
 
-
-# coef.bass
+#' @export
+coef.bass <- function(object, ...){
+  return(object$B);
+}
+  
 # vcov.bass
 # confint.bass
 # summary.bass
