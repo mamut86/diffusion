@@ -120,7 +120,7 @@
 #'  across product generations.
 #'   
 #' @author Oliver Schaer, \email{info@@oliverschaer.ch}, 
-#' @author Nikoloas Kourentzes, \email{nikoloas@@kourentzes.com}
+#' @author Nikolaos Kourentzes, \email{nikolaos@@kourentzes.com}
 #' 
 #' @rdname diffusion  
 #' @export diffusion

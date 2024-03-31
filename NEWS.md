@@ -1,4 +1,4 @@
-#### v.0.3.1.918 ####
+#### v.0.3.1 (30/03/2024) ####
 
 changes
 - new automated removal of leading and trailing NAs. Error abort if NA within series
@@ -20,6 +20,7 @@ changes
 - removed tsBroadband dataset due to data privacy concerns
 
 bugfixes
+- fixed
 - issues with log errors - reverted error measure to v.0.2.7 for the time being
 - fixed an initalisation issue on the weibull model
 - fixed titles for graphs
