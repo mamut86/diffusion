@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 #### v.0.3.1 (30/03/2024) ####
 
 changes
@@ -25,6 +26,7 @@ changes
 - removed tsBroadband dataset due to data privacy concerns
 - bass() function implementing Bass Model, together with plot(), print(), nobs(), logLik() and actuals() methods.
 - is.diffusion() and is.bass() functions
+- Seasonality in the Bass model. Currently the fixed one is supported.
 
 bugfixes
 - fixed
