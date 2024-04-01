@@ -20,8 +20,5 @@ LazyData: true
 Imports:
     nloptr,
     systemfit,
-    statmod,
-    greybox,
-    smooth,
     optimx
 RoxygenNote: 7.3.1

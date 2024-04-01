@@ -33,6 +33,7 @@ bassCurve <- function(n, w){
   return(x)
 }
 
+#' @importFrom stats lm
 bassInit <- function(y){
   # Internal function: get initial values using linear regression
   # y in adoption per period
@@ -40,7 +41,7 @@ bassInit <- function(y){
   # Estimate via linear regression as shown by Bass (1969)
   Y <- cumsum(y)
   Y2 <- Y^2
-  cf <- stats::lm(y ~ Y + Y2)$coefficients
+  cf <- lm(y ~ Y + Y2)$coefficients
   
   # Solve the quadratic and get all p, q, m
   m <- polyroot(cf) 

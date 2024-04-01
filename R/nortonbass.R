@@ -431,14 +431,15 @@ Nortonbass_curve <- function(gstart, n, param, flexpq = F){
   return(yhat)
 }
 
+#' @importFrom nloptr bobyqa
 Nortonbass_optim <- function(param, x, gstart, gn, flexpq){
   
   paraminit <- param
   
-  opt <- nloptr::bobyqa(x0 = paraminit, fn = Nortonbass_costfun,
-                            lower = rep(0, length(param)),
-                            upper = rep(Inf, length(param)),
-                        x = x, gn = gn, gstart = gstart, flexpq = flexpq)
+  opt <- bobyqa(x0 = paraminit, fn = Nortonbass_costfun,
+                lower = rep(0, length(param)),
+                upper = rep(Inf, length(param)),
+                x = x, gn = gn, gstart = gstart, flexpq = flexpq)
   
   optparam <- opt$par
   names(optparam) <- Nortonbass_paraname(gn, flexpq)

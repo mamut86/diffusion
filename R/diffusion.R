@@ -123,7 +123,7 @@
 #' @author Nikolaos Kourentzes, \email{nikolaos@@kourentzes.com}
 #' 
 #' @importFrom stats is.ts runif sd
-#' @importFrom utils tail
+#' @importFrom utils tail head
 #' @rdname diffusion  
 #' @export diffusion
 diffusion <- function(y, w = NULL, cleanlead = c(TRUE, FALSE),
