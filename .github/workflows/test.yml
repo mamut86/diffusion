@@ -44,8 +44,7 @@ jobs:
         uses: r-lib/actions/setup-r-dependencies@v2
 
       - name: Install rcmdcheck
-        run: |
-          install.packages('rcmdcheck')
+        run: install.packages('rcmdcheck')
 
       - name: Session info
         run: |
