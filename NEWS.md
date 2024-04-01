@@ -21,12 +21,9 @@ changes
 - renamed option variable x to y (the response variable)
 - updated documentation for diffusion() - Thx Ivan!
 - removed tsBroadband dataset due to data privacy concerns
-- bass() function implementing Bass Model, together with plot(), print(), nobs(), logLik() and actuals() methods.
-- Seasonality in the Bass model. Currently the fixed one is supported.
 - new search optimisation option
 
 bugfixes
-- fixed
 - issues with log errors - reverted error measure to v.0.2.7 for the time being
 - fixed an initalisation issue on the weibull model
 - fixed titles for graphs
