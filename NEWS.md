@@ -1,3 +1,9 @@
+#### v.0.4.0 (01/04/2024) ####
+
+changes
+- diffusion is now released under LGPLv2.1. The previous version under GPL(>=2) can be downloaded from here: https://github.com/mamut86/diffusion/releases/tag/v0.3.1
+
+
 #### v.0.3.1 (30/03/2024) ####
 
 changes

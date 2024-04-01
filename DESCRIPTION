@@ -1,7 +1,7 @@
 Package: diffusion
 Type: Package
 Title: Forecast the Diffusion of New Products
-Version: 0.3.1.919
+Version: 0.4.0
 Authors@R: c(person("Oliver", "Schaer", email = "info@oliverschaer.ch",
                     role = c("aut", "cre")),
              person("Nikolaos", "Kourentzes", email = "nikolaos@kourentzes.com",
@@ -14,7 +14,9 @@ BugReports: https://github.com/mamut86/diffusion/issues
 Description: Various diffusion models to forecast new product growth. Currently
     the package contains Bass, Gompertz, Gamma/Shifted Gompertz and Weibull curves. See
     Meade and Islam (2006) <doi:10.1016/j.ijforecast.2006.01.005>.
-License: GPL (>=2)
+License: LGPL-2.1
+Depends:
+    R (>= 3.5.0)
 Encoding: UTF-8
 LazyData: true
 Imports:
