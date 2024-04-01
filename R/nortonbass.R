@@ -88,6 +88,8 @@
 #'  }
 #'   
 #' @rdname Nortonbass
+#' @importFrom optimx optimx scalechk
+#' @importFrom systemfit nlsystemfit
 #' @export Nortonbass
 
 Nortonbass <- function(x, startval.met = c("2ST", "BB", "iBM"),
@@ -188,7 +190,7 @@ Nortonbass_eqngen <- function(gn, flexpq = T){
   
   # store instruments --> needed for the 3SLS estimation
   inst <- c(list(paste(c("~ t%d", rep(" + t%d", gn-1)), collapse = "")), pqmt[,4])
-  inst <- stats::as.formula(do.call(sprintf, inst))
+  inst <- as.formula(do.call(sprintf, inst))
   
   # create Norton-Bass 1987 forumla using their naming convention
   a <- sprintf("(q%d/p%d)", pqmt[, 2], pqmt[, 1])
@@ -206,15 +208,15 @@ Nortonbass_eqngen <- function(gn, flexpq = T){
     
     if (g == 1) {
       pg <- sprintf("%s * %s", ft[g], m[g])
-      eqns[[g]] <- stats::as.formula(sprintf("y%d ~ %s * (1-%s)", g, pg, ft[g+1]))
+      eqns[[g]] <- as.formula(sprintf("y%d ~ %s * (1-%s)", g, pg, ft[g+1]))
       eqnshat[[g]] <- sprintf("yhat[[%d]] <-  %s * (1-%s)", g, pg, ft[g+1])
     }else if (g == gn) {
       pg <- sprintf("%s * (%s + %s)", ft[g], m[g], pg)
-      eqns[[g]] <- stats::as.formula(sprintf("y%d ~ %s", g, pg))
+      eqns[[g]] <- as.formula(sprintf("y%d ~ %s", g, pg))
       eqnshat[[g]] <- sprintf("yhat[[%d]] <-  %s", g, pg)
     }else{
       pg <- sprintf("%s * (%s + %s)", ft[g], m[g], pg)
-      eqns[[g]] <- stats::as.formula(sprintf("y%d ~ %s * (1-%s)", g, pg, ft[g+1]))
+      eqns[[g]] <- as.formula(sprintf("y%d ~ %s * (1-%s)", g, pg, ft[g+1]))
       eqnshat[[g]] <- sprintf("yhat[[%d]] <-  %s * (1-%s)", g, pg, ft[g+1])
     }
   }
@@ -247,7 +249,7 @@ Nortonbass_estim <- function(x, gn, gstart, startval, flexpq, estim.met){
     colnames(x) <- c(paste0("y", 1:gn), paste0("t", 1:gn))
     x <- as.data.frame(x) # nlsystemfit requires dataframe format
     
-    nbFit <- systemfit::nlsystemfit(method = estim.met, eqns = mod$eqns, startvals = startval,
+    nbFit <- nlsystemfit(method = estim.met, eqns = mod$eqns, startvals = startval,
                                     data = x, maxiter = 1000)
     param <- nbFit$b
     
@@ -262,7 +264,7 @@ Nortonbass_estim <- function(x, gn, gstart, startval, flexpq, estim.met){
     colnames(x) <- c(paste0("y", 1:gn), paste0("t", 1:gn))
     x <- as.data.frame(x) # nlsystemfit requires dataframe format
     
-    nbFit <- systemfit::nlsystemfit(method = estim.met, eqns = mod$eqns, startvals = startval,
+    nbFit <- nlsystemfit(method = estim.met, eqns = mod$eqns, startvals = startval,
                                     data = x, inst = mod$inst, maxiter = 1000)
     
     param <- nbFit$b
@@ -285,6 +287,7 @@ Nortonbass_estim <- function(x, gn, gstart, startval, flexpq, estim.met){
 #' @keywords internal
 #' 
 #' @rdname Nortonbass_startvalgen
+#' @importFrom stats as.formula median
 #' @export Nortonbass_startvalgen
 Nortonbass_startvalgen <- function(x, gstart, flexpq, startval.met){
   # function to guess starting values to be past into the nonlinear optimiser
@@ -309,8 +312,8 @@ Nortonbass_startvalgen <- function(x, gstart, flexpq, startval.met){
     
     if (gn > 1) {
       if (flexpq == F) {
-        startval[1] <- stats::median(startval[seq(1, (3*gn), 3)])
-        startval[2] <- stats::median(startval[seq(2, (3*gn), 3)])
+        startval[1] <- median(startval[seq(1, (3*gn), 3)])
+        startval[2] <- median(startval[seq(2, (3*gn), 3)])
         
         startval <- startval[-c(seq(4, (3*gn), 3), seq(5,(3*gn), 3))]
       }

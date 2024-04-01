@@ -123,6 +123,8 @@
 #' @author Nikolaos Kourentzes, \email{nikolaos@@kourentzes.com}
 #' 
 #' @importFrom stats is.ts runif sd
+#' @importFrom stats rnorm density approx
+#' @importFrom graphics plot lines legend points
 #' @importFrom utils tail head
 #' @rdname diffusion  
 #' @export diffusion
@@ -458,13 +460,13 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
       switch (bootloss,
         "se" = {# Option 1, assuming normal errors      
           sigma <- sqrt(mean((y - yhat)^2))
-          yboot <- matrix(stats::rnorm(n*pvalreps, 0, sigma), nrow = n) + matrix(rep(yhat, pvalreps), ncol = pvalreps)},
+          yboot <- matrix(rnorm(n*pvalreps, 0, sigma), nrow = n) + matrix(rep(yhat, pvalreps), ncol = pvalreps)},
         "empir" = { # Option 2, use the empirical distribution of the errors
           err <- y-yhat
           yboot <- matrix(sample(err,n*pvalreps,replace=TRUE), nrow = n) + matrix(rep(yhat, pvalreps), ncol = pvalreps)},
         "smthempir" = {# Option 3, construct a smooth empirical distribution and sample from that
           err <- y-yhat
-          kde <- stats::density(err)
+          kde <- density(err)
           kdeY <- cumsum(kde$y)/sum(kde$y)
           
           # get uniform distribution and scale it with kdeY to make sure min values are within limits
@@ -472,7 +474,7 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
           uDscl <- min(kdeY)+(uDist - min(uDist))*(max(kdeY)-min(kdeY)) / (max(uDist)-min(uDist))
           
           # approximate from distribution
-          errKDE <- stats::approx(kdeY, kde$x, uDscl, ties = "ordered")$y
+          errKDE <- approx(kdeY, kde$x, uDscl, ties = "ordered")$y
           yboot <- matrix(errKDE, nrow = n) + matrix(rep(yhat, pvalreps), ncol = pvalreps)})
       
  
@@ -636,18 +638,18 @@ diffusionPlot <- function(x, cumulative = c(FALSE, TRUE), ...){
     yy[1] <- max(0, yy[1])
     
     # Plot fit
-    graphics::plot(as.vector(x$y), type="p", pch = 20, ylab = "Adoption", xlab = "Period",
+    plot(as.vector(x$y), type="p", pch = 20, ylab = "Adoption", xlab = "Period",
          ylim = yy, xlim = xx, main = x$type)
     for (i in 1:elmt){
-      graphics::lines(x$fit[, 1+i], col = cmp[i])
+      lines(x$fit[, 1+i], col = cmp[i])
     }
     # Check if forecasts exist and plot
     if (!is.null(x$frc)){
       for (i in 1:elmt){
-        graphics::lines((length(x$y)+1):xx[2], x$frc[, i+1], col=cmp[i])
+        lines((length(x$y)+1):xx[2], x$frc[, i+1], col=cmp[i])
       }
     }
-    graphics::legend("topleft", c("Adoption", "Innovators", "Imitators")[1:elmt],
+    legend("topleft", c("Adoption", "Innovators", "Imitators")[1:elmt],
            col = cmp, lty = 1, bty = "n")
     
   } else {
@@ -663,13 +665,13 @@ diffusionPlot <- function(x, cumulative = c(FALSE, TRUE), ...){
     yy[1] <- max(0, yy[1])
     
     # Plot fit
-    graphics::plot(cumsum(x$y), type = "p", pch = 20, ylab = "Cumulative Adoption",
+    plot(cumsum(x$y), type = "p", pch = 20, ylab = "Cumulative Adoption",
          xlab="Period", ylim = yy, xlim = xx, main = x$method)
-    graphics::lines(x$fit[, 1], col = cmp[1])
+    lines(x$fit[, 1], col = cmp[1])
     
     if (type == "bass"){
       for (i in 1:2){
-        graphics::lines(cumsum(x$fit[, 2+i]), col = cmp[i+1])
+        lines(cumsum(x$fit[, 2+i]), col = cmp[i+1])
       }
     }
     
@@ -677,11 +679,11 @@ diffusionPlot <- function(x, cumulative = c(FALSE, TRUE), ...){
     if (!is.null(x$frc)){
       fstart <- apply(x$fit, 2, cumsum)[length(x$y), 2:(1+elmt)]
       for (i in 1:elmt){
-        graphics::lines((length(x$y)+1):xx[2],
+        lines((length(x$y)+1):xx[2],
               cumsum(x$frc[, i+1]) + fstart[i], col = cmp[i])
       }
     }
-    graphics::legend("bottomright", c("Adoption", "Innovators", "Imitators")[1:elmt],
+    legend("bottomright", c("Adoption", "Innovators", "Imitators")[1:elmt],
            col = cmp, lty = 1, bty = "n")
   }
 }

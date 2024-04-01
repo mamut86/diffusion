@@ -272,7 +272,7 @@ runOptim <- function(w, method, lbound, y, loss, type, cumulative, wIdx, wFix,
   
   if (length(w) > 1 | method == "Rcgmin") {
     # These optimisation algorithms are multidimensional, so revert to BFGS if needed unless it is Rcgmin
-    opt <- optimx::optimx(w, difCost, method = method, lower = lbound, y = y,
+    opt <- optimx(w, difCost, method = method, lower = lbound, y = y,
                    loss = loss, type = type, cumulative = cumulative,
                    wIdx = wIdx, wFix = wFix, prew = prew, mscal = mscal, ibound = ibound,
                    control = list(trace = 0, dowarn = TRUE,
@@ -281,7 +281,7 @@ runOptim <- function(w, method, lbound, y, loss, type, cumulative, wIdx, wFix,
   } else {
     # revert to single parameter optimisation algorithms
     # Max iterations included in the BFGS
-    opt <- optimx::optimx(w, difCost, method = "L-BFGS-B", lower = -Inf, y = y,
+    opt <- optimx(w, difCost, method = "L-BFGS-B", lower = -Inf, y = y,
                           loss = loss, type = type, cumulative = cumulative,
                           wIdx = wIdx, wFix = wFix, prew = prew, mscal = mscal, ibound = F,
                           control = list(trace = 0, dowarn = TRUE, maxit = maxiter, starttests = FALSE))
@@ -292,13 +292,13 @@ runOptim <- function(w, method, lbound, y, loss, type, cumulative, wIdx, wFix,
   # if (opt$convcode == 9999) {browser()} # to trackerror
   if (opt$convcode == 9999) {
     # first try Rcgmin
-    opt <- optimx::optimx(w, difCost, method = "Rcgmin", lower = -Inf, y = y,
+    opt <- optimx(w, difCost, method = "Rcgmin", lower = -Inf, y = y,
                           loss = loss, type = type, cumulative = cumulative,
                           wIdx = wIdx, wFix = wFix, prew = prew, mscal = mscal, ibound = T,
                           control = list(trace = 0, dowarn = TRUE, maxit = maxiter, starttests = FALSE))
   } else if (opt$convcode == 9999) {
     # revert to BFGS
-    opt <- optimx::optimx(w, difCost, method = "BFGS", lower = lbound, y = y,
+    opt <- optimx(w, difCost, method = "BFGS", lower = lbound, y = y,
                           loss = loss, type = type, cumulative = cumulative,
                           wIdx = wIdx, wFix = wFix, prew = prew, mscal = mscal, ibound = ibound,
                           control = list(trace = 0, dowarn = TRUE, maxit = maxiter, starttests = FALSE))
@@ -398,7 +398,7 @@ checkInit <- function(init, method, prew, y, mscal) {
   init[init < lbound] <- lbound[init < lbound]
   
   # run a scalecheck
-  check <- optimx::scalechk(init, lbound, hbound, dowarn = FALSE)
+  check <- scalechk(init, lbound, hbound, dowarn = FALSE)
   checkRes <- c(check$lpratio, check$lbratio)
   
   # revert to normal scale
