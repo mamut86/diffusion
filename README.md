@@ -21,8 +21,8 @@ Stable version can be installed from CRAN:
 install.packages("diffusion")
 ```
 
-For installation from github use devtools:
+For installation from github use remotes:
 ```r
-if (!require("devtools")){install.packages("devtools")}
-devtools::install_github("mamut86/diffusion")
+if (!require("remotes")){install.packages("remotes")}
+remotes::install_github("mamut86/diffusion")
 ```
