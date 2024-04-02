@@ -38,7 +38,7 @@
 #'   \code{"Rcgmin"} might be an alternative for complex shapes but have
 #'   substantially higher computational costs. For further details on
 #'   optimization algorithms we refer to the optimx package documentation
-#' @param maxiter number of iterations the optimzer takes (default == \code{5000})
+#' @param maxiter number of iterations the optimiser takes (default == \code{5000})
 #' @param opttol Tolerance for convergence (default == 1.e-06)
 #' @param multisol when \code{"TRUE"} multiple optmisation solutions from
 #'   different initialisations of the market parameter are used (default ==
@@ -111,7 +111,7 @@
 #' @seealso \code{\link{predict.diffusion}}, \code{\link{plot.diffusion}} and \code{\link{print.diffusion}}.   
 #'   
 #' @note Parameters are estimated by 
-#' minimising the Mean Squared Error with a Subplex algorithm from the optimx package. 
+#' minimising the Mean Squared Error with a subplex algorithm from the optimx package. 
 #' Optionally p-values of the coefficients can be determined via
 #' bootstraping. Furthermore, the bootstrapping allows removing insignificant
 #' parameters from the optimization process.   
@@ -589,7 +589,7 @@ diffusionEstim <- function(y, loss = 2, cumulative = c(FALSE, TRUE),
 #'
 #' @return None. Function produces a plot.
 #' @author Oliver Schaer, \email{info@@oliverschaer.ch}, 
-#' @author Nikoloas Kourentzes, \email{nikoloas@@kourentzes.com}
+#' @author Nikolaos Kourentzes, \email{nikolaos@@kourentzes.com}
 #' @seealso \code{\link{diffusion}}.
 #' @examples
 #'  fit <- diffusion(tsChicken[, 2])
@@ -697,7 +697,7 @@ diffusionPlot <- function(x, cumulative = c(FALSE, TRUE), ...){
 #'
 #' @return None. Console output only. 
 #' @author Oliver Schaer, \email{info@@oliverschaer.ch}, 
-#' @author Nikoloas Kourentzes, \email{nikoloas@@kourentzes.com}
+#' @author Nikolaos Kourentzes, \email{nikolaos@@kourentzes.com}
 #' @seealso \code{\link{diffusion}}.
 #' @examples
 #'  fit <- diffusion(tsChicken[, 2])
@@ -775,7 +775,7 @@ diffusionPrint <- function(x, ...){
 #' @seealso \code{\link{diffusion}} for fitting a diffusion curve.
 #'   
 #' @author Oliver Schaer, \email{info@@oliverschaer.ch}, 
-#' @author Nikoloas Kourentzes, \email{nikoloas@@kourentzes.com}
+#' @author Nikolaos Kourentzes, \email{nikolaos@@kourentzes.com}
 #' 
 #' @rdname difcurve 
 #' @export difcurve

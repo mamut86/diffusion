@@ -74,7 +74,7 @@ NULL
 
 #' Time series: Safari Browser market share
 #' 
-#' A dataset containing the monthly market share of Safri browser generations
+#' A dataset containing the monthly market share of Safari browser generations
 #' from Safari 4.0 to Safari 10.
 #' 
 #' @name tsSafari
@@ -137,7 +137,7 @@ NULL
 
 #' Time series: COVID-19 confirmed cases US
 #' 
-#' A dataset containing the number of confirmed Covid-19 cases in the US.
+#' A dataset containing the number of confirmed COVID-19 cases in the US.
 #' 
 #' @name tsCovid
 #' @docType data

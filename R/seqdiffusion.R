@@ -6,7 +6,7 @@
 #' Mean Squared Error with subplex algorithms from the optimx package.
 #' Optionally p-values of the coefficients can be determined via bootstraping.
 #' Furthermore, the bootstrapping allows removing insignificant parameters from
-#' the optimization process.
+#' the optimisation process.
 #' 
 #' @inheritSection diffusion Bass curve
 #' @inheritSection diffusion Gompertz curve
@@ -15,7 +15,7 @@
 #' 
 #' @param y matrix containing in each column the adoption per period for generation k
 #' @param w matrix containing in each column the curve parameters for generation k (see note). Parameters set to NA will be
-#'   optimized. If \code{w = NULL} (default) all parameters are optimized.
+#'   optimised. If \code{w = NULL} (default) all parameters are optimized.
 #' @param cleanlead removes leading zeros for fitting purposes (default == T)
 #' @param loss the l-norm (1 is absolute errors, 2 is squared errors)
 #' @param cumulative If TRUE optimization is done on cumulative adoption.
@@ -28,11 +28,11 @@
 #' @param type of diffusion curve to use. This can be "bass", "gompertz",
 #'   "gsgompertz" and "weibull"
 #' @param method optimization method to use. This can be "nm" for Nelder-Meade or
-#'   "hj" for Hooke-Jeeves. #' @param maxiter number of iterations the optimzer
+#'   "hj" for Hooke-Jeeves. #' @param maxiter number of iterations the optimiser
 #'   takes (default == \code{10000} for "nm" and \code{Inf} for "hj")
 #' @param opttol Tolerance for convergence (default == 1.e-06)
 #' @param multisol when \code{"TRUE"} multiple optmisation solutions from different initialisations of the market parameter are used (default == \code{"FALSE"})
-#' @param initpar vector of initalisation parameters. If set to \code{preset} a predfined set of internal initalisation parameters is used while \code{"linearize"} uses linearized initalisation methods (default == \code{"linearize"}.
+#' @param initpar vector of initalisation parameters. If set to \code{preset} a predfined set of internal initalisation parameters is used while \code{"linearize"} uses linearised initalisation methods (default == \code{"linearize"}.
 #' @param mscal scales market potential at initalisation with the maximum of the observed market potential for better optimization results (default == \code{TRUE})
 #' 
 #' 
@@ -179,7 +179,7 @@ seqdiffusion <- function(y, w = NULL, cleanlead = c(TRUE, FALSE), loss = 2,
 #'
 #' @return None. Console output only. 
 #' @author Oliver Schaer, \email{info@@oliverschaer.ch}, 
-#' @author Nikoloas Kourentzes, \email{nikoloas@@kourentzes.com}
+#' @author Nikolaos Kourentzes, \email{nikolaos@@kourentzes.com}
 #' @seealso \code{\link{seqdiffusion}}.
 #' @keywords internal
 #' @examples
@@ -238,7 +238,7 @@ print.seqdiffusion <- function(x,...){
 #'
 #' @return None. Function produces a plot.
 #' @author Oliver Schaer, \email{info@@oliverschaer.ch}, 
-#' @author Nikoloas Kourentzes, \email{nikoloas@@kourentzes.com}
+#' @author Nikolaos Kourentzes, \email{nikolaos@@kourentzes.com}
 #' @seealso \code{\link{seqdiffusion}}.
 #' @keywords internal
 #' @examples
