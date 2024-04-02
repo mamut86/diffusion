@@ -11,5 +11,7 @@ _datasets/
 sync.ffs_db
 # Rprofile
 .Rprofile
-# cran-comments
+# cran submission
+CRAN-SUBMISSION
+# cran comments
 cran-comments.md
