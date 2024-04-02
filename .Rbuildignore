@@ -7,3 +7,4 @@
 ^_datasets$
 ^_old$
 .github$
+^cran-comments\.md$
