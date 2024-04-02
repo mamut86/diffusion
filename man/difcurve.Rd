@@ -58,5 +58,5 @@ This function calculates the values of diffusion curves that can be of \code{"ba
 \author{
 Oliver Schaer, \email{info@oliverschaer.ch},
 
-Nikoloas Kourentzes, \email{nikoloas@kourentzes.com}
+Nikolaos Kourentzes, \email{nikolaos@kourentzes.com}
 }

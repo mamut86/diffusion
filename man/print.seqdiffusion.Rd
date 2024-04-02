@@ -28,6 +28,6 @@ Outputs the result of sequentially fitted diffusion curves.
 \author{
 Oliver Schaer, \email{info@oliverschaer.ch},
 
-Nikoloas Kourentzes, \email{nikoloas@kourentzes.com}
+Nikolaos Kourentzes, \email{nikolaos@kourentzes.com}
 }
 \keyword{internal}

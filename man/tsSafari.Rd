@@ -24,6 +24,6 @@ A data frame with 98 observations and 13 variables \describe{
 \url{http://gs.statcounter.com/browser-version-market-share}
 }
 \description{
-A dataset containing the monthly market share of Safri browser generations
+A dataset containing the monthly market share of Safari browser generations
 from Safari 4.0 to Safari 10.
 }

@@ -14,7 +14,7 @@ A ts object with 107 days of observations
 \url{https://github.com/CSSEGISandData/COVID-19}
 }
 \description{
-A dataset containing the number of confirmed Covid-19 cases in the US.
+A dataset containing the number of confirmed COVID-19 cases in the US.
 }
 \references{
 COVID-19 Data Repository by the Center for Systems Science and Engineering (CSSE) at Johns Hopkins University

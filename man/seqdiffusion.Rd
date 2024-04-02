@@ -29,7 +29,7 @@ seqdiffusion(
 \item{y}{matrix containing in each column the adoption per period for generation k}
 
 \item{w}{matrix containing in each column the curve parameters for generation k (see note). Parameters set to NA will be
-optimized. If \code{w = NULL} (default) all parameters are optimized.}
+optimised. If \code{w = NULL} (default) all parameters are optimized.}
 
 \item{cleanlead}{removes leading zeros for fitting purposes (default == T)}
 
@@ -51,14 +51,14 @@ estimation. Forces \code{pvalreps = 1000} if left to 0.}
 "gsgompertz" and "weibull"}
 
 \item{method}{optimization method to use. This can be "nm" for Nelder-Meade or
-"hj" for Hooke-Jeeves. #' @param maxiter number of iterations the optimzer
+"hj" for Hooke-Jeeves. #' @param maxiter number of iterations the optimiser
 takes (default == \code{10000} for "nm" and \code{Inf} for "hj")}
 
 \item{opttol}{Tolerance for convergence (default == 1.e-06)}
 
 \item{multisol}{when \code{"TRUE"} multiple optmisation solutions from different initialisations of the market parameter are used (default == \code{"FALSE"})}
 
-\item{initpar}{vector of initalisation parameters. If set to \code{preset} a predfined set of internal initalisation parameters is used while \code{"linearize"} uses linearized initalisation methods (default == \code{"linearize"}.}
+\item{initpar}{vector of initalisation parameters. If set to \code{preset} a predfined set of internal initalisation parameters is used while \code{"linearize"} uses linearised initalisation methods (default == \code{"linearize"}.}
 
 \item{mscal}{scales market potential at initalisation with the maximum of the observed market potential for better optimization results (default == \code{TRUE})}
 }
@@ -82,7 +82,7 @@ Parameters are estimated for each generation individually by minimizing the
 Mean Squared Error with subplex algorithms from the optimx package.
 Optionally p-values of the coefficients can be determined via bootstraping.
 Furthermore, the bootstrapping allows removing insignificant parameters from
-the optimization process.
+the optimisation process.
 }
 \section{Bass curve}{
 

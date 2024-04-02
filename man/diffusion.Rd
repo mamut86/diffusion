@@ -45,7 +45,7 @@ optimized. If \code{w = NULL} (default) all paramters are optimized.}
 substantially higher computational costs. For further details on
 optimization algorithms we refer to the optimx package documentation}
 
-\item{maxiter}{number of iterations the optimzer takes (default == \code{5000})}
+\item{maxiter}{number of iterations the optimiser takes (default == \code{5000})}
 
 \item{opttol}{Tolerance for convergence (default == 1.e-06)}
 
@@ -106,7 +106,7 @@ vector \code{w} needs to be provided for the Bass curve in the order of
   parameter sets the market potential (saturation point).
 
 Parameters are estimated by 
-minimising the Mean Squared Error with a Subplex algorithm from the optimx package. 
+minimising the Mean Squared Error with a subplex algorithm from the optimx package. 
 Optionally p-values of the coefficients can be determined via
 bootstraping. Furthermore, the bootstrapping allows removing insignificant
 parameters from the optimization process.
