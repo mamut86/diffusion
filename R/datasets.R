@@ -69,7 +69,7 @@ NULL
 #' @references Bass, P.I. and Bass, F.M. 2004. IT Waves: Two Completed
 #'   Generational Diffusion Models. Working Paper Basseconomics, 1-33.
 #'   
-#' @source \url{https://goo.gl/VSEkgM}
+#' @source \url{https://citeseerx.ist.psu.edu/document?repid=rep1&type=pdf&doi=8bbf197bc39a27ccf44cfd5ed22b5db3da0c7bb2}
 NULL
 
 #' Time series: Safari Browser market share

@@ -2,9 +2,8 @@
 ^\.Rproj\.user$
 ^sync\.ffs_db$
 ^_testing$
-^NEWS\.md$
 ^README\.Rmd$
 ^\.travis\.yml$
 ^_datasets$
 ^_old$
-.github
+.github$

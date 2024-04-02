@@ -13,7 +13,7 @@ Nortonbass_startvalgen(x, gstart, flexpq, startval.met)
 
 \item{flexpq}{For \code{startvalgen="BB"}. Allows parameters p and q to be flexible if set \code{TRUE}.}
 
-\item{startvalgen}{\code{"iBM"} fits individual Bass model to each generation;
+\item{startval.met}{\code{"iBM"} fits individual Bass model to each generation;
 \code{"BB"} uses the approach described in Bass and Bass (2004).}
 }
 \value{

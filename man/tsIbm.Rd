@@ -12,7 +12,7 @@ A data frame with 24 observations and 4 variables \describe{
 \item{SIU4}{4th generation (starts 16 years after first generation)}}
 }
 \source{
-\url{https://goo.gl/VSEkgM}
+\url{https://citeseerx.ist.psu.edu/document?repid=rep1&type=pdf&doi=8bbf197bc39a27ccf44cfd5ed22b5db3da0c7bb2}
 }
 \description{
 A dataset containing the first four generations of yearly IBM general-purpose
