@@ -94,7 +94,7 @@ NULL
 #'   \item{Safari4.1}{Market share of Safari browser v 4.1}
 #'   \item{Safari4.0}{Market share of Safari browser v 4.0}}
 #'   
-#' @source \url{http://gs.statcounter.com/browser-version-market-share}
+#' @source \url{https://gs.statcounter.com/browser-version-market-share}
 NULL
 
 #' Time series: U.S. Merchant Marine conversion to metal
