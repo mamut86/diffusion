@@ -1,7 +1,7 @@
 [![CRAN](https://www.r-pkg.org/badges/version/diffusion)](https://cran.r-project.org/package=diffusion)
 [![Downloads](https://cranlogs.r-pkg.org/badges/diffusion?color=brightgreen)](https://www.r-pkg.org/pkg/diffusion)
 [![R-CMD-check](https://github.com/mamut86/diffusion/actions/workflows/test.yml/badge.svg)](https://github.com/mamut86/diffusion/actions/workflows/test.yml)
-[![lifecycle](https://img.shields.io/badge/lifecycle-maturing-blue.svg)](https://www.tidyverse.org/lifecycle/#maturing)
+[![lifecycle](https://img.shields.io/badge/lifecycle-maturing-blue.svg)](https://lifecycle.r-lib.org/articles/stages.html#maturing)
 
 # diffusion
 The R package __diffusion__ is for forecasting with diffusion curves.
