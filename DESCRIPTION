@@ -3,9 +3,11 @@ Type: Package
 Title: Forecast the Diffusion of New Products
 Version: 0.4.0
 Authors@R: c(person("Oliver", "Schaer", email = "info@oliverschaer.ch",
-                    role = c("aut", "cre")),
+                    role = c("aut", "cre"),
+                    comment = "Assistant Professor, LeBow College of Business, Drexel University, USA"),
              person("Nikolaos", "Kourentzes", email = "nikolaos@kourentzes.com",
-                    role = c("aut")),
+                    role = c("aut"),
+                    comment = "Professor of Predictive Analytics, School of Informatics, Skoevde University, Sweden"),
              person("Ivan", "Svetunkov", email = "ivan@svetunkov.com",
                     role = c("aut"),
                     comment="Lecturer at Centre for Marketing Analytics and Forecasting, Lancaster University, UK"))
